@@ -1,2 +1,4 @@
 /build
 /.gradle
+/gradlew.bat
+src/main/resources/public
