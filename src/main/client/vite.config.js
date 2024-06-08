@@ -9,4 +9,10 @@ export default defineConfig({
 		emptyOutDir: true,
 	},
 	base: '/app/',
+	server: {
+		port: 3006,
+		proxy: {
+			'/app/data': 'http://localhost:8080',
+		},
+	},
 })

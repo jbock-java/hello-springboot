@@ -11,7 +11,7 @@ public class MyApplication {
 
 	@RequestMapping("/data")
 	String home() {
-		return "Hello World!";
+		return Long.toString(System.currentTimeMillis());
 	}
 
 	public static void main(String[] args) {
