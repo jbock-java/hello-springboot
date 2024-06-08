@@ -12,7 +12,7 @@
 	},
 	"scripts": {
 		"start": "react-scripts start",
-		"build": "BUILD_PATH='../resources/public' react-scripts build",
+		"build": "PUBLIC_URL='/app/' BUILD_PATH='../resources/public' react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject"
 	},
