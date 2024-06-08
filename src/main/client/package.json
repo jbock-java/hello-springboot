@@ -2,6 +2,7 @@
 	"name": "client",
 	"private": true,
 	"version": "0.0.0",
+	"type": "module",
 	"scripts": {
 		"start": "react-scripts start",
 		"build": "PUBLIC_URL='/app/' BUILD_PATH='../resources/public' react-scripts build",
