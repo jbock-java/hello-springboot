@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
 export const App = () => {
-	let [ data, setData ] = useState("XXX");
+	let [ data, setData ] = useState("");
 	useEffect(() => {
 		let timer = setInterval(async () => {
-			let d = await fetchAsync("data");
+			let d = await fetchAsync("/app/data");
 			setData(d);
-		}, 1000);
+		}, 2000);
 		return () => clearInterval(timer);
 	});
 	return (

@@ -8,7 +8,7 @@ export default defineConfig({
 		outDir: '../resources/public/',
 		emptyOutDir: true,
 	},
-	base: '/app/',
+	base: '/app',
 	server: {
 		port: 3006,
 		proxy: {
