@@ -7,3 +7,6 @@ npm run dev
 
 The react app is now running here:
 http://localhost:3006/app
+
+
+TODO: https://github.com/spring-guides/gs-messaging-stomp-websocket
