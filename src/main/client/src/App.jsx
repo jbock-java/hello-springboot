@@ -3,24 +3,22 @@ import {
   useState,
 } from "react"
 
+const ws = new WebSocket("ws://" + location.host + "/app/ws/hello")
+
 export const App = () => {
   let [ data, setData ] = useState("")
   useEffect(() => {
-    let timer = setInterval(async () => {
-      let d = await fetchAsync("/app/data")
-      setData(d)
+    ws.onmessage = (message) => {
+      setData(message.data)
+    }
+    let timer = setInterval(() => {
+      ws.send("Hallo")
     }, 2000)
     return () => clearInterval(timer)
   })
   return (
-    <div className="App">
-      <h1 className="text-3xl font-bold underline">{data}</h1>
+    <div className="mx-2">
+      <h1 className="text-xl font-mono">{data}</h1>
     </div>
   )
-}
-
-async function fetchAsync (url) {
-  let response = await fetch(url)
-  let data = await response.json()
-  return data;
 }
