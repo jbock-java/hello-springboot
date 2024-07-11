@@ -14,23 +14,23 @@ const stompClient = new Client({
 
 export const App = () => {
   let [ data, setData ] = useState([])
-  let [ initialized, setInitialized ] = useState(false)
+  let initialized = useRef()
   let dataRef = useRef()
   dataRef.current = data
   let inputRef = useRef()
   useEffect(() => {
-    if (initialized) {
+    if (initialized.current) {
       return
     }
-    setInitialized(true)
-    stompClient.activate()
-    setTimeout(() => {
+    initialized.current = true
+    stompClient.onConnect = () => {
       stompClient.subscribe("/topic/greetings", (message) => {
         let d = [...dataRef.current, JSON.parse(message.body).content]
         setData(d)
       })
-    }, 1000)
-  }, [data, setData, initialized, setInitialized])
+    }
+    stompClient.activate()
+  }, [data, setData, initialized])
   let publish = useCallback((d) => {
     stompClient.publish({
       destination: "/app/hello",
