@@ -1,6 +1,8 @@
 import {
   useEffect,
   useState,
+  useCallback,
+  useRef,
 } from "react"
 import {
   Client,
@@ -11,27 +13,51 @@ const stompClient = new Client({
 })
 
 export const App = () => {
-  let [ data, setData ] = useState("")
+  let [ data, setData ] = useState([])
+  let [ initialized, setInitialized ] = useState(false)
+  let dataRef = useRef()
+  dataRef.current = data
+  let inputRef = useRef()
   useEffect(() => {
+    if (initialized) {
+      return
+    }
+    setInitialized(true)
     stompClient.activate()
     setTimeout(() => {
       stompClient.subscribe("/topic/greetings", (message) => {
-        setData(JSON.parse(message.body).content)
+        let d = [...dataRef.current, JSON.parse(message.body).content]
+        setData(d)
       })
     }, 1000)
-  }, [])
-  useEffect(() => {
-    let timer = setInterval(() => {
-      stompClient.publish({
-        destination: "/app/hello",
-        body: JSON.stringify({"name": ""}),
-      })
-    }, 2000)
-    return () => clearInterval(timer)
+  }, [data, setData, initialized, setInitialized])
+  let publish = useCallback((d) => {
+    stompClient.publish({
+      destination: "/app/hello",
+      body: JSON.stringify(d),
+    })
   }, [])
   return (
-    <div className="mx-2">
-      <h1 className="text-xl font-mono">{data}</h1>
+    <div className="m-2">
+      <form onSubmit={e => {
+        e.preventDefault()
+        let formData = new FormData(e.currentTarget)
+        let d = Object.fromEntries(formData)
+        inputRef.current.value = ""
+        publish(d)
+      }}>
+        <div>
+          <input className="border-black border p-1" ref={inputRef} name="name" type="text"></input>
+        </div>
+        <div>
+          <button className="border-black border mt-2 px-2 py-1" type="submit">OK</button>
+        </div>
+      </form>
+      <div className="mt-2">
+        {data.map((d, i) => (
+          <div key={i} className="font-mono">{d}</div>
+        ))}
+      </div>
     </div>
   )
 }

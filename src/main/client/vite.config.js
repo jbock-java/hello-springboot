@@ -13,10 +13,10 @@ export default defineConfig({
     port: 3006,
     proxy: {
       '/app/data': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8102',
       },
       '/app/ws': {
-        target: 'ws://localhost:8080',
+        target: 'ws://localhost:8102',
         ws: true,
       }
     },
