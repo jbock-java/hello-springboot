@@ -25,7 +25,7 @@ export const App = () => {
     initialized.current = true
     stompClient.onConnect = () => {
       stompClient.subscribe("/topic/greetings", (message) => {
-        let d = [...dataRef.current, JSON.parse(message.body).content]
+        let d = [JSON.parse(message.body).content, ...dataRef.current]
         setData(d)
       })
     }
