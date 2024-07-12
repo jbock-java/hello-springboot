@@ -38,7 +38,7 @@ export const App = () => {
       return
     }
     initialized.current = true
-    stompClient.subscribe("/topic/greetings", (message) => {
+    stompClient.subscribe("/topic/game", (message) => {
       let r = JSON.parse(message.body)
       setGameState(r)
     })
@@ -47,9 +47,8 @@ export const App = () => {
     let updated = [...positionRef.current]
     updated[i] = symbol
     stompClient.publish({
-      destination: "/app/action",
+      destination: "/app/move",
       body: JSON.stringify({
-        intent: "move",
         position: updated,
         id: myId,
       }),

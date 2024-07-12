@@ -40,10 +40,9 @@ export const Lobby = () => {
     let response = await tfetch("/data/join")
     setId(response.id)
     stompClient.publish({
-      destination: "/app/action",
+      destination: "/app/match",
       body: JSON.stringify({
         id: response.id,
-        intent: "join",
       }),
     })
   }
