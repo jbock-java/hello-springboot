@@ -2,6 +2,11 @@ package com.bernd;
 
 import com.bernd.model.Move;
 import com.bernd.model.Status;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -23,14 +28,36 @@ public class GreetingController {
   @MessageMapping("/action")
   public void action(String string) {
     JSONObject message = new JSONObject(string);
+    int id = getId(message);
     Intent intent = Intent.getIntent(message);
     if (Intent.JOIN == intent) {
       joinCount++;
       operations.convertAndSend("/topic/lobby",
           joinCount % 2 == 0 ?
-              new Status("ready") :
-              new Status("waiting"));
+              new Status(id, "ready") :
+              new Status(id, "waiting"));
     }
-    operations.convertAndSend("/topic/greetings", new Move(message.getString("name")));
+    List<String> result = getPosition(message);
+    operations.convertAndSend("/topic/greetings", new Move(id, result));
+  }
+
+  private List<String> getPosition(JSONObject message) {
+    if (!message.has("position")) {
+      return Collections.nCopies(9, "");
+    }
+    JSONArray position = message.getJSONArray("position");
+    List<String> result = new ArrayList<>();
+    for (Object o : position) {
+      result.add(Objects.toString(o, ""));
+    }
+    return result;
+  }
+
+  private int getId(JSONObject message) {
+    if (!message.has("id")) {
+      return 0;
+    }
+    Number position = message.getNumber("id");
+    return position.intValue();
   }
 }

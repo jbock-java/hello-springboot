@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 enum Intent {
   NONE,
+  MOVE,
   JOIN,
   ;
 
