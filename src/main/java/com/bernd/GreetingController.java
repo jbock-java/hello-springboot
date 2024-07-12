@@ -1,5 +1,6 @@
 package com.bernd;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -16,7 +17,8 @@ public class GreetingController {
     }
 
     @MessageMapping("/hello")
-    public void greeting(HelloMessage message) {
-        operations.convertAndSend("/topic/greetings", new Greeting(message.getName()));
+    public void greeting(String string) {
+        JSONObject message = new JSONObject(string);
+        operations.convertAndSend("/topic/greetings", new Greeting(message.getString("name")));
     }
 }
