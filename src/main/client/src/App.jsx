@@ -2,17 +2,15 @@ import {
   useEffect,
   useState,
   useCallback,
+  useContext,
   useRef,
 } from "react"
 import {
-  Client,
-} from "@stomp/stompjs"
-
-const stompClient = new Client({
-  brokerURL: "ws://" + location.host + "/app/ws/action"
-})
+  StompContext,
+} from "./context.js"
 
 export const App = () => {
+  let stompClient = useContext(StompContext)
   let [ data, setData ] = useState([])
   let initialized = useRef()
   let dataRef = useRef()
@@ -30,13 +28,13 @@ export const App = () => {
       })
     }
     stompClient.activate()
-  }, [data, setData, initialized])
+  }, [data, setData, initialized, stompClient])
   let publish = useCallback((d) => {
     stompClient.publish({
       destination: "/app/action",
       body: JSON.stringify(d),
     })
-  }, [])
+  }, [stompClient])
   return (
     <div className="m-2">
       <form onSubmit={e => {
