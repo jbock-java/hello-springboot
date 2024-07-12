@@ -9,7 +9,7 @@ import {
 } from "@stomp/stompjs"
 
 const stompClient = new Client({
-  brokerURL: "ws://" + location.host + "/app/ws/hello"
+  brokerURL: "ws://" + location.host + "/app/ws/action"
 })
 
 export const App = () => {
@@ -33,7 +33,7 @@ export const App = () => {
   }, [data, setData, initialized])
   let publish = useCallback((d) => {
     stompClient.publish({
-      destination: "/app/hello",
+      destination: "/app/action",
       body: JSON.stringify(d),
     })
   }, [])

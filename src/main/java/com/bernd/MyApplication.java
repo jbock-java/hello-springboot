@@ -9,13 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 public class MyApplication {
 
-	@RequestMapping("/data")
-	String home() {
-		return Long.toString(System.currentTimeMillis());
-	}
+  @RequestMapping("/data")
+  String home() {
+    return Long.toString(System.currentTimeMillis());
+  }
 
-	public static void main(String[] args) {
-		SpringApplication.run(MyApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(MyApplication.class, args);
+  }
 }
