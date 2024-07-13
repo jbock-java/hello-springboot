@@ -13,9 +13,6 @@ import {
   useLocation,
 } from "react-router-dom"
 import {
-  StompContext,
-} from "./context.js"
-import {
   Login,
 } from "./Login.jsx"
 import {
@@ -26,6 +23,7 @@ import {
 } from "./Play.jsx"
 import {
   base,
+  StompContext,
 } from "./util.js"
 
 export const Router = createBrowserRouter(

@@ -1,3 +1,9 @@
+import {
+  createContext,
+} from "react"
+
+export const StompContext = createContext()
+
 export const base = "/app"
 
 export const tfetch = async (url, options) => {

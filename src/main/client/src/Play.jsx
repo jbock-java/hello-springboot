@@ -9,7 +9,7 @@ import {
 } from "tailwind-merge"
 import {
   StompContext,
-} from "./context.js"
+} from "./util.js"
 import {
   IconContext,
 } from "react-icons"
@@ -40,10 +40,11 @@ export const Play = () => {
       return
     }
     initialized.current = true
-    stompClient.subscribe("/topic/game", (message) => {
+    let sub = stompClient.subscribe("/topic/game", (message) => {
       let r = JSON.parse(message.body)
       setGameState(r)
     })
+    return sub.unsubscribe
   }, [setGameState, initialized, stompClient])
   let onClick = useCallback((i) => {
     let updated = [...positionRef.current]

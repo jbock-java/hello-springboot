@@ -5,7 +5,7 @@ import {
 } from "@stomp/stompjs"
 import {
   StompContext,
-} from "./context.js"
+} from "./util.js"
 import {
   RouterProvider,
 } from "react-router-dom"

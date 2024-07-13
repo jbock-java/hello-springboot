@@ -7,15 +7,14 @@ import {
 
 export const useGameStore = create(set => ({
   symbol: "", // my symbol
-  id: 0, // my id
-  status: "waiting",
+  id: undefined, // my id
   gameState: {
     position: [
       "", "", "",
       "", "", "",
       "", "", "",
     ],
-    lastMove: 0, // id of player who made the most recent move
+    lastMove: undefined, // id of player who made the most recent move
   },
   setInit: (payload) => {
     set(produce(state => {
