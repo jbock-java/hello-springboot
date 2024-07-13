@@ -25,7 +25,7 @@ import {
 
 const tileClasses = "border border-r border-b border-black w-8 h-8 grid place-items-center"
 
-export const App = () => {
+export const Play = () => {
   let stompClient = useContext(StompContext)
   let symbol = useGameStore(state => state.symbol)
   let myId = useGameStore(state => state.id)

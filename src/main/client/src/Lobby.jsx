@@ -1,16 +1,8 @@
 import {
-  useEffect,
-  useContext,
-  useRef,
-} from "react"
+  Navigate,
+} from "react-router-dom"
 import {
-  StompContext,
-} from "./context.js"
-import {
-  App,
-} from "./App.jsx"
-import {
-  tfetch,
+  base,
 } from "./util.js"
 import {
   useGameStore,
@@ -18,46 +10,6 @@ import {
 
 export function Lobby() {
   let status = useGameStore(state => state.status)
-  let symbol = useGameStore(state => state.symbol)
-  let setInit = useGameStore(state => state.setInit)
-  let setId = useGameStore(state => state.setId)
-  let stompClient = useContext(StompContext)
-  let initialized = useRef()
-  useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
-    stompClient.onConnect = () => {
-      stompClient.subscribe("/topic/lobby", (message) => {
-        let r = JSON.parse(message.body)
-        setInit(r)
-      })
-    }
-    stompClient.activate()
-  }, [status, initialized, stompClient, setInit])
-  let onClick = async () => {
-    let response = await tfetch("/data/join")
-    setId(response.id)
-    stompClient.publish({
-      destination: "/app/match",
-      body: JSON.stringify({
-        id: response.id,
-      }),
-    })
-  }
-  if (!symbol) {
-    return (
-      <div className="m-4">
-        <button
-          className="p-2 border border-black"
-          onClick={onClick}
-          type="button">
-            Join
-        </button>
-      </div>
-    )
-  }
   if (status === "waiting") {
     return (
       <div className="m-2">
@@ -65,5 +17,5 @@ export function Lobby() {
       </div>
     )
   }
-  return <App />
+  return <Navigate to={base + "/play"} />
 }
