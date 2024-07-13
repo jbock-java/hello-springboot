@@ -16,7 +16,7 @@ import {
   useGameStore,
 } from "./store.js"
 
-export const Lobby = () => {
+export function Lobby() {
   let status = useGameStore(state => state.status)
   let symbol = useGameStore(state => state.symbol)
   let setInit = useGameStore(state => state.setInit)

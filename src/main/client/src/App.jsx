@@ -23,6 +23,8 @@ import {
   useGameStore,
 } from "./store.js"
 
+const tileClasses = "border border-r border-b border-black w-8 h-8 grid place-items-center"
+
 export const App = () => {
   let stompClient = useContext(StompContext)
   let symbol = useGameStore(state => state.symbol)
@@ -76,12 +78,11 @@ function Tile({check, onClick, disabled}) {
       <TileHover disabled={disabled} onClick={onClick} />
     )
   }
-  let classes = "border border-r border-b border-black w-8 h-8"
   return (
-    <div className={classes}>
-    <IconContext.Provider value={{ className: "pl-1 pt-1", size: "1.5em" }}>
-      {check == "circle" ? <FaRegCircle /> : <ImCross />}
-    </IconContext.Provider>
+    <div className={tileClasses}>
+      <IconContext.Provider value={{ size: "1.5em" }}>
+        {check == "circle" ? <FaRegCircle /> : <ImCross />}
+      </IconContext.Provider>
     </div>
   )
 }
@@ -89,7 +90,8 @@ function Tile({check, onClick, disabled}) {
 function TileHover({disabled, onClick}) {
   let symbol = useGameStore(state => state.symbol)
   let classes = twJoin(
-    "border border-r border-b border-black w-8 h-8 text-white",
+    tileClasses,
+    "text-white",
     !disabled && "cursor-pointer",
     !disabled && "hover:text-slate-400",
   )
@@ -98,9 +100,9 @@ function TileHover({disabled, onClick}) {
   }
   return (
     <div className={classes} onClick={!disabled ? onClick : undefined}>
-    <IconContext.Provider value={{ className: "pl-1 pt-1", size: "1.5em" }}>
-      {symbol === "circle" ?  <FaRegCircle /> : <ImCross />}
-    </IconContext.Provider>
+      <IconContext.Provider value={{ size: "1.5em" }}>
+        {symbol === "circle" ?  <FaRegCircle /> : <ImCross />}
+      </IconContext.Provider>
     </div>
   )
 }
