@@ -1,4 +1,4 @@
-const base = "/app"
+export const base = "/app"
 
 export const tfetch = async (url, options) => {
   let response

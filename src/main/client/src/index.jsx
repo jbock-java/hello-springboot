@@ -7,8 +7,11 @@ import {
   StompContext,
 } from "./context.js"
 import {
-  Lobby,
-} from "./Lobby.jsx"
+  RouterProvider,
+} from "react-router-dom"
+import {
+  Router,
+} from "./Router.jsx"
 
 const stompClient = new Client({
   brokerURL: "ws://" + location.host + "/app/ws/action"
@@ -17,6 +20,6 @@ const stompClient = new Client({
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <StompContext.Provider value={stompClient}>
-    <Lobby />
+    <RouterProvider router={Router} />
   </StompContext.Provider>
 )
