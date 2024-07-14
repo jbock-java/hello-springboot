@@ -6,7 +6,7 @@ import {
   useContext,
 } from "react"
 import {
-  Navigate,
+  useNavigate,
 } from "react-router-dom"
 import {
   base,
@@ -20,7 +20,7 @@ export function Lobby() {
   let [matchRequested, setMatchRequested] = useState(false)
   let [users, setUsers] = useState([])
   let stompClient = useContext(StompContext)
-  let lastMove = useGameStore(state => state.gameState.lastMove)
+  let navigate = useNavigate()
   let id = useGameStore(state => state.id)
   let initialized = useRef()
   let setInit = useGameStore(state => state.setInit)
@@ -32,10 +32,17 @@ export function Lobby() {
     let sub1 = stompClient.subscribe("/topic/lobby/gamestart", (message) => {
       let r = JSON.parse(message.body)
       setInit(r)
+      navigate(base + "/play")
     })
     let sub2 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)
       setUsers(r.users)
+    })
+    let sub3 = stompClient.subscribe("/topic/lobby/gamerequest", (message) => {
+      let r = JSON.parse(message.body)
+      if (r.id === id) {
+        setMatchRequested(true)
+      }
     })
     stompClient.publish({
       destination: "/app/lobby/hello",
@@ -45,16 +52,16 @@ export function Lobby() {
     return () => {
       sub1.unsubscribe
       sub2.unsubscribe
+      sub3.unsubscribe
     }
-  }, [setInit, setUsers, id, initialized, stompClient])
+  }, [setInit, setUsers, setMatchRequested, id, initialized, stompClient, navigate])
   let matchRequest = useCallback(() => {
     stompClient.publish({
-      destination: "/app/match",
+      destination: "/app/lobby/match",
       body: JSON.stringify({
         id,
       }),
     })
-    setMatchRequested(true)
   }, [id, stompClient])
   if (!matchRequested) {
     return (
@@ -73,12 +80,9 @@ export function Lobby() {
       </div>
     )
   }
-  if (lastMove == null) {
-    return (
-      <div className="m-4">
-       Waiting for match...
-      </div>
-    )
-  }
-  return <Navigate to={base + "/play"} />
+  return (
+    <div className="m-4">
+     Waiting for match...
+    </div>
+  )
 }
