@@ -2,8 +2,6 @@ package com.bernd;
 
 import com.bernd.model.JoinRequest;
 import com.bernd.model.JoinResponse;
-import com.bernd.model.MatchRequest;
-import com.bernd.model.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;

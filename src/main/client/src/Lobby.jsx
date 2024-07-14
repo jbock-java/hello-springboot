@@ -18,6 +18,7 @@ import {
 
 export function Lobby() {
   let [matchRequested, setMatchRequested] = useState(false)
+  let [users, setUsers] = useState([])
   let stompClient = useContext(StompContext)
   let lastMove = useGameStore(state => state.gameState.lastMove)
   let id = useGameStore(state => state.id)
@@ -28,12 +29,24 @@ export function Lobby() {
       return
     }
     initialized.current = true
-    let sub = stompClient.subscribe("/topic/lobby", (message) => {
+    let sub1 = stompClient.subscribe("/topic/lobby/gamestart", (message) => {
       let r = JSON.parse(message.body)
       setInit(r)
     })
-    return sub.unsubscribe
-  }, [setInit, id, initialized, stompClient])
+    let sub2 = stompClient.subscribe("/topic/lobby/users", (message) => {
+      let r = JSON.parse(message.body)
+      setUsers(r.users)
+    })
+    stompClient.publish({
+      destination: "/app/lobby/hello",
+      body: JSON.stringify({
+      }),
+    })
+    return () => {
+      sub1.unsubscribe
+      sub2.unsubscribe
+    }
+  }, [setInit, setUsers, id, initialized, stompClient])
   let matchRequest = useCallback(() => {
     stompClient.publish({
       destination: "/app/match",
@@ -52,6 +65,11 @@ export function Lobby() {
           onClick={matchRequest}>
           Find match
         </button>
+        <div className="mt-2">
+          {users.map(user => (
+            <div key={user.id}>{user.name}</div>
+          ))}
+        </div>
       </div>
     )
   }
