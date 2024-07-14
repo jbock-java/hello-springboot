@@ -6,21 +6,21 @@ export const StompContext = createContext()
 
 export const base = "/app"
 
-export const tfetch = async (url, options) => {
+export async function tfetch(url, options) {
   let response
   try {
     response = await fetch(base + url, options || {})
   } catch (e) {
     throw {
       options,
-      message: (options?.method || "GET") + " " + url + ": " + e,
+      message: (options?.method || "get") + " " + url + ": " + e,
       status: -1,
     }
   }
   if (response.status >= 400) {
     throw {
       options,
-      message: (options?.method || "GET") + " " + url + ": " + response.status,
+      message: (options?.method || "get") + " " + url + ": " + response.status,
       status: response.status,
     }
   }
@@ -30,4 +30,14 @@ export const tfetch = async (url, options) => {
   } else {
     return response.text()
   }
+}
+
+export function getRandomString() {
+  var arr = new Uint8Array(6)
+  window.crypto.getRandomValues(arr)
+  return Array.from(arr, dec2hex).join("")
+}
+
+function dec2hex(dec) {
+  return dec.toString(16).padStart(2, "0")
 }
