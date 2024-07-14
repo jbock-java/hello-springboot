@@ -5,7 +5,7 @@ import {
   produce,
 } from "immer"
 
-export const useGameStore = create(set => ({
+export const useGameStore = create((set, get) => ({
   symbol: "", // my symbol
   id: undefined, // my id
   gameState: {
@@ -20,6 +20,7 @@ export const useGameStore = create(set => ({
     set(produce(state => {
       state.status = payload.status
       state.gameState.lastMove = payload.id
+      state.symbol = get().id == payload.id ? "circle" : "cross"
     }))
   },
   setId: (id) => {

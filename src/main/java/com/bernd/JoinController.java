@@ -2,7 +2,6 @@ package com.bernd;
 
 import com.bernd.model.JoinRequest;
 import com.bernd.model.JoinResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
@@ -14,19 +13,18 @@ public class JoinController {
 
   private final MessageSendingOperations<String> operations;
 
-  private final UserNames userNames;
+  private final Users users;
 
-  @Autowired
   JoinController(
       MessageSendingOperations<String> operations,
-      UserNames userNames) {
+      Users users) {
     this.operations = operations;
-    this.userNames = userNames;
+    this.users = users;
   }
 
   @MessageMapping("/join")
   public void joinAction(JoinRequest request, Principal principal) {
-    userNames.setName(principal, request.name());
+    users.setName(principal, request.name());
     String channel = request.channel();
     operations.convertAndSend("/topic/join/" + channel,
         new JoinResponse(Integer.parseInt(principal.getName()))); 
