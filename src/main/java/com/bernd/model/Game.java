@@ -3,8 +3,10 @@ package com.bernd.model;
 import java.util.List;
 
 public record Game(
-    String id,
+    String gameId,
     User black,
-    User white
+    User white,
+    int currentUser,
+    List<String> position
   ) {
 }

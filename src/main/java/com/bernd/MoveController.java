@@ -1,6 +1,6 @@
 package com.bernd;
 
-import com.bernd.model.Move;
+import com.bernd.model.*;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
@@ -15,7 +15,7 @@ public class MoveController {
     }
 
     @MessageMapping("/move")
-    public void action(Move move) {
-        operations.convertAndSend("/topic/game", move);
+    public void action(Game game) {
+        operations.convertAndSend("/topic/game", game);
     }
 }

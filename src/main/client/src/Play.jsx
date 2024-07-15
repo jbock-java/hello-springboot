@@ -31,8 +31,10 @@ export const Play = () => {
   let symbol = useGameStore(state => state.symbol)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
+  let black = useGameStore(state => state.gameState.black)
+  let white = useGameStore(state => state.gameState.white)
   let position = useGameStore(state => state.gameState.position)
-  let lastMove = useGameStore(state => state.gameState.lastMove)
+  let currentUser = useGameStore(state => state.gameState.currentUser)
   let positionRef = useRef()
   positionRef.current = position
   let initialized = useRef()
@@ -54,17 +56,17 @@ export const Play = () => {
       destination: "/app/move",
       body: JSON.stringify({
         position: updated,
-        id: auth.id,
+        currentUser: auth.id === black.id ? white.id : black.id,
       }),
     })
-  }, [stompClient, auth, symbol])
+  }, [stompClient, auth, symbol, black, white])
   return (
     <div className="mt-2 ml-4">
-      <div>{lastMove === auth.id ? "Der andere Spieler ist dran..." : "Jetzt bin ich dran"}</div>
+      <div>{currentUser === auth.id ? "Jetzt bin ich dran" : "Der andere Spieler ist dran..."}</div>
       <div className="border border-l border-t border-black mt-4 inline-grid grid-cols-[min-content_min-content_min-content]">
         {position.map((check, i) => (
           <Tile
-            disabled={lastMove === auth.id}
+            disabled={currentUser !== auth.id}
             key={i}
             onClick={() => onClick(i)}
             check={check} />

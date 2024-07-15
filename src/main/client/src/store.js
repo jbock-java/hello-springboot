@@ -21,24 +21,34 @@ export const useAuthStore = create((set) => ({
 export const useGameStore = create((set) => ({
   symbol: "", // my symbol
   gameState: {
+    black: {
+      id: undefined,
+      name: "",
+    },
+    white: {
+      id: undefined,
+      name: "",
+    },
     position: [
       "", "", "",
       "", "", "",
       "", "", "",
     ],
-    lastMove: undefined, // id of player who made the most recent move
+    currentUser: undefined,
   },
   setInit: (payload, auth) => {
     set(produce(state => {
-      state.status = payload.status
-      state.gameState.lastMove = payload.id
-      state.symbol = payload.id !== auth.id? "circle" : "cross"
+      state.gameState.black = payload.black
+      state.gameState.white = payload.white
+      state.gameState.position = payload.position
+      state.gameState.currentUser = payload.currentUser
+      state.symbol = payload.black.id === auth.id? "circle" : "cross"
     }))
   },
   setGameState: (payload) => {
     set(produce(state => {
       state.gameState.position = payload.position
-      state.gameState.lastMove = payload.id
+      state.gameState.currentUser = payload.currentUser
     }))
   },
 }))

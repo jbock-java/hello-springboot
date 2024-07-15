@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 public class LobbyController {
@@ -42,7 +43,11 @@ public class LobbyController {
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     operations.convertAndSend("/topic/lobby/gamestart",
-        new Status(message.id(), "ready"));
+        new Game("123", user, lookingForMatch, user.id(), List.of(
+          "", "", "",
+          "", "", "",
+          "", "", ""
+        )));
     lookingForMatch = null;
   }
 }
