@@ -13,20 +13,20 @@ public class JoinController {
 
   private final MessageSendingOperations<String> operations;
 
-  private final Users users;
+  private final LobbyUsers lobbyUsers;
 
   JoinController(
       MessageSendingOperations<String> operations,
-      Users users) {
+      LobbyUsers lobbyUsers) {
     this.operations = operations;
-    this.users = users;
+    this.lobbyUsers = lobbyUsers;
   }
 
   @MessageMapping("/join")
   public void joinAction(JoinRequest request, Principal principal) {
-    users.setName(principal, request.name());
+    lobbyUsers.add(principal, request.name());
     String channel = request.channel();
     operations.convertAndSend("/topic/join/" + channel,
-        new JoinResponse(Integer.parseInt(principal.getName()))); 
+        new JoinResponse(request.name(), Integer.parseInt(principal.getName())));
   }
 }

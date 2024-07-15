@@ -58,6 +58,9 @@ function WithConnection() {
     stompClient.onConnect = () => {
       setConnected(true)
     }
+    stompClient.connectHeaders = {
+      token: "abc123",
+    }
     stompClient.activate()
   }, [initialized, stompClient, setConnected])
   if (!initialized.current && location.pathname !== base) {

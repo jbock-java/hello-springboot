@@ -20,6 +20,7 @@ import {
   ImCross,
 } from "react-icons/im"
 import {
+  useAuthStore,
   useGameStore,
 } from "./store.js"
 
@@ -28,7 +29,7 @@ const tileClasses = "border border-r border-b border-black w-8 h-8 grid place-it
 export const Play = () => {
   let stompClient = useContext(StompContext)
   let symbol = useGameStore(state => state.symbol)
-  let myId = useGameStore(state => state.id)
+  let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
   let position = useGameStore(state => state.gameState.position)
   let lastMove = useGameStore(state => state.gameState.lastMove)
@@ -53,17 +54,17 @@ export const Play = () => {
       destination: "/app/move",
       body: JSON.stringify({
         position: updated,
-        id: myId,
+        id: auth.id,
       }),
     })
-  }, [stompClient, myId, symbol])
+  }, [stompClient, auth, symbol])
   return (
     <div className="mt-2 ml-4">
-      <div>{lastMove === myId ? "Der andere Spieler ist dran..." : "Jetzt bin ich dran"}</div>
+      <div>{lastMove === auth.id ? "Der andere Spieler ist dran..." : "Jetzt bin ich dran"}</div>
       <div className="border border-l border-t border-black mt-4 inline-grid grid-cols-[min-content_min-content_min-content]">
         {position.map((check, i) => (
           <Tile
-            disabled={lastMove === myId}
+            disabled={lastMove === auth.id}
             key={i}
             onClick={() => onClick(i)}
             check={check} />

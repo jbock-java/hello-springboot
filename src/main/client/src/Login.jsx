@@ -18,7 +18,7 @@ import {
   StompContext,
 } from "./util.js"
 import {
-  useGameStore,
+  useAuthStore,
 } from "./store.js"
 
 const channel = getRandomString()
@@ -26,7 +26,7 @@ const channel = getRandomString()
 export function Login() {
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
-  let setId = useGameStore(state => state.setId)
+  let setAuth = useAuthStore(state => state.setAuth)
   let initialized = useRef()
   useEffect(() => {
     if (initialized.current) {
@@ -35,11 +35,11 @@ export function Login() {
     initialized.current = true
     let sub = stompClient.subscribe("/topic/join/" + channel, (message) => {
       let response = JSON.parse(message.body)
-      setId(response.id)
+      setAuth(response)
       navigate(base + "/lobby")
     })
     return sub.unsubscribe
-  }, [navigate, setId, initialized, stompClient])
+  }, [navigate, setAuth, initialized, stompClient])
   let onSubmit = (d) => {
     stompClient.publish({
       destination: "/app/join",

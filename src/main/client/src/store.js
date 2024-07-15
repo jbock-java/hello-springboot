@@ -5,9 +5,21 @@ import {
   produce,
 } from "immer"
 
-export const useGameStore = create((set, get) => ({
+export const useAuthStore = create((set) => ({
+  auth: {
+    name: "",
+    id: undefined,
+  },
+  setAuth: (payload) => {
+    set(produce(state => {
+      state.auth.name = payload.name
+      state.auth.id = payload.id
+    }))
+  },
+}))
+
+export const useGameStore = create((set) => ({
   symbol: "", // my symbol
-  id: undefined, // my id
   gameState: {
     position: [
       "", "", "",
@@ -16,17 +28,11 @@ export const useGameStore = create((set, get) => ({
     ],
     lastMove: undefined, // id of player who made the most recent move
   },
-  setInit: (payload) => {
+  setInit: (payload, auth) => {
     set(produce(state => {
       state.status = payload.status
       state.gameState.lastMove = payload.id
-      state.symbol = get().id == payload.id ? "circle" : "cross"
-    }))
-  },
-  setId: (id) => {
-    set(produce(state => {
-      state.symbol = id % 2 === 0 ? "circle" : "cross"
-      state.id = id
+      state.symbol = payload.id !== auth.id? "circle" : "cross"
     }))
   },
   setGameState: (payload) => {

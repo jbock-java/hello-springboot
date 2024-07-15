@@ -4,14 +4,15 @@ import com.bernd.model.User;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
-public class Users {
-  private final Map<String, User> map = new HashMap<>();
+public class LobbyUsers {
+  private final Map<String, User> map = new LinkedHashMap<>();
 
-  void setName(Principal principal, String name) {
+  void add(Principal principal, String name) {
     map.put(principal.getName(), new User(Integer.parseInt(principal.getName()), name));
   }
 
@@ -20,5 +21,13 @@ public class Users {
       return null;
     }
     return map.get(principal.getName());
+  }
+
+  void remove(String principal) {
+    map.remove(principal);
+  }
+
+  List<User> users() {
+    return List.copyOf(map.values());
   }
 }

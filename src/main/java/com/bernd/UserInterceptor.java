@@ -15,6 +15,7 @@ public class UserInterceptor implements ChannelInterceptor {
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
     if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+//      List<String> tokens = accessor.getNativeHeader("token");
       accessor.setUser(new StompUser(counter++));
     }
     return message;

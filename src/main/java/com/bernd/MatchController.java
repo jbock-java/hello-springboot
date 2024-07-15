@@ -13,19 +13,19 @@ import java.security.Principal;
 public class MatchController {
 
   private final MessageSendingOperations<String> operations;
-  private final Users users;
+  private final LobbyUsers lobbyUsers;
   private User lookingForMatch;
 
   MatchController(
       MessageSendingOperations<String> operations,
-      Users users) {
+      LobbyUsers lobbyUsers) {
     this.operations = operations;
-    this.users = users;
+    this.lobbyUsers = lobbyUsers;
   }
 
   @MessageMapping("/match")
   public void matchAction(MatchRequest message, Principal principal) {
-    User user = users.get(principal);
+    User user = lobbyUsers.get(principal);
     if (lookingForMatch == null) {
       lookingForMatch = user;
       return;

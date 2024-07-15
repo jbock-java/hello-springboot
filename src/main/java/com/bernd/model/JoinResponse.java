@@ -1,4 +1,4 @@
 package com.bernd.model;
 
-public record JoinResponse(int id) {
+public record JoinResponse(String name, int id) {
 }

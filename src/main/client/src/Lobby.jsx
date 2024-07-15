@@ -13,6 +13,7 @@ import {
   StompContext,
 } from "./util.js"
 import {
+  useAuthStore,
   useGameStore,
 } from "./store.js"
 
@@ -21,7 +22,7 @@ export function Lobby() {
   let [users, setUsers] = useState([])
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
-  let id = useGameStore(state => state.id)
+  let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
   let setInit = useGameStore(state => state.setInit)
   useEffect(() => {
@@ -31,7 +32,7 @@ export function Lobby() {
     initialized.current = true
     let sub1 = stompClient.subscribe("/topic/lobby/gamestart", (message) => {
       let r = JSON.parse(message.body)
-      setInit(r)
+      setInit(r, auth)
       navigate(base + "/play")
     })
     let sub2 = stompClient.subscribe("/topic/lobby/users", (message) => {
@@ -40,13 +41,14 @@ export function Lobby() {
     })
     let sub3 = stompClient.subscribe("/topic/lobby/gamerequest", (message) => {
       let r = JSON.parse(message.body)
-      if (r.id === id) {
+      if (r.id === auth.id) {
         setMatchRequested(true)
       }
     })
     stompClient.publish({
       destination: "/app/lobby/hello",
       body: JSON.stringify({
+        name: auth.name,
       }),
     })
     return () => {
@@ -54,21 +56,21 @@ export function Lobby() {
       sub2.unsubscribe
       sub3.unsubscribe
     }
-  }, [setInit, setUsers, setMatchRequested, id, initialized, stompClient, navigate])
+  }, [setInit, setUsers, setMatchRequested, auth, initialized, stompClient, navigate])
   let matchRequest = useCallback(() => {
     stompClient.publish({
       destination: "/app/lobby/match",
       body: JSON.stringify({
-        id,
+        id: auth.id,
       }),
     })
-  }, [id, stompClient])
+  }, [auth, stompClient])
   if (!matchRequested) {
     return (
       <div className="m-4">
         <button type="button"
           className="p-2 border border-black"
-          disabled={id == null}
+          disabled={auth.id == null}
           onClick={matchRequest}>
           Find match
         </button>
