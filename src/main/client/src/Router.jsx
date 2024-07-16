@@ -67,8 +67,7 @@ function WithConnection() {
       setConnected(true)
     }
     stompClient.connectHeaders = {
-      login: auth.name,
-      token: "abc123",
+      token: auth.token,
     }
     stompClient.activate()
   }, [initialized, stompClient, setConnected, auth])

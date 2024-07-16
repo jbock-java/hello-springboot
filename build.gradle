@@ -12,5 +12,9 @@ repositories {
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-websocket'
-  implementation 'org.json:json:20240303'
+  implementation 'com.auth0:java-jwt:4.4.0'
+}
+
+tasks.named("bootRun") {
+  systemProperty("jwt.secret.key", "c13af801795aabad7cd12c5f79be3ca9060715a938891e73")
 }

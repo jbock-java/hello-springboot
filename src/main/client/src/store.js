@@ -10,12 +10,14 @@ export const useAuthStore = create((set) => ({
     name: "",
     id: undefined,
     state: "anonymous",
+    token: "",
   },
   setAuth: (payload) => {
     set(produce(state => {
       state.auth.name = payload.name
       state.auth.id = payload.name
       state.auth.state = "authenticated"
+      state.auth.token = payload.token
     }))
   },
   setPending: () => {

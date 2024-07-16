@@ -1,7 +1,10 @@
 package com.bernd;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.bernd.model.LoginRequest;
 import com.bernd.model.LoginResponse;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,9 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
 
   private final Users users;
+  private final Environment environment;
 
-  public LoginController(Users users) {
+  LoginController(
+      Users users,
+      Environment environment) {
     this.users = users;
+    this.environment = environment;
   }
 
   @PostMapping(value = "/login", consumes = "application/json")
@@ -25,7 +32,12 @@ public class LoginController {
     if (users.contains(request.name())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+    Algorithm algorithm = Algorithm.HMAC512(environment.getProperty("jwt.secret.key"));
+    String token = JWT.create()
+        .withIssuer("auth0")
+        .withClaim("name", request.name())
+        .sign(algorithm);
     users.login(request.name());
-    return ResponseEntity.ok(new LoginResponse(request.name()));
+    return ResponseEntity.ok(new LoginResponse(request.name(), token));
   }
 }
