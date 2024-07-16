@@ -5,6 +5,9 @@ import {
   useRef,
 } from "react"
 import {
+  useParams,
+} from "react-router-dom"
+import {
   twJoin,
 } from "tailwind-merge"
 import {
@@ -27,12 +30,13 @@ import {
 const tileClasses = "border border-r border-b border-black w-8 h-8 grid place-items-center"
 
 export const Play = () => {
+  let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let symbol = useGameStore(state => state.symbol)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
-  let black = useGameStore(state => state.gameState.black)
-  let white = useGameStore(state => state.gameState.white)
+  let black = useGameStore(state => state.black)
+  let white = useGameStore(state => state.white)
   let position = useGameStore(state => state.gameState.position)
   let currentUser = useGameStore(state => state.gameState.currentUser)
   let positionRef = useRef()
@@ -43,23 +47,32 @@ export const Play = () => {
       return
     }
     initialized.current = true
-    let sub = stompClient.subscribe("/topic/game", (message) => {
-      let r = JSON.parse(message.body)
-      setGameState(r)
+    let sub1 = stompClient.subscribe("/topic/game/" + gameId, (message) => {
+      let game = JSON.parse(message.body)
+      setGameState(game, auth)
     })
-    return sub.unsubscribe
-  }, [setGameState, initialized, stompClient])
+    stompClient.publish({
+      destination: "/app/game/hello",
+      body: JSON.stringify({
+        id: gameId,
+      }),
+    })
+    return () => {
+      sub1.unsubscribe
+    }
+  }, [setGameState, initialized, stompClient, auth, gameId])
   let onClick = useCallback((i) => {
     let updated = [...positionRef.current]
     updated[i] = symbol
     stompClient.publish({
-      destination: "/app/move",
+      destination: "/app/game/move",
       body: JSON.stringify({
+        id: gameId,
         position: updated,
         currentUser: auth.id === black.id ? white.id : black.id,
       }),
     })
-  }, [stompClient, auth, symbol, black, white])
+  }, [stompClient, auth, symbol, black, white, gameId])
   return (
     <div className="mt-2 ml-4">
       <div>{currentUser === auth.id ? "Jetzt bin ich dran" : "Der andere Spieler ist dran..."}</div>

@@ -12,6 +12,20 @@ import java.util.Map;
 public class Games {
   private final Map<String, Game> map = new LinkedHashMap<>();
 
+  Game update(Game game) {
+    Game g = map.get(game.id()).update(game);
+    return add(g);
+  }
+
+  Game get(String id) {
+    return map.get(id);
+  }
+
+  Game add(Game game) {
+    map.put(game.id(), game);
+    return game;
+  }
+
   List<Game> games() {
     return List.copyOf(map.values());
   }

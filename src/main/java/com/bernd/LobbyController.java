@@ -1,6 +1,7 @@
 package com.bernd;
 
 import com.bernd.model.*;
+import com.bernd.util.RandomString;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,17 +14,20 @@ public class LobbyController {
 
   private final MessageSendingOperations<String> operations;
   private final LobbyUsers lobbyUsers;
+  private final Games games;
   private User lookingForMatch;
 
   LobbyController(
       MessageSendingOperations<String> operations,
-      LobbyUsers lobbyUsers) {
+      LobbyUsers lobbyUsers,
+      Games games) {
     this.operations = operations;
     this.lobbyUsers = lobbyUsers;
+    this.games = games;
   }
 
   @MessageMapping("/lobby/hello")
-  public void lobbyJoinedAction(LobbyJoinRequest request, Principal principal) {
+  public void lobbyJoinedAction(JoinLobbyRequest request, Principal principal) {
     lobbyUsers.add(principal, request.name());
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
@@ -42,12 +46,13 @@ public class LobbyController {
     lobbyUsers.remove(Integer.toString(lookingForMatch.id()));
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
-    operations.convertAndSend("/topic/lobby/gamestart",
-        new Game("123", user, lookingForMatch, user.id(), List.of(
-          "", "", "",
-          "", "", "",
-          "", "", ""
-        )));
+    String gameId = RandomString.get();
+    Game game = games.add(new Game(gameId, user, lookingForMatch, user.id(), List.of(
+        "", "", "",
+        "", "", "",
+        "", "", ""
+    )));
+    operations.convertAndSend("/topic/lobby/gamestart", game);
     lookingForMatch = null;
   }
 }

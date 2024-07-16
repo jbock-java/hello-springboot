@@ -31,9 +31,8 @@ export function Lobby() {
     }
     initialized.current = true
     let sub1 = stompClient.subscribe("/topic/lobby/gamestart", (message) => {
-      let r = JSON.parse(message.body)
-      setInit(r, auth)
-      navigate(base + "/play")
+      let game = JSON.parse(message.body)
+      navigate(base + "/game/" + game.id)
     })
     let sub2 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)

@@ -38,7 +38,7 @@ export const Router = createBrowserRouter(
         path={base + "/lobby"}
         element={<Lobby />} />
       <Route
-        path={base + "/play"}
+        path={base + "/game/:gameId"}
         element={<Play />} />
     </Route>
   </>
