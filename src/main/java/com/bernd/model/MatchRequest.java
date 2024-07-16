@@ -1,4 +1,4 @@
 package com.bernd.model;
 
-public record MatchRequest(String id) {
+public record MatchRequest(String name) {
 }

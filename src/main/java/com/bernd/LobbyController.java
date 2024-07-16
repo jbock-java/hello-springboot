@@ -39,7 +39,7 @@ public class LobbyController {
     if (lookingForMatch == null) {
       lookingForMatch = user;
       operations.convertAndSend("/topic/lobby/gamerequest",
-          new Status(message.id(), "ready"));
+          new Status(message.name(), "ready"));
       return;
     }
     lobbyUsers.remove(principal.getName());

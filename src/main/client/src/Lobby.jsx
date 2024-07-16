@@ -40,7 +40,7 @@ export function Lobby() {
     })
     let sub3 = stompClient.subscribe("/topic/lobby/gamerequest", (message) => {
       let r = JSON.parse(message.body)
-      if (r.id === auth.id) {
+      if (r.name === auth.name) {
         setMatchRequested(true)
       }
     })
@@ -60,7 +60,7 @@ export function Lobby() {
     stompClient.publish({
       destination: "/app/lobby/match",
       body: JSON.stringify({
-        id: auth.id,
+        name: auth.name,
       }),
     })
   }, [auth, stompClient])
@@ -69,13 +69,12 @@ export function Lobby() {
       <div className="m-4">
         <button type="button"
           className="p-2 border border-black"
-          disabled={auth.id == null}
           onClick={matchRequest}>
           Find match
         </button>
         <div className="mt-2">
           {users.map(user => (
-            <div key={user.id}>{user.name}</div>
+            <div key={user.name}>{user.name}</div>
           ))}
         </div>
       </div>
