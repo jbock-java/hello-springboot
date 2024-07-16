@@ -13,7 +13,7 @@ public class LobbyUsers {
   private final Map<String, User> map = new LinkedHashMap<>();
 
   void add(Principal principal, String name) {
-    map.put(principal.getName(), new User(Integer.parseInt(principal.getName()), name));
+    map.put(principal.getName(), new User(principal.getName(), name));
   }
 
   User get(Principal principal) {

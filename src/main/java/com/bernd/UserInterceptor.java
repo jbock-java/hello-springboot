@@ -9,14 +9,13 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 
 public class UserInterceptor implements ChannelInterceptor {
 
-  private int counter;
-
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
     StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
     if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 //      List<String> tokens = accessor.getNativeHeader("token");
-      accessor.setUser(new StompUser(counter++));
+      String login = accessor.getLogin();
+      accessor.setUser(new StompUser(login));
     }
     return message;
   }

@@ -10,8 +10,10 @@ import {
   Route,
   Outlet,
   Navigate,
-  useLocation,
 } from "react-router-dom"
+import {
+  useAuthStore,
+} from "./store.js"
 import {
   Login,
 } from "./Login.jsx"
@@ -32,26 +34,32 @@ export const Router = createBrowserRouter(
     <Route
       element={<WithConnection />}>
       <Route
-        path={base}
-        element={<Login />} />
-      <Route
         path={base + "/lobby"}
         element={<Lobby />} />
       <Route
         path={base + "/game/:gameId"}
         element={<Play />} />
     </Route>
+    <Route
+      path={base + "/login"}
+      element={<Login />} />
+    <Route
+      path={base}
+      element={<Login />} />
   </>
   )
 )
 
 function WithConnection() {
+  let auth = useAuthStore(state => state.auth)
   let stompClient = useContext(StompContext)
   let [connected, setConnected] = useState(false)
-  let location = useLocation()
   let initialized = useRef()
   useEffect(() => {
     if (initialized.current) {
+      return
+    }
+    if (!auth.name) {
       return
     }
     initialized.current = true
@@ -59,12 +67,16 @@ function WithConnection() {
       setConnected(true)
     }
     stompClient.connectHeaders = {
+      login: auth.name,
       token: "abc123",
     }
     stompClient.activate()
-  }, [initialized, stompClient, setConnected])
-  if (!initialized.current && location.pathname !== base) {
-    return <Navigate to={base} />
+  }, [initialized, stompClient, setConnected, auth])
+  if (auth.state == "anonymous") {
+    return <Navigate to={base + "/login"} />
+  }
+  if (auth.state == "pending") {
+    return <div className="m-4">Authentication in progress...</div>
   }
   if (!connected) {
     return <div className="m-4">Waiting for STOMP connection...</div>

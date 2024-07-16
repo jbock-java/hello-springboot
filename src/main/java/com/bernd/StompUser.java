@@ -6,8 +6,8 @@ public final class StompUser implements Principal {
 
   private final String name;
 
-  StompUser(int name) {
-    this.name = Integer.toString(name);
+  StompUser(String name) {
+    this.name = name;
   }
 
   @Override

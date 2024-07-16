@@ -6,7 +6,7 @@ public record Game(
     String id,
     User black,
     User white,
-    int currentUser,
+    String currentUser,
     List<String> position
   ) {
 

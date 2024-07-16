@@ -4,12 +4,12 @@ import com.bernd.model.*;
 import com.bernd.util.RandomString;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.util.List;
 
-@RestController
+@Controller
 public class LobbyController {
 
   private final MessageSendingOperations<String> operations;
@@ -43,7 +43,7 @@ public class LobbyController {
       return;
     }
     lobbyUsers.remove(principal.getName());
-    lobbyUsers.remove(Integer.toString(lookingForMatch.id()));
+    lobbyUsers.remove(lookingForMatch.id());
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     String gameId = RandomString.get();

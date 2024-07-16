@@ -1,4 +1,4 @@
 package com.bernd.model;
 
-public record Status(int id, String status) {
+public record Status(String id, String status) {
 }

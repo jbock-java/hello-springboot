@@ -1,9 +1,4 @@
 import {
-  useRef,
-  useEffect,
-  useContext,
-} from "react"
-import {
   Form,
 } from "./Form.jsx"
 import {
@@ -14,40 +9,27 @@ import {
 } from "react-router-dom"
 import {
   base,
-  getRandomString,
-  StompContext,
+  tfetch,
 } from "./util.js"
 import {
   useAuthStore,
 } from "./store.js"
 
-const channel = getRandomString()
-
 export function Login() {
-  let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let setAuth = useAuthStore(state => state.setAuth)
-  let initialized = useRef()
-  useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
-    let sub = stompClient.subscribe("/topic/join/" + channel, (message) => {
-      let response = JSON.parse(message.body)
-      setAuth(response)
-      navigate(base + "/lobby")
+  let setPending = useAuthStore(state => state.setPending)
+  let onSubmit = async (d) => {
+    setPending()
+    let response = await tfetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(d),
     })
-    return sub.unsubscribe
-  }, [navigate, setAuth, initialized, stompClient])
-  let onSubmit = (d) => {
-    stompClient.publish({
-      destination: "/app/join",
-      body: JSON.stringify({
-        ...d,
-        channel,
-      }),
-    })
+    setAuth(response)
+    navigate(base + "/lobby")
   }
   return (
     <Form className="m-4" onSubmit={onSubmit}>

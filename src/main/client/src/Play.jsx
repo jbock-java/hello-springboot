@@ -42,6 +42,7 @@ export const Play = () => {
   let positionRef = useRef()
   positionRef.current = position
   let initialized = useRef()
+  let opponent = auth.id === black.id ? white : black
   useEffect(() => {
     if (initialized.current) {
       return
@@ -69,13 +70,13 @@ export const Play = () => {
       body: JSON.stringify({
         id: gameId,
         position: updated,
-        currentUser: auth.id === black.id ? white.id : black.id,
+        currentUser: opponent.id,
       }),
     })
-  }, [stompClient, auth, symbol, black, white, gameId])
+  }, [stompClient, symbol, opponent, gameId])
   return (
     <div className="mt-2 ml-4">
-      <div>{currentUser === auth.id ? "Jetzt bin ich dran" : "Der andere Spieler ist dran..."}</div>
+      <div>{currentUser === auth.id ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
       <div className="border border-l border-t border-black mt-4 inline-grid grid-cols-[min-content_min-content_min-content]">
         {position.map((check, i) => (
           <Tile

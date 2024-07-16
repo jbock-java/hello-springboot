@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     port: 3006,
     proxy: {
-      '/app/data': {
+      '/app/api': {
         target: 'http://localhost:8102',
       },
       '/app/ws': {
