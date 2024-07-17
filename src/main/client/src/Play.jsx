@@ -30,15 +30,12 @@ const tileClasses = "w-12 h-12 grid place-items-center"
 export const Play = () => {
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
-  let symbol = useGameStore(state => state.symbol)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
   let position = useGameStore(state => state.gameState.position)
   let currentUser = useGameStore(state => state.gameState.currentUser)
-  let positionRef = useRef()
-  positionRef.current = position
   let initialized = useRef()
   let opponent = auth.name === black.name ? white : black
   useEffect(() => {
@@ -70,6 +67,9 @@ export const Play = () => {
       }),
     })
   }, [stompClient, gameId])
+  if (!position) {
+    return <div>Spieldaten werden geladen...</div>
+  }
   return (
     <div className="mt-2 ml-4">
       <div className="relative w-full h-1">
@@ -96,11 +96,16 @@ export const Play = () => {
           }
         </div>
       </div>
-      <div className="fixed right-12 ml-4">{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
+      <div className="fixed right-12 ml-4">
+      {
+        currentUser === auth.name ? 
+          "Jetzt bin ich dran" : 
+          (opponent.name + " ist dran...")
+      }
+      </div>
     </div>
   )
 }
-
 function GridTile() {
   return <div className={gridTileClasses} />
 }
@@ -123,7 +128,7 @@ function Tile({check, onClick, disabled}) {
 
 function TileHover({disabled, onClick}) {
   let symbol = useGameStore(state => state.symbol)
-  let hovercolor = symbol === "b" ? "hover:text-asch" : "hover:text-esch"
+  let hovercolor = symbol === "b" ? "hover:text-esch" : "hover:text-asch"
   let classes = twJoin(
     tileClasses,
     "text-transparent",

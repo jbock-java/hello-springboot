@@ -23,7 +23,7 @@ public record Game(
   public Game update(Move move) {
     int x = move.x();
     int y = move.y();
-    String color = currentUser.equals(black().name()) ? "w" : "b";
+    String color = currentUser.equals(black().name()) ? "b" : "w";
     List<List<String>> rows = new ArrayList<>(position.size());
     for (int i = 0; i < y; i++) {
       rows.add(position.get(i));

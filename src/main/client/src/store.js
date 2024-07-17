@@ -28,33 +28,27 @@ export const useAuthStore = create((set) => ({
 export const useGameStore = create((set, get) => ({
   symbol: "", // my symbol
   black: {
-    id: undefined,
     name: "",
   },
   white: {
-    id: undefined,
     name: "",
   },
   gameState: {
-    position: [
-      ["", "", ""],
-      ["", "", ""],
-      ["", "", ""],
-    ],
     currentUser: undefined,
   },
   setGameState: (game, auth) => {
     set(produce(state => {
-      if (get().black.name !== game.black.name) {
+      let oldState = get()
+      if (oldState.black.name !== game.black.name) {
         state.black = game.black
       }
-      if (get().white.name !== game.white.name) {
+      if (oldState.white.name !== game.white.name) {
         state.white = game.white
       }
       state.gameState.position = game.position
       state.gameState.currentUser = game.currentUser
       let symbol = game.black.name === auth.name? "w" : "b"
-      if (get().symbol !== symbol) {
+      if (oldState.symbol !== symbol) {
         state.symbol = symbol
       }
     }))
