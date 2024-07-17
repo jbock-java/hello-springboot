@@ -18,9 +18,9 @@ export const useAuthStore = create((set) => ({
       state.auth.token = payload.token
     }))
   },
-  setPending: () => {
+  setPending: (b) => {
     set(produce(state => {
-      state.auth.state = "pending"
+      state.auth.state = b ? "pending" : "anonymous"
     }), true)
   },
 }))

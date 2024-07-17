@@ -17,13 +17,18 @@ export async function tfetch(url, options) {
       status: -1,
     }
   }
+  let body = await getBody(response)
   if (response.status >= 400) {
     throw {
       options,
-      message: (options?.method || "get") + " " + url + ": " + response.status,
+      message: body.message || (options?.method || "get") + " " + url + ": " + response.status,
       status: response.status,
     }
   }
+  return body
+}
+
+function getBody(response) {
   let contentType = response.headers.get("content-type")
   if (contentType && contentType.indexOf("application/json") !== -1) {
     return response.json()

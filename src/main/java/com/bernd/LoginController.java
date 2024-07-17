@@ -2,6 +2,7 @@ package com.bernd;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.bernd.model.Error;
 import com.bernd.model.LoginRequest;
 import com.bernd.model.LoginResponse;
 import org.springframework.core.env.Environment;
@@ -30,7 +31,8 @@ public class LoginController {
   public ResponseEntity<?> loginAction(
       @RequestBody LoginRequest request) {
     if (users.contains(request.name())) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(new Error("Name bereits vergeben"));
     }
     Algorithm algorithm = Algorithm.HMAC512(environment.getProperty("jwt.secret.key"));
     String token = JWT.create()

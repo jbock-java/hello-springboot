@@ -7,6 +7,9 @@ import {
 import {
   useNavigate,
 } from "react-router-dom"
+import toast, {
+  Toaster,
+} from "react-hot-toast";
 import {
   base,
   tfetch,
@@ -20,18 +23,24 @@ export function Login() {
   let setAuth = useAuthStore(state => state.setAuth)
   let setPending = useAuthStore(state => state.setPending)
   let onSubmit = async (d) => {
-    setPending()
-    let response = await tfetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(d),
-    })
-    setAuth(response)
-    navigate(base + "/lobby")
+    setPending(true)
+    try {
+      let response = await tfetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(d),
+      })
+      setAuth(response)
+      navigate(base + "/lobby")
+    } catch (e) {
+      setPending(false)
+      toast.error(e.message)
+    }
   }
   return (
+  <>
     <Form className="m-4" onSubmit={onSubmit}>
       <div>
         <Input name="name" />
@@ -42,5 +51,7 @@ export function Login() {
           Join
       </button>
     </Form>
+    <Toaster position="top-right"/>
+  </>
   )
 }
