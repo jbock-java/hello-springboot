@@ -48,9 +48,9 @@ public class LobbyController {
         new UserList(lobbyUsers.users()));
     String gameId = RandomString.get();
     Game game = games.add(new Game(gameId, user, lookingForMatch, user.id(), List.of(
-        "", "", "",
-        "", "", "",
-        "", "", ""
+        List.of("", "", ""),
+        List.of("", "", ""),
+        List.of("", "", "")
     )));
     operations.convertAndSend("/topic/lobby/gamestart", game);
     lookingForMatch = null;

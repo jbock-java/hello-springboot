@@ -7,7 +7,7 @@ public record Game(
     User black,
     User white,
     String currentUser,
-    List<String> position
+    List<List<String>> position
   ) {
 
   public Game update(Game game) {

@@ -62,9 +62,11 @@ export const Play = () => {
       sub1.unsubscribe
     }
   }, [setGameState, initialized, stompClient, auth, gameId])
-  let onClick = useCallback((i) => {
+  let onClick = useCallback((x, y) => {
+    let updatedRow = [...positionRef.current[y]]
+    updatedRow[x] = symbol
     let updated = [...positionRef.current]
-    updated[i] = symbol
+    updated[y] = updatedRow
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
@@ -79,12 +81,15 @@ export const Play = () => {
       <div>{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
       <div className="bg-kirsch p-4 inline-grid mt-4 border border-asch">
       <div className="bg-kirsch border-l border-t border-asch inline-grid grid-cols-[min-content_min-content_min-content]">
-        {position.map((check, i) => (
-          <Tile
-            disabled={currentUser !== auth.name}
-            key={i}
-            onClick={() => onClick(i)}
-            check={check} />
+        {
+          position.map((row, y) => (
+            row.map((check, x) => (
+              <Tile
+                disabled={currentUser !== auth.name}
+                key={y + "_" + x}
+                onClick={() => onClick(x, y)}
+                check={check} />
+            ))
         ))}
       </div>
       </div>
@@ -93,7 +98,7 @@ export const Play = () => {
 }
 
 function Tile({check, onClick, disabled}) {
-  let color = check === "cross" ? "black" : "white"
+  let color = check === "b" ? "black" : "white"
   if (!check) {
     return (
       <TileHover disabled={disabled} onClick={onClick} />
@@ -102,7 +107,7 @@ function Tile({check, onClick, disabled}) {
   return (
     <div className={tileClasses}>
       <IconContext.Provider value={{ color: color, size: "1.5em" }}>
-        {check == "circle" ? <FaRegCircle /> : <ImCross />}
+        {check == "w" ? <FaRegCircle /> : <ImCross />}
       </IconContext.Provider>
     </div>
   )
@@ -110,7 +115,7 @@ function Tile({check, onClick, disabled}) {
 
 function TileHover({disabled, onClick}) {
   let symbol = useGameStore(state => state.symbol)
-  let hovercolor = symbol === "cross" ? "hover:text-asch" : "hover:text-esch"
+  let hovercolor = symbol === "b" ? "hover:text-asch" : "hover:text-esch"
   let classes = twJoin(
     tileClasses,
     "text-transparent",
@@ -123,7 +128,7 @@ function TileHover({disabled, onClick}) {
   return (
     <div className={classes} onClick={!disabled ? onClick : undefined}>
       <IconContext.Provider value={{ size: "1.5em" }}>
-        {symbol === "circle" ?  <FaRegCircle /> : <ImCross />}
+        {symbol === "w" ?  <FaRegCircle /> : <ImCross />}
       </IconContext.Provider>
     </div>
   )

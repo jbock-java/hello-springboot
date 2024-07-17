@@ -37,9 +37,9 @@ export const useGameStore = create((set, get) => ({
   },
   gameState: {
     position: [
-      "", "", "",
-      "", "", "",
-      "", "", "",
+      ["", "", ""],
+      ["", "", ""],
+      ["", "", ""],
     ],
     currentUser: undefined,
   },
@@ -53,7 +53,7 @@ export const useGameStore = create((set, get) => ({
       }
       state.gameState.position = game.position
       state.gameState.currentUser = game.currentUser
-      let symbol = game.black.name === auth.name? "circle" : "cross"
+      let symbol = game.black.name === auth.name? "w" : "b"
       if (get().symbol !== symbol) {
         state.symbol = symbol
       }
