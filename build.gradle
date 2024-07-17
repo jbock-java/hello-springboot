@@ -13,8 +13,17 @@ repositories {
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-websocket'
   implementation 'com.auth0:java-jwt:4.4.0'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 tasks.named("bootRun") {
   systemProperty("jwt.secret.key", "c13af801795aabad7cd12c5f79be3ca9060715a938891e73")
+}
+
+test {
+  useJUnitPlatform()
+  testLogging {
+    events('failed')
+  }
 }

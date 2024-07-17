@@ -1,5 +1,7 @@
 package com.bernd.model;
 
+import com.bernd.game.Board;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,15 +12,6 @@ public record Game(
     String currentUser,
     List<List<String>> position
 ) {
-
-  public Game update(Game game) {
-    return new Game(
-        this.id,
-        this.black,
-        this.white,
-        game.currentUser,
-        game.position);
-  }
 
   public Game update(Move move) {
     int x = move.x();
@@ -40,11 +33,12 @@ public record Game(
     for (int i = y + 1; i < position().size(); i++) {
       rows.add(position.get(i));
     }
+    List<List<String>> newRows = Board.removeDeadStonesAround(rows, x, y);
     return new Game(
         this.id,
         this.black,
         this.white,
         currentUser.equals(black.name()) ? white().name() : black().name(),
-        rows);
+        newRows);
   }
 }
