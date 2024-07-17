@@ -28,7 +28,7 @@ public class LobbyController {
 
   @MessageMapping("/lobby/hello")
   public void lobbyJoinedAction(JoinLobbyRequest request, Principal principal) {
-    lobbyUsers.add(principal, request.name());
+    lobbyUsers.add(principal);
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
   }
@@ -43,14 +43,20 @@ public class LobbyController {
       return;
     }
     lobbyUsers.remove(principal.getName());
-    lobbyUsers.remove(lookingForMatch.id());
+    lobbyUsers.remove(lookingForMatch.name());
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     String gameId = RandomString.get();
-    Game game = games.add(new Game(gameId, user, lookingForMatch, user.id(), List.of(
-        List.of("", "", ""),
-        List.of("", "", ""),
-        List.of("", "", "")
+    Game game = games.add(new Game(gameId, user, lookingForMatch, user.name(), List.of(
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", ""),
+        List.of("", "", "", "", "", "", "", "", "")
     )));
     operations.convertAndSend("/topic/lobby/gamestart", game);
     lookingForMatch = null;

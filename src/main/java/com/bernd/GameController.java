@@ -2,6 +2,7 @@ package com.bernd;
 
 import com.bernd.model.Game;
 import com.bernd.model.JoinGameRequest;
+import com.bernd.model.Move;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
@@ -26,8 +27,9 @@ public class GameController {
   }
 
   @MessageMapping("/game/move")
-  public void action(Game game) {
+  public void action(Move move) {
+    Game game = games.get(move.id());
     operations.convertAndSend("/topic/game/" + game.id(),
-        games.update(game));
+        games.update(move));
   }
 }

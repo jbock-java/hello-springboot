@@ -1,6 +1,4 @@
 package com.bernd.model;
 
-import java.util.List;
-
-public record Move(String id, List<String> position) {
+public record Move(String id, int x, int y) {
 }

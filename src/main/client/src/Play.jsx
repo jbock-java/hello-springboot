@@ -61,24 +61,20 @@ export const Play = () => {
     }
   }, [setGameState, initialized, stompClient, auth, gameId])
   let onClick = useCallback((x, y) => {
-    let updatedRow = [...positionRef.current[y]]
-    updatedRow[x] = symbol
-    let updated = [...positionRef.current]
-    updated[y] = updatedRow
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        position: updated,
-        currentUser: opponent.name,
+        x: x,
+        y: y,
       }),
     })
-  }, [stompClient, symbol, opponent, gameId])
+  }, [stompClient, gameId])
   return (
     <div className="mt-2 ml-4">
-      <div className="float-left relative w-48 h-1">
+      <div className="relative w-full h-1">
         <div className="absolute bg-kirsch p-6">
-          <div className="m-6 inline-grid grid-cols-[min-content_min-content] border-l border-t border-asch">
+          <div className="m-6 inline-grid grid-cols-8 border-l border-t border-asch">
           {
             Array.from({length: (position.length - 1) * (position.length - 1)}).map((_, index) => (
               <GridTile key={index} />
@@ -86,7 +82,7 @@ export const Play = () => {
           }
           </div>
         </div>
-        <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-[min-content_min-content_min-content]">
+        <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-9">
           {
             position.map((row, y) => (
               row.map((check, x) => (
@@ -100,7 +96,7 @@ export const Play = () => {
           }
         </div>
       </div>
-      <div className="float-left ml-4">{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
+      <div className="fixed right-12 ml-4">{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
     </div>
   )
 }

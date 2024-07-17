@@ -1,9 +1,9 @@
 package com.bernd;
 
 import com.bernd.model.Game;
+import com.bernd.model.Move;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +12,8 @@ import java.util.Map;
 public class Games {
   private final Map<String, Game> map = new LinkedHashMap<>();
 
-  Game update(Game game) {
-    Game g = map.get(game.id()).update(game);
+  Game update(Move move) {
+    Game g = map.get(move.id()).update(move);
     return add(g);
   }
 

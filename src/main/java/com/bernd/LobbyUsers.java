@@ -12,8 +12,8 @@ import java.util.Map;
 public class LobbyUsers {
   private final Map<String, User> map = new LinkedHashMap<>();
 
-  void add(Principal principal, String name) {
-    map.put(principal.getName(), new User(principal.getName(), name));
+  void add(Principal principal) {
+    map.put(principal.getName(), new User(principal.getName()));
   }
 
   User get(Principal principal) {
