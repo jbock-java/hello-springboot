@@ -27,7 +27,7 @@ import {
   useGameStore,
 } from "./store.js"
 
-const tileClasses = "border border-r border-b border-black w-8 h-8 grid place-items-center"
+const tileClasses = "border-r border-b border-asch w-8 h-8 grid place-items-center"
 
 export const Play = () => {
   let { gameId } = useParams()
@@ -77,7 +77,8 @@ export const Play = () => {
   return (
     <div className="mt-2 ml-4">
       <div>{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
-      <div className="border border-l border-t border-black mt-4 inline-grid grid-cols-[min-content_min-content_min-content]">
+      <div className="bg-kirsch p-4 inline-grid mt-4 border border-asch">
+      <div className="bg-kirsch border-l border-t border-asch inline-grid grid-cols-[min-content_min-content_min-content]">
         {position.map((check, i) => (
           <Tile
             disabled={currentUser !== auth.name}
@@ -86,11 +87,13 @@ export const Play = () => {
             check={check} />
         ))}
       </div>
+      </div>
     </div>
   )
 }
 
 function Tile({check, onClick, disabled}) {
+  let color = check === "cross" ? "black" : "white"
   if (!check) {
     return (
       <TileHover disabled={disabled} onClick={onClick} />
@@ -98,7 +101,7 @@ function Tile({check, onClick, disabled}) {
   }
   return (
     <div className={tileClasses}>
-      <IconContext.Provider value={{ size: "1.5em" }}>
+      <IconContext.Provider value={{ color: color, size: "1.5em" }}>
         {check == "circle" ? <FaRegCircle /> : <ImCross />}
       </IconContext.Provider>
     </div>
@@ -107,11 +110,12 @@ function Tile({check, onClick, disabled}) {
 
 function TileHover({disabled, onClick}) {
   let symbol = useGameStore(state => state.symbol)
+  let hovercolor = symbol === "cross" ? "hover:text-asch" : "hover:text-esch"
   let classes = twJoin(
     tileClasses,
-    "text-white",
+    "text-transparent",
     !disabled && "cursor-pointer",
-    !disabled && "hover:text-slate-400",
+    !disabled && hovercolor,
   )
   if (disabled) {
     return <div className={classes} />
