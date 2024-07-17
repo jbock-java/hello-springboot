@@ -17,17 +17,15 @@ import {
   IconContext,
 } from "react-icons"
 import {
-  FaRegCircle,
+  FaCircle,
 } from "react-icons/fa"
-import {
-  ImCross,
-} from "react-icons/im"
 import {
   useAuthStore,
   useGameStore,
 } from "./store.js"
 
-const tileClasses = "border-r border-b border-asch w-8 h-8 grid place-items-center"
+const gridTileClasses = "w-12 h-12 border-r border-b border-asch"
+const tileClasses = "w-12 h-12 grid place-items-center"
 
 export const Play = () => {
   let { gameId } = useParams()
@@ -78,23 +76,37 @@ export const Play = () => {
   }, [stompClient, symbol, opponent, gameId])
   return (
     <div className="mt-2 ml-4">
-      <div>{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
-      <div className="bg-kirsch p-4 inline-grid mt-4 border border-asch">
-      <div className="bg-kirsch border-l border-t border-asch inline-grid grid-cols-[min-content_min-content_min-content]">
-        {
-          position.map((row, y) => (
-            row.map((check, x) => (
-              <Tile
-                disabled={currentUser !== auth.name}
-                key={y + "_" + x}
-                onClick={() => onClick(x, y)}
-                check={check} />
+      <div className="float-left relative w-48 h-1">
+        <div className="absolute bg-kirsch p-6">
+          <div className="m-6 inline-grid grid-cols-[min-content_min-content] border-l border-t border-asch">
+          {
+            Array.from({length: (position.length - 1) * (position.length - 1)}).map((_, index) => (
+              <GridTile key={index} />
             ))
-        ))}
+          }
+          </div>
+        </div>
+        <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-[min-content_min-content_min-content]">
+          {
+            position.map((row, y) => (
+              row.map((check, x) => (
+                <Tile
+                  disabled={currentUser !== auth.name}
+                  key={y + "_" + x}
+                  onClick={() => onClick(x, y)}
+                  check={check} />
+              ))
+            ))
+          }
+        </div>
       </div>
-      </div>
+      <div className="float-left ml-4">{currentUser === auth.name ? "Jetzt bin ich dran" : (opponent.name + " ist dran...")}</div>
     </div>
   )
+}
+
+function GridTile() {
+  return <div className={gridTileClasses} />
 }
 
 function Tile({check, onClick, disabled}) {
@@ -106,8 +118,8 @@ function Tile({check, onClick, disabled}) {
   }
   return (
     <div className={tileClasses}>
-      <IconContext.Provider value={{ color: color, size: "1.5em" }}>
-        {check == "w" ? <FaRegCircle /> : <ImCross />}
+      <IconContext.Provider value={{ color: color, size: "2.75em" }}>
+        <FaCircle />
       </IconContext.Provider>
     </div>
   )
@@ -127,8 +139,8 @@ function TileHover({disabled, onClick}) {
   }
   return (
     <div className={classes} onClick={!disabled ? onClick : undefined}>
-      <IconContext.Provider value={{ size: "1.5em" }}>
-        {symbol === "w" ?  <FaRegCircle /> : <ImCross />}
+      <IconContext.Provider value={{ size: "2.75em" }}>
+        <FaCircle />
       </IconContext.Provider>
     </div>
   )
