@@ -1,6 +1,15 @@
 package com.bernd.game;
 
-import java.util.*;
+import com.bernd.util.BoardFunction;
+import com.bernd.util.BoardFunctionImpl;
+import com.bernd.util.BoardUpdater;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Board {
 
@@ -23,9 +32,7 @@ public class Board {
     while (!pointsToCheck.isEmpty()) {
       Point pt = pop(pointsToCheck);
       int ptId = pt.y() * size + pt.x();
-      if (ptId < id) {
-        id = ptId;
-      }
+      id = Math.min(id, ptId);
       points.add(pt);
       if (pt.y() > 0) {
         String bpt = board.get(pt.y() - 1).get(pt.x());
@@ -126,27 +133,16 @@ public class Board {
     if (groups.isEmpty()) {
       return board;
     }
-    Set<Point> points = points(groups.values());
-    List<List<String>> newBoard = new ArrayList<>(9);
-    for (int _y = 0; _y < board.size(); _y++) {
-      List<String> row = board.get(_y);
-      String[] newRow = new String[row.size()];
-      for (int _x = 0; _x < board.size(); _x++) {
-        if (points.contains(new Point(_x, _y))) { // TODO inefficient
-          newRow[_x] = "";
-        } else {
-          newRow[_x] = row.get(_x);
-        }
-      }
-      newBoard.add(List.of(newRow));
-    }
-    return newBoard;
+    BoardFunction remove = removeStonesIn(groups.values());
+    return BoardUpdater.apply(board, remove);
   }
 
-  private static Set<Point> points(Collection<StoneGroup> groups) {
-    Set<Point> result = new HashSet<>();
+  private static BoardFunction removeStonesIn(Collection<StoneGroup> groups) {
+    BoardFunctionImpl result = BoardFunctionImpl.create(9);
     for (StoneGroup group : groups) {
-      result.addAll(group.points());
+      for (Point point : group.points()) {
+        result.put(point, "");
+      }
     }
     return result;
   }

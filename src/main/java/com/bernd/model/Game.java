@@ -1,8 +1,9 @@
 package com.bernd.model;
 
 import com.bernd.game.Board;
-
-import java.util.ArrayList;
+import com.bernd.util.BoardFunction;
+import com.bernd.util.BoardFunctionImpl;
+import com.bernd.util.BoardUpdater;
 import java.util.List;
 
 public record Game(
@@ -17,22 +18,8 @@ public record Game(
     int x = move.x();
     int y = move.y();
     String color = currentUser.equals(black().name()) ? "b" : "w";
-    List<List<String>> rows = new ArrayList<>(position.size());
-    for (int i = 0; i < y; i++) {
-      rows.add(position.get(i));
-    }
-    List<String> row = new ArrayList<>(position.size());
-    for (int i = 0; i < x; i++) {
-      row.add(position.get(y).get(i));
-    }
-    row.add(color);
-    for (int i = x + 1; i < position().size(); i++) {
-      row.add(position.get(y).get(i));
-    }
-    rows.add(row);
-    for (int i = y + 1; i < position().size(); i++) {
-      rows.add(position.get(i));
-    }
+    BoardFunction update = BoardFunctionImpl.update(x, y, color);
+    List<List<String>> rows = BoardUpdater.apply(position, update);
     List<List<String>> newRows = Board.removeDeadStonesAround(rows, x, y);
     return new Game(
         this.id,
