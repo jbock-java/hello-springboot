@@ -22,14 +22,15 @@ public class GameController {
 
   @MessageMapping("/game/hello")
   public void gameJoinedAction(JoinGameRequest request) {
-    operations.convertAndSend("/topic/game/" + request.id(),
-        games.get(request.id()));
+    Game game = games.get(request.id());
+    operations.convertAndSend("/topic/game/" + request.id(), game);
   }
 
   @MessageMapping("/game/move")
   public void action(Move move) {
     Game game = games.get(move.id());
-    operations.convertAndSend("/topic/game/" + game.id(),
-        games.update(move));
+    Game updated = game.update(move);
+    games.put(updated);
+    operations.convertAndSend("/topic/game/" + game.id(), updated);
   }
 }

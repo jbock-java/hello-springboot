@@ -4,7 +4,7 @@ import java.util.List;
 
 public record StoneGroup(
     int id,
-    String color,
+    int color,
     List<Point> points,
     int liberties
 ) {

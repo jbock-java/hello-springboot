@@ -49,16 +49,16 @@ public class LobbyController {
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     String gameId = RandomString.get();
-    Game game = games.add(new Game(gameId, user, lookingForMatch, user.name(), new String[][]{
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""},
-        new String[]{"", "", "", "", "", "", "", "", ""}
+    Game game = games.put(new Game(gameId, user, lookingForMatch, user.name(), new int[][]{
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9],
+        new int[9]
     }));
     operations.convertAndSend("/topic/lobby/gamestart", game);
     lookingForMatch = null;

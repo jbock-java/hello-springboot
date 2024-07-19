@@ -12,6 +12,8 @@ import {
 } from "tailwind-merge"
 import {
   StompContext,
+  BLACK,
+  WHITE,
 } from "./util.js"
 import {
   IconContext,
@@ -34,7 +36,7 @@ export const Play = () => {
   let setGameState = useGameStore(state => state.setGameState)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
-  let position = useGameStore(state => state.gameState.position)
+  let board = useGameStore(state => state.gameState.board)
   let currentUser = useGameStore(state => state.gameState.currentUser)
   let initialized = useRef()
   let opponent = auth.name === black.name ? white : black
@@ -67,7 +69,7 @@ export const Play = () => {
       }),
     })
   }, [stompClient, gameId])
-  if (!position) {
+  if (!board) {
     return <div>Spieldaten werden geladen...</div>
   }
   return (
@@ -76,7 +78,7 @@ export const Play = () => {
         <div className="absolute bg-kirsch p-6">
           <div className="m-6 inline-grid grid-cols-8 border-l border-t border-asch">
           {
-            Array.from({length: (position.length - 1) * (position.length - 1)}).map((_, index) => (
+            Array.from({length: (board.length - 1) * (board.length - 1)}).map((_, index) => (
               <GridTile key={index} />
             ))
           }
@@ -84,7 +86,7 @@ export const Play = () => {
         </div>
         <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-9">
           {
-            position.map((row, y) => (
+            board.map((row, y) => (
               row.map((check, x) => (
                 <Tile
                   disabled={currentUser !== auth.name}
@@ -111,7 +113,7 @@ function GridTile() {
 }
 
 function Tile({check, onClick, disabled}) {
-  let color = check === "b" ? "black" : "white"
+  let color = check === BLACK ? "black" : "white"
   if (!check) {
     return (
       <TileHover disabled={disabled} onClick={onClick} />
@@ -128,7 +130,7 @@ function Tile({check, onClick, disabled}) {
 
 function TileHover({disabled, onClick}) {
   let symbol = useGameStore(state => state.symbol)
-  let hovercolor = symbol === "b" ? "hover:text-esch" : "hover:text-asch"
+  let hovercolor = symbol === BLACK ? "hover:text-asch" : "hover:text-esch"
   let classes = twJoin(
     tileClasses,
     "text-transparent",

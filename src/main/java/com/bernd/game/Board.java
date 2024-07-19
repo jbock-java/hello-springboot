@@ -1,8 +1,6 @@
 package com.bernd.game;
 
-import com.bernd.util.BoardFunction;
-import com.bernd.util.BoardFunctionImpl;
-import com.bernd.util.BoardUpdater;
+import com.bernd.util.BoardUpdate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 public class Board {
 
@@ -19,11 +18,11 @@ public class Board {
   public static final int WHITE_TERRITORY = 5;
 
   public static StoneGroup getStoneGroup(
-      String[][] board,
+      int[][] board,
       int x,
       int y) {
-    String color = board[y][x];
-    if (color.isEmpty()) {
+    int color = board[y][x];
+    if (color == 0) {
       return null;
     }
     int size = board.length;
@@ -40,41 +39,41 @@ public class Board {
       id = Math.min(id, ptId);
       points.add(pt);
       if (pt.y() > 0) {
-        String bpt = board[pt.y() - 1][pt.x()];
+        int bpt = board[pt.y() - 1][pt.x()];
         int bptId = (pt.y() - 1) * size + pt.x();
-        if (bpt.isEmpty()) {
+        if (bpt == 0) {
           liberties++;
-        } else if (bpt.equals(color) && !pointsChecked.contains(bptId)) {
+        } else if (bpt == color && !pointsChecked.contains(bptId)) {
           pointsChecked.add(bptId);
           pointsToCheck.add(new Point(pt.x(), pt.y() - 1));
         }
       }
       if (pt.y() < size - 1) {
-        String bpt = board[pt.y() + 1][pt.x()];
+        int bpt = board[pt.y() + 1][pt.x()];
         int bptId = (pt.y() + 1) * size + pt.x();
-        if (bpt.isEmpty()) {
+        if (bpt == 0) {
           liberties++;
-        } else if (bpt.equals(color) && !pointsChecked.contains(bptId)) {
+        } else if (bpt == color && !pointsChecked.contains(bptId)) {
           pointsChecked.add(bptId);
           pointsToCheck.add(new Point(pt.x(), pt.y() + 1));
         }
       }
       if (pt.x() > 0) {
-        String bpt = board[pt.y()][pt.x() - 1];
+        int bpt = board[pt.y()][pt.x() - 1];
         int bptId = pt.y() * size + pt.x() - 1;
-        if (bpt.isEmpty()) {
+        if (bpt == 0) {
           liberties++;
-        } else if (bpt.equals(color) && !pointsChecked.contains(bptId)) {
+        } else if (bpt == color && !pointsChecked.contains(bptId)) {
           pointsChecked.add(bptId);
           pointsToCheck.add(new Point(pt.x() - 1, pt.y()));
         }
       }
       if (pt.x() < size - 1) {
-        String bpt = board[pt.y()][pt.x() + 1];
+        int bpt = board[pt.y()][pt.x() + 1];
         int bptId = pt.y() * size + pt.x() + 1;
-        if (bpt.isEmpty()) {
+        if (bpt == 0) {
           liberties++;
-        } else if (bpt.equals(color) && !pointsChecked.contains(bptId)) {
+        } else if (bpt == color && !pointsChecked.contains(bptId)) {
           pointsChecked.add(bptId);
           pointsToCheck.add(new Point(pt.x() + 1, pt.y()));
         }
@@ -87,22 +86,22 @@ public class Board {
         liberties);
   }
 
-  public static String[][] removeDeadStonesAround(
-      String[][] board,
+  public static int[][] removeDeadStonesAround(
+      int[][] board,
       int x,
       int y) {
-    String color = board[y][x];
-    if (color.isEmpty()) {
+    int color = board[y][x];
+    if (color == 0) {
       return board;
     }
-    String oppositeColor = color.equals("w") ? "b" : "w";
+    int oppositeColor = color == WHITE ? BLACK : WHITE;
     int size = board.length;
     Map<Integer, StoneGroup> groups = new LinkedHashMap<>(8);
 
     // Above
     if (y > 0) {
       StoneGroup group = getStoneGroup(board, x, y - 1);
-      if (group != null && group.color().equals(oppositeColor) && group.liberties() == 0) {
+      if (group != null && group.color() == oppositeColor && group.liberties() == 0) {
         groups.put(group.id(), group);
       }
     }
@@ -110,7 +109,7 @@ public class Board {
     if (y < size - 1) {
       StoneGroup group = getStoneGroup(board, x, y + 1);
       if (group != null &&
-          group.color().equals(oppositeColor) &&
+          group.color() == oppositeColor &&
           group.liberties() == 0 &&
           !groups.containsKey(group.id())) {
         groups.put(group.id(), group);
@@ -120,7 +119,7 @@ public class Board {
     if (x > 0) {
       StoneGroup group = getStoneGroup(board, x - 1, y);
       if (group != null &&
-          group.color().equals(oppositeColor) &&
+          group.color() == oppositeColor &&
           group.liberties() == 0 &&
           !groups.containsKey(group.id())) {
         groups.put(group.id(), group);
@@ -130,7 +129,7 @@ public class Board {
     if (x < size - 1) {
       StoneGroup group = getStoneGroup(board, x + 1, y);
       if (group != null &&
-          group.color().equals(oppositeColor) &&
+          group.color() == oppositeColor &&
           group.liberties() == 0 &&
           !groups.containsKey(group.id())) {
         groups.put(group.id(), group);
@@ -140,15 +139,21 @@ public class Board {
     if (groups.isEmpty()) {
       return board;
     }
-    BoardFunction remove = removeStonesIn(groups.values());
-    return BoardUpdater.apply(board, remove);
+    Function<int[][], int[][]> remove = removeStonesIn(board.length, groups.values());
+    return remove.apply(board);
   }
 
-  private static BoardFunction removeStonesIn(Collection<StoneGroup> groups) {
-    BoardFunctionImpl result = BoardFunctionImpl.create(9);
+  private static Function<int[][], int[][]> removeStonesIn(
+      int dim,
+      Collection<StoneGroup> groups) {
+    int size = 0;
+    for (StoneGroup group : groups) {
+      size += group.points().size();
+    }
+    BoardUpdate result = BoardUpdate.builder(dim, size);
     for (StoneGroup group : groups) {
       for (Point point : group.points()) {
-        result.put(point, "");
+        result.add(point, 0);
       }
     }
     return result;

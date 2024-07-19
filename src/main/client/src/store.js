@@ -4,6 +4,10 @@ import {
 import {
   produce,
 } from "immer"
+import {
+  BLACK,
+  WHITE,
+} from "./util.js"
 
 export const useAuthStore = create((set) => ({
   auth: {
@@ -26,7 +30,7 @@ export const useAuthStore = create((set) => ({
 }))
 
 export const useGameStore = create((set, get) => ({
-  symbol: "", // my symbol
+  symbol: 0,
   black: {
     name: "",
   },
@@ -45,9 +49,9 @@ export const useGameStore = create((set, get) => ({
       if (oldState.white.name !== game.white.name) {
         state.white = game.white
       }
-      state.gameState.position = game.position
+      state.gameState.board = game.board
       state.gameState.currentUser = game.currentUser
-      let symbol = game.black.name === auth.name? "w" : "b"
+      let symbol = game.black.name === auth.name? BLACK : WHITE 
       if (oldState.symbol !== symbol) {
         state.symbol = symbol
       }
