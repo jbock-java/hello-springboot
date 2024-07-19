@@ -1,13 +1,15 @@
 package com.bernd;
 
-import com.bernd.model.*;
+import com.bernd.model.Game;
+import com.bernd.model.MatchRequest;
+import com.bernd.model.Status;
+import com.bernd.model.User;
+import com.bernd.model.UserList;
 import com.bernd.util.RandomString;
+import java.security.Principal;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
-
-import java.security.Principal;
-import java.util.List;
 
 @Controller
 public class LobbyController {
@@ -27,7 +29,7 @@ public class LobbyController {
   }
 
   @MessageMapping("/lobby/hello")
-  public void lobbyJoinedAction(JoinLobbyRequest request, Principal principal) {
+  public void lobbyJoinedAction(Principal principal) {
     lobbyUsers.add(principal);
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
@@ -47,17 +49,17 @@ public class LobbyController {
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     String gameId = RandomString.get();
-    Game game = games.add(new Game(gameId, user, lookingForMatch, user.name(), List.of(
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", ""),
-        List.of("", "", "", "", "", "", "", "", "")
-    )));
+    Game game = games.add(new Game(gameId, user, lookingForMatch, user.name(), new String[][]{
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""},
+        new String[]{"", "", "", "", "", "", "", "", ""}
+    }));
     operations.convertAndSend("/topic/lobby/gamestart", game);
     lookingForMatch = null;
   }

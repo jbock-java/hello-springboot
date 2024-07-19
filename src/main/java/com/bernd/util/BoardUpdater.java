@@ -1,28 +1,27 @@
 package com.bernd.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class BoardUpdater {
 
-  public static List<List<String>> apply(
-      List<List<String>> board,
+  public static String[][] apply(
+      String[][] board,
       BoardFunction function
   ) {
-    List<List<String>> result = new ArrayList<>(board.size());
-    for (int y = 0; y < board.size(); y++) {
-      List<String> row = board.get(y);
-      List<String> newRow = row;
-      for (int x = 0; x < board.size(); x++) {
+    String[][] result = new String[board.length][];
+    for (int y = 0; y < board.length; y++) {
+      String[] row = board[y];
+      String[] newRow = row;
+      for (int x = 0; x < board.length; x++) {
         String value = function.apply(x, y);
         if (value != null) {
           if (newRow == row) {
-            newRow = new ArrayList<>(row);
+            newRow = Arrays.copyOf(row, row.length);
           }
-          newRow.set(x, value);
+          newRow[x] = value;
         }
       }
-      result.add(newRow);
+      result[y] = newRow;
     }
     return result;
   }

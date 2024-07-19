@@ -13,15 +13,20 @@ import java.util.Set;
 
 public class Board {
 
+  public static final int BLACK = 2;
+  public static final int BLACK_TERRITORY = 3;
+  public static final int WHITE = 4;
+  public static final int WHITE_TERRITORY = 5;
+
   public static StoneGroup getStoneGroup(
-      List<List<String>> board,
+      String[][] board,
       int x,
       int y) {
-    String color = board.get(y).get(x);
+    String color = board[y][x];
     if (color.isEmpty()) {
       return null;
     }
-    int size = board.size();
+    int size = board.length;
     int id = y * size + x;
     List<Point> points = new ArrayList<>();
     int liberties = 0;
@@ -35,7 +40,7 @@ public class Board {
       id = Math.min(id, ptId);
       points.add(pt);
       if (pt.y() > 0) {
-        String bpt = board.get(pt.y() - 1).get(pt.x());
+        String bpt = board[pt.y() - 1][pt.x()];
         int bptId = (pt.y() - 1) * size + pt.x();
         if (bpt.isEmpty()) {
           liberties++;
@@ -45,7 +50,7 @@ public class Board {
         }
       }
       if (pt.y() < size - 1) {
-        String bpt = board.get(pt.y() + 1).get(pt.x());
+        String bpt = board[pt.y() + 1][pt.x()];
         int bptId = (pt.y() + 1) * size + pt.x();
         if (bpt.isEmpty()) {
           liberties++;
@@ -55,7 +60,7 @@ public class Board {
         }
       }
       if (pt.x() > 0) {
-        String bpt = board.get(pt.y()).get(pt.x() - 1);
+        String bpt = board[pt.y()][pt.x() - 1];
         int bptId = pt.y() * size + pt.x() - 1;
         if (bpt.isEmpty()) {
           liberties++;
@@ -65,7 +70,7 @@ public class Board {
         }
       }
       if (pt.x() < size - 1) {
-        String bpt = board.get(pt.y()).get(pt.x() + 1);
+        String bpt = board[pt.y()][pt.x() + 1];
         int bptId = pt.y() * size + pt.x() + 1;
         if (bpt.isEmpty()) {
           liberties++;
@@ -82,14 +87,16 @@ public class Board {
         liberties);
   }
 
-
-  public static List<List<String>> removeDeadStonesAround(List<List<String>> board, int x, int y) {
-    String color = board.get(y).get(x);
+  public static String[][] removeDeadStonesAround(
+      String[][] board,
+      int x,
+      int y) {
+    String color = board[y][x];
     if (color.isEmpty()) {
       return board;
     }
     String oppositeColor = color.equals("w") ? "b" : "w";
-    int size = board.size();
+    int size = board.length;
     Map<Integer, StoneGroup> groups = new LinkedHashMap<>(8);
 
     // Above
