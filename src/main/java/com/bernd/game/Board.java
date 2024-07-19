@@ -3,79 +3,76 @@ package com.bernd.game;
 import com.bernd.util.BoardUpdate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 public class Board {
 
   public static final int BLACK = 2;
-  public static final int BLACK_TERRITORY = 3;
   public static final int WHITE = 4;
-  public static final int WHITE_TERRITORY = 5;
 
   public static StoneGroup getStoneGroup(
       int[][] board,
-      int x,
-      int y) {
-    int color = board[y][x];
+      int xx,
+      int yy) {
+    int color = board[yy][xx];
     if (color == 0) {
       return null;
     }
-    int size = board.length;
-    int id = y * size + x;
+    int dim = board.length;
+    int id = yy * dim + xx;
     List<Point> points = new ArrayList<>();
     int liberties = 0;
-    Set<Integer> pointsChecked = new HashSet<>();
-    pointsChecked.add(id);
-    List<Point> pointsToCheck = new ArrayList<>();
-    pointsToCheck.add(new Point(x, y));
+    boolean[] pointsChecked = new boolean[dim * dim];
+    pointsChecked[id] = true;
+    PointQueue pointsToCheck = PointQueue.create(dim);
+    pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
-      Point pt = pop(pointsToCheck);
-      int ptId = pt.y() * size + pt.x();
+      int ptId = pointsToCheck.poll();
+      int y = ptId / dim;
+      int x = ptId % dim;
       id = Math.min(id, ptId);
-      points.add(pt);
-      if (pt.y() > 0) {
-        int bpt = board[pt.y() - 1][pt.x()];
-        int bptId = (pt.y() - 1) * size + pt.x();
+      points.add(new Point(x, y));
+      if (y > 0) {
+        int bpt = board[y - 1][x];
+        int bptId = (y - 1) * dim + x;
         if (bpt == 0) {
           liberties++;
-        } else if (bpt == color && !pointsChecked.contains(bptId)) {
-          pointsChecked.add(bptId);
-          pointsToCheck.add(new Point(pt.x(), pt.y() - 1));
+        } else if (bpt == color && !pointsChecked[bptId]) {
+          pointsChecked[bptId] = true;
+          pointsToCheck.offer(x, y - 1);
         }
       }
-      if (pt.y() < size - 1) {
-        int bpt = board[pt.y() + 1][pt.x()];
-        int bptId = (pt.y() + 1) * size + pt.x();
+      if (y < dim - 1) {
+        int bpt = board[y + 1][x];
+        int bptId = (y + 1) * dim + x;
         if (bpt == 0) {
           liberties++;
-        } else if (bpt == color && !pointsChecked.contains(bptId)) {
-          pointsChecked.add(bptId);
-          pointsToCheck.add(new Point(pt.x(), pt.y() + 1));
+        } else if (bpt == color && !pointsChecked[bptId]) {
+          pointsChecked[bptId] = true;
+          pointsToCheck.offer(x, y + 1);
         }
       }
-      if (pt.x() > 0) {
-        int bpt = board[pt.y()][pt.x() - 1];
-        int bptId = pt.y() * size + pt.x() - 1;
+      if (x > 0) {
+        int bpt = board[y][x - 1];
+        int bptId = y * dim + x - 1;
         if (bpt == 0) {
           liberties++;
-        } else if (bpt == color && !pointsChecked.contains(bptId)) {
-          pointsChecked.add(bptId);
-          pointsToCheck.add(new Point(pt.x() - 1, pt.y()));
+        } else if (bpt == color && !pointsChecked[bptId]) {
+          pointsChecked[bptId] = true;
+          pointsToCheck.offer(x - 1, y);
         }
       }
-      if (pt.x() < size - 1) {
-        int bpt = board[pt.y()][pt.x() + 1];
-        int bptId = pt.y() * size + pt.x() + 1;
+      if (x < dim - 1) {
+        int bpt = board[y][x + 1];
+        int bptId = y * dim + x + 1;
         if (bpt == 0) {
           liberties++;
-        } else if (bpt == color && !pointsChecked.contains(bptId)) {
-          pointsChecked.add(bptId);
-          pointsToCheck.add(new Point(pt.x() + 1, pt.y()));
+        } else if (bpt == color && !pointsChecked[bptId]) {
+          pointsChecked[bptId] = true;
+          pointsToCheck.offer(x + 1, y);
         }
       }
     }
@@ -156,12 +153,6 @@ public class Board {
         result.add(point, 0);
       }
     }
-    return result;
-  }
-
-  private static Point pop(List<Point> points) {
-    Point result = points.get(points.size() - 1);
-    points.remove(points.size() - 1);
     return result;
   }
 }
