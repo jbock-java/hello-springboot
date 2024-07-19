@@ -10,25 +10,27 @@ public class Count {
       return board[yy][xx];
     }
     int dim = board.length;
+    PointSet pointsChecked = PointSet.create(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
+      pointsChecked.add(x, y);
       if (board[y][x] != 0) {
         return board[y][x] + 1; // add territory flag
       }
-      if (y > 0) {
+      if (y > 0 && !pointsChecked.has(x, y - 1)) {
         pointsToCheck.offer(x, y - 1);
       }
-      if (y < dim - 1) {
+      if (y < dim - 1 && !pointsChecked.has(x, y + 1)) {
         pointsToCheck.offer(x, y + 1);
       }
-      if (x > 0) {
+      if (x > 0 && !pointsChecked.has(x - 1, y)) {
         pointsToCheck.offer(x - 1, y);
       }
-      if (x < dim - 1) {
+      if (x < dim - 1 && !pointsChecked.has(x + 1, y)) {
         pointsToCheck.offer(x + 1, y);
       }
     }

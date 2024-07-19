@@ -16,43 +16,36 @@ public class Remove {
     }
     int dim = board.length;
     PointQueue pointsToCheck = PointQueue.create(dim);
-    boolean[] pointsChecked = new boolean[dim * dim];
+    PointSet pointsChecked = PointSet.create(dim);
     pointsToCheck.offer(xx, yy);
     List<Point> result = new ArrayList<>();
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
+      pointsChecked.add(x, y);
       result.add(new Point(x, y));
       if (y > 0) {
         int c = board[y - 1][x];
-        int bptId = (y - 1) * dim + x;
-        if (c == color && !pointsChecked[bptId]) {
-          pointsChecked[bptId] = true;
+        if (c == color && !pointsChecked.has(x, y - 1)) {
           pointsToCheck.offer(x, y - 1);
         }
       }
       if (y < dim - 1) {
         int c = board[y + 1][x];
-        int bptId = (y + 1) * dim + x;
-        if (c == color && !pointsChecked[bptId]) {
-          pointsChecked[bptId] = true;
+        if (c == color && !pointsChecked.has(x, y + 1)) {
           pointsToCheck.offer(x, y + 1);
         }
       }
       if (x > 0) {
         int c = board[y][x - 1];
-        int bptId = y * dim + x - 1;
-        if (c == color && !pointsChecked[bptId]) {
-          pointsChecked[bptId] = true;
+        if (c == color && !pointsChecked.has(x - 1, y)) {
           pointsToCheck.offer(x - 1, y);
         }
       }
       if (x < dim - 1) {
         int c = board[y][x + 1];
-        int bptId = y * dim + x + 1;
-        if (c == color && !pointsChecked[bptId]) {
-          pointsChecked[bptId] = true;
+        if (c == color && !pointsChecked.has(x + 1, y)) {
           pointsToCheck.offer(x + 1, y);
         }
       }

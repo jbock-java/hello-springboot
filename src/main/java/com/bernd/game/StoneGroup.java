@@ -1,11 +1,9 @@
 package com.bernd.game;
 
-import java.util.List;
+import com.bernd.util.BoardUpdate;
 
 public record StoneGroup(
-    int id,
-    int color,
-    List<Point> points,
+    BoardUpdate update,
     int liberties
 ) {
 }

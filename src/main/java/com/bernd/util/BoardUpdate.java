@@ -6,9 +6,10 @@ import java.util.function.Function;
 
 public class BoardUpdate implements Function<int[][], int[][]> {
 
+  private static final int SHIFT = 256;
   private int pos;
   private final int dim;
-  private final int[] updates;
+  private int[] updates;
 
   private BoardUpdate(
       int dim,
@@ -18,7 +19,7 @@ public class BoardUpdate implements Function<int[][], int[][]> {
   }
 
   public static BoardUpdate builder(int dim, int size) {
-    return new BoardUpdate(dim, new int[2 * size]);
+    return new BoardUpdate(dim, new int[size]);
   }
 
   public static Function<int[][], int[][]> create(
@@ -29,9 +30,11 @@ public class BoardUpdate implements Function<int[][], int[][]> {
   }
 
   public void add(int x, int y, int value) {
-    int base = 2 * pos;
-    updates[base] = dim * y + x;
-    updates[base + 1] = value;
+    if (pos >= updates.length) {
+      updates = Arrays.copyOf(updates, 2 * dim * dim);
+    }
+    int ptId = dim * y + x;
+    updates[pos] = SHIFT * ptId + value;
     pos++;
   }
 
@@ -39,14 +42,31 @@ public class BoardUpdate implements Function<int[][], int[][]> {
     add(point.x(), point.y(), value);
   }
 
+  public int x(int i) {
+    int code = updates[i];
+    int ptId = code / SHIFT;
+    return ptId % dim;
+  }
+
+  public int y(int i) {
+    int code = updates[i];
+    int ptId = code / SHIFT;
+    return ptId / dim;
+  }
+
+  public int size() {
+    return pos;
+  }
+
   @Override
   public int[][] apply(int[][] board) {
     int[][] result = Arrays.copyOf(board, board.length);
-    int size = updates.length / 2;
-    for (int i = 0; i < size; i++) {
-      int x = updates[2 * i] % dim;
-      int y = updates[2 * i] / dim;
-      int value = updates[2 * i + 1];
+    for (int i = 0; i < pos; i++) {
+      int code = updates[i];
+      int value = code % SHIFT;
+      int ptId = code / SHIFT;
+      int x = ptId % dim;
+      int y = ptId / dim;
       if (result[y] == board[y]) {
         result[y] = Arrays.copyOf(board[y], board[y].length);
       }

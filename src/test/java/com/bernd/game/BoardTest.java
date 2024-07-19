@@ -33,4 +33,21 @@ class BoardTest {
     assertArrayEquals(new int[]{2, 0, 0, 2, 0}, result[3]);
     assertArrayEquals(new int[]{0, 2, 2, 0, 0}, result[4]);
   }
+
+  @Test
+  void testRemoveStones() {
+    int[][] position = new int[][]{
+        new int[]{4, 2, 0, 0, 0},
+        new int[]{2, 4, 0, 0, 0},
+        new int[]{2, 4, 0, 0, 0},
+        new int[]{4, 2, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    };
+    int[][] result = Board.removeDeadStonesAround(position, 0, 0);
+    assertArrayEquals(new int[]{4, 2, 0, 0, 0}, result[0]);
+    assertArrayEquals(new int[]{0, 4, 0, 0, 0}, result[1]);
+    assertArrayEquals(new int[]{0, 4, 0, 0, 0}, result[2]);
+    assertArrayEquals(new int[]{4, 2, 0, 0, 0}, result[3]);
+    assertArrayEquals(new int[]{0, 0, 0, 0, 0}, result[4]);
+  }
 }
