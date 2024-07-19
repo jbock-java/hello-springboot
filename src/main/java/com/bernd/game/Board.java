@@ -136,8 +136,8 @@ public class Board {
     if (groups.isEmpty()) {
       return board;
     }
-    Function<int[][], int[][]> remove = removeStonesIn(board.length, groups.values());
-    return remove.apply(board);
+    Function<int[][], int[][]> update = removeStonesIn(board.length, groups.values());
+    return update.apply(board);
   }
 
   private static Function<int[][], int[][]> removeStonesIn(
@@ -147,12 +147,12 @@ public class Board {
     for (StoneGroup group : groups) {
       size += group.points().size();
     }
-    BoardUpdate result = BoardUpdate.builder(dim, size);
+    BoardUpdate update = BoardUpdate.builder(dim, size);
     for (StoneGroup group : groups) {
       for (Point point : group.points()) {
-        result.add(point, 0);
+        update.add(point, 0);
       }
     }
-    return result;
+    return update;
   }
 }

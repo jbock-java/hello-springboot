@@ -1,6 +1,6 @@
 package com.bernd.game;
 
-class PointQueue {
+final class PointQueue {
   private int pos;
   private final int dim;
   private final int[] queue;
