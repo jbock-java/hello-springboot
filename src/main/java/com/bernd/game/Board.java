@@ -4,8 +4,11 @@ import com.bernd.util.BoardUpdate;
 
 public class Board {
 
-  public static final int BLACK = 2;
-  public static final int WHITE = 4;
+  public static final int B = 32;
+  public static final int W = 64;
+  public static final int FORBIDDEN = 1;
+  public static final int TERRITORY = 2;
+  public static final int REMOVED = 4;
 
   private static StoneGroup getStoneGroup(
       int[][] board,
@@ -13,7 +16,7 @@ public class Board {
       int yy) {
     int color = board[yy][xx];
     int dim = board.length;
-    BoardUpdate update = BoardUpdate.builder(dim, 16);
+    BoardUpdate update = BoardUpdate.builder(dim);
     int liberties = 0;
     PointSet pointsChecked = PointSet.create(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
@@ -70,7 +73,7 @@ public class Board {
     if (color == 0) {
       return board;
     }
-    int oppositeColor = color == WHITE ? BLACK : WHITE;
+    int oppositeColor = color == W ? B : W;
     int size = board.length;
     int[][] result = board;
     // Above

@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public class BoardUpdate implements Function<int[][], int[][]> {
 
-  private static final int SHIFT = 256;
+  private static final int SHIFT = 256; // > max(B, W)
   private int pos;
   private final int dim;
   private int[] updates;
@@ -20,6 +20,10 @@ public class BoardUpdate implements Function<int[][], int[][]> {
 
   public static BoardUpdate builder(int dim, int size) {
     return new BoardUpdate(dim, new int[size]);
+  }
+
+  public static BoardUpdate builder(int dim) {
+    return new BoardUpdate(dim, new int[16]);
   }
 
   public static Function<int[][], int[][]> create(
@@ -36,6 +40,10 @@ public class BoardUpdate implements Function<int[][], int[][]> {
     int ptId = dim * y + x;
     updates[pos] = SHIFT * ptId + value;
     pos++;
+  }
+
+  public void add(int x, int y) {
+    add(x, y, 0);
   }
 
   public void add(Point point, int value) {

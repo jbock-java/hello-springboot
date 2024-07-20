@@ -15,7 +15,7 @@ public record Game(
   public Game update(Move move) {
     int x = move.x();
     int y = move.y();
-    int color = currentUser.equals(black().name()) ? Board.BLACK : Board.WHITE;
+    int color = currentUser.equals(black().name()) ? Board.B : Board.W;
     Function<int[][], int[][]> update = BoardUpdate.create(board.length, x, y, color);
     int[][] rows = update.apply(board);
     int[][] newRows = Board.removeDeadStonesAround(rows, x, y);

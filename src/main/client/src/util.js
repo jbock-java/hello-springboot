@@ -5,8 +5,8 @@ import {
 export const StompContext = createContext()
 
 export const base = "/app"
-export const BLACK = 2
-export const WHITE = 4
+export const BLACK = 32
+export const WHITE = 64
 
 export async function tfetch(url, options) {
   let response
