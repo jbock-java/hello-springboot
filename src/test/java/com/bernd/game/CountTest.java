@@ -79,4 +79,81 @@ class CountTest {
         new int[]{X, X, X, X},
     }, result);
   }
+
+  @Test
+  void testMarkBig() {
+    int[][] position = {
+        new int[]{B, 0, B, B, B, W, 0, 0, 0},
+        new int[]{B, B, B, W, W, B, 0, 0, 0},
+        new int[]{W, W, W, W, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    };
+    int[][] acc = Count.createAcc(position);
+    acc[0] = new int[]{B, C, B, B, B, W, -1, -1, -1};
+    acc[1] = new int[]{B, B, B, W, W, B, -1, -1, -1};
+    acc[2] = new int[]{W, W, W, W, -1, -1, -1, -1, -1};
+    Count.markStonesAround(acc, position, 6, 0);
+    assertArrayEquals(new int[][]{
+        new int[]{B, C, B, B, B, W, 0, 0, 0},
+        new int[]{B, B, B, W, W, B, 0, 0, 0},
+        new int[]{W, W, W, W, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    }, acc);
+  }
+
+  @Test
+  void testMarkSmall() {
+    int[][] position = {
+        new int[]{B, 0, B, B, B, W, 0, 0, 0},
+        new int[]{B, B, B, W, W, B, 0, 0, 0},
+        new int[]{W, W, W, W, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    };
+    int[][] acc = Count.createAcc(position);
+    acc[0][0] = B;
+    Count.markStonesAround(acc, position, 1, 0);
+    assertArrayEquals(new int[]{B, C, -1, -1, -1, -1, -1, -1, -1}, acc[0]);
+  }
+
+  @Test
+  void testCountLargeArea() {
+    int[][] position = {
+        new int[]{B, 0, B, B, B, W, 0, 0, 0},
+        new int[]{B, B, B, W, W, B, 0, 0, 0},
+        new int[]{W, W, W, W, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    };
+    int[][] result = Count.count(position);
+    assertArrayEquals(new int[][]{
+        new int[]{B, C, B, B, B, W, 0, 0, 0},
+        new int[]{B, B, B, W, W, B, 0, 0, 0},
+        new int[]{W, W, W, W, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    }, result);
+  }
 }

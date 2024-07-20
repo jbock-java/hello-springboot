@@ -19,19 +19,20 @@ public class Board {
     BoardUpdate update = BoardUpdate.builder(dim);
     int liberties = 0;
     PointSet pointsChecked = PointSet.create(dim);
+    pointsChecked.add(xx, yy);
     PointQueue pointsToCheck = PointQueue.create(dim);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      pointsChecked.add(x, y);
       update.add(x, y, 0);
       if (y > 0) {
         int bpt = board[y - 1][x];
         if (bpt == 0) {
           liberties++;
         } else if (bpt == color && !pointsChecked.has(x, y - 1)) {
+          pointsChecked.add(x, y - 1);
           pointsToCheck.offer(x, y - 1);
         }
       }
@@ -40,6 +41,7 @@ public class Board {
         if (bpt == 0) {
           liberties++;
         } else if (bpt == color && !pointsChecked.has(x, y + 1)) {
+          pointsChecked.add(x, y + 1);
           pointsToCheck.offer(x, y + 1);
         }
       }
@@ -48,6 +50,7 @@ public class Board {
         if (bpt == 0) {
           liberties++;
         } else if (bpt == color && !pointsChecked.has(x - 1, y)) {
+          pointsChecked.add(x - 1, y);
           pointsToCheck.offer(x - 1, y);
         }
       }
@@ -56,6 +59,7 @@ public class Board {
         if (bpt == 0) {
           liberties++;
         } else if (bpt == color && !pointsChecked.has(x + 1, y)) {
+          pointsChecked.add(x + 1, y);
           pointsToCheck.offer(x + 1, y);
         }
       }

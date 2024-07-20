@@ -38,7 +38,7 @@ export const useGameStore = create((set, get) => ({
     name: "",
   },
   gameState: {
-    currentUser: undefined,
+    currentPlayer: undefined,
   },
   setGameState: (game, auth) => {
     set(produce(state => {
@@ -50,7 +50,7 @@ export const useGameStore = create((set, get) => ({
         state.white = game.white
       }
       state.gameState.board = game.board
-      state.gameState.currentUser = game.currentUser
+      state.gameState.currentPlayer = game.currentPlayer
       let symbol = game.black.name === auth.name? BLACK : WHITE 
       if (oldState.symbol !== symbol) {
         state.symbol = symbol

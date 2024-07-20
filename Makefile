@@ -10,6 +10,9 @@ pack:
 lint:
 	cd src/main/client && npm run lint
 
+test:
+	./gradlew test
+
 run:
 	./gradlew bootRun
 

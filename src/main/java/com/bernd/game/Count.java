@@ -18,33 +18,37 @@ public class Count {
     }
     int dim = board.length;
     PointSet pointsChecked = PointSet.create(dim);
+    pointsChecked.add(xx, yy);
     PointQueue pointsToCheck = PointQueue.create(dim);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      pointsChecked.add(x, y);
       if (board[y][x] != 0) {
         return board[y][x] + TERRITORY;
       }
       if (y > 0 && !pointsChecked.has(x, y - 1)) {
+        pointsChecked.add(x, y - 1);
         pointsToCheck.offer(x, y - 1);
       }
       if (y < dim - 1 && !pointsChecked.has(x, y + 1)) {
+        pointsChecked.add(x, y + 1);
         pointsToCheck.offer(x, y + 1);
       }
       if (x > 0 && !pointsChecked.has(x - 1, y)) {
+        pointsChecked.add(x - 1, y);
         pointsToCheck.offer(x - 1, y);
       }
       if (x < dim - 1 && !pointsChecked.has(x + 1, y)) {
+        pointsChecked.add(x + 1, y);
         pointsToCheck.offer(x + 1, y);
       }
     }
     throw new RuntimeException("empty board");
   }
 
-  private static void markStonesAround(
+  static void markStonesAround(
       int[][] acc,
       int[][] board,
       int xx,
@@ -58,21 +62,23 @@ public class Count {
     int baseColor = color - TERRITORY;
     int oppositeColor = baseColor == W ? B : W;
     int dim = board.length;
-    BoardUpdate updater = BoardUpdate.builder(dim, 64);
+    BoardUpdate tracker = BoardUpdate.builder(dim, 64);
     PointQueue pointsToCheck = PointQueue.create(dim);
+    acc[yy][xx] = color;
+    tracker.add(xx, yy);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      acc[y][x] = color;
-      updater.add(x, y);
+      tracker.add(x, y);
       if (y > 0) {
         int c = board[y - 1][x];
         if (c == oppositeColor) {
           oppositeStonesFound = true;
         }
-        if (c == 0 && acc[y - 1][x] != color) {
+        if (c == 0 && acc[y - 1][x] == -1) {
+          acc[y - 1][x] = color;
           pointsToCheck.offer(x, y - 1);
         }
       }
@@ -81,7 +87,8 @@ public class Count {
         if (c == oppositeColor) {
           oppositeStonesFound = true;
         }
-        if (c == 0 && acc[y + 1][x] != color) {
+        if (c == 0 && acc[y + 1][x] == -1) {
+          acc[y + 1][x] = color;
           pointsToCheck.offer(x, y + 1);
         }
       }
@@ -90,7 +97,8 @@ public class Count {
         if (c == oppositeColor) {
           oppositeStonesFound = true;
         }
-        if (c == 0 && acc[y][x - 1] != color) {
+        if (c == 0 && acc[y][x - 1] == -1) {
+          acc[y][x - 1] = color;
           pointsToCheck.offer(x - 1, y);
         }
       }
@@ -99,14 +107,15 @@ public class Count {
         if (c == oppositeColor) {
           oppositeStonesFound = true;
         }
-        if (c == 0 && acc[y][x + 1] != color) {
+        if (c == 0 && acc[y][x + 1] == -1) {
+          acc[y][x + 1] = color;
           pointsToCheck.offer(x + 1, y);
         }
       }
     }
     if (oppositeStonesFound) {
-      for (int i = 0; i < updater.size(); i++) {
-        acc[updater.y(i)][updater.x(i)] = 0;
+      for (int i = 0; i < tracker.size(); i++) {
+        acc[tracker.y(i)][tracker.x(i)] = 0;
       }
     }
   }
@@ -125,7 +134,7 @@ public class Count {
     return acc;
   }
 
-  private static int[][] createAcc(int[][] board) {
+  static int[][] createAcc(int[][] board) {
     int[][] result = new int[board.length][];
     for (int i = 0; i < board.length; i++) {
       result[i] = new int[result.length];

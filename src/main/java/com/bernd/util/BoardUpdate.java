@@ -35,7 +35,7 @@ public class BoardUpdate implements Function<int[][], int[][]> {
 
   public void add(int x, int y, int value) {
     if (pos >= updates.length) {
-      updates = Arrays.copyOf(updates, 2 * dim * dim);
+      updates = Arrays.copyOf(updates, dim * dim);
     }
     int ptId = dim * y + x;
     updates[pos] = SHIFT * ptId + value;

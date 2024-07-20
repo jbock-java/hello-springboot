@@ -37,7 +37,7 @@ export const Play = () => {
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
   let board = useGameStore(state => state.gameState.board)
-  let currentUser = useGameStore(state => state.gameState.currentUser)
+  let currentPlayer = useGameStore(state => state.gameState.currentPlayer)
   let initialized = useRef()
   let opponent = auth.name === black.name ? white : black
   useEffect(() => {
@@ -59,6 +59,15 @@ export const Play = () => {
       sub1.unsubscribe
     }
   }, [setGameState, initialized, stompClient, auth, gameId])
+  let onPass = useCallback(() => {
+    stompClient.publish({
+      destination: "/app/game/move",
+      body: JSON.stringify({
+        id: gameId,
+        pass: true,
+      }),
+    })
+  }, [stompClient, gameId])
   let onClick = useCallback((x, y) => {
     stompClient.publish({
       destination: "/app/game/move",
@@ -89,7 +98,7 @@ export const Play = () => {
             board.map((row, y) => (
               row.map((check, x) => (
                 <Tile
-                  disabled={currentUser !== auth.name}
+                  disabled={currentPlayer !== auth.name}
                   key={y + "_" + x}
                   onClick={() => onClick(x, y)}
                   check={check} />
@@ -99,11 +108,21 @@ export const Play = () => {
         </div>
       </div>
       <div className="fixed right-12 ml-4">
+      <div>
+        <button
+          onClick={onPass}
+          type="button"
+          className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded-lg">
+          Pass
+        </button>
+      </div>
+      <div className="mt-2">
       {
-        currentUser === auth.name ? 
+        currentPlayer === auth.name ?
           "Jetzt bin ich dran" : 
           (opponent.name + " ist dran...")
       }
+      </div>
       </div>
     </div>
   )
