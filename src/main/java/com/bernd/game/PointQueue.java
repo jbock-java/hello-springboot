@@ -1,13 +1,15 @@
 package com.bernd.game;
 
 final class PointQueue {
-  private int pos;
-  private final int dim;
-  private final int[] queue;
 
-  private PointQueue(int dim, int[] queue) {
+  private int write;
+  private int read;
+  private final int dim;
+  private final int[] buffer;
+
+  private PointQueue(int dim, int[] buffer) {
     this.dim = dim;
-    this.queue = queue;
+    this.buffer = buffer;
   }
 
   static PointQueue create(int dim) {
@@ -15,17 +17,17 @@ final class PointQueue {
   }
 
   void offer(int x, int y) {
-    queue[pos] = dim * y + x;
-    pos++;
+    buffer[write] = dim * y + x;
+    write = (write + 1) % buffer.length;
   }
 
   int poll() {
-    int result = queue[pos - 1];
-    pos--;
+    int result = buffer[read];
+    read = (read + 1) % buffer.length;
     return result;
   }
 
   boolean isEmpty() {
-    return pos == 0;
+    return write == read;
   }
 }
