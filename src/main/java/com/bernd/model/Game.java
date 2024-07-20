@@ -3,7 +3,7 @@ package com.bernd.model;
 import com.bernd.game.Board;
 import com.bernd.game.Count;
 import com.bernd.util.BoardUpdate;
-import java.util.Arrays;
+import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,13 +23,7 @@ public record Game(
     try {
       return updateInternal(move);
     } catch (RuntimeException e) {
-      StringBuilder sb = new StringBuilder("int[][] position = new int[][]{\n");
-      for (int[] row : board) {
-        String string = Arrays.toString(row).replace('[', '{').replace(']', '}');
-        sb.append("  new int[]" + string + ",\n");
-      }
-      sb.append("};\n");
-      logger.error(sb.toString(), e);
+      logger.error("{}\n{}\n", move, Util.boardToString(board), e);
       return this;
     }
   }

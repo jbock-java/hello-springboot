@@ -9,7 +9,7 @@ import static com.bernd.game.Board.W;
 
 public class Count {
 
-  private static int getImpliedColor(
+  static int getImpliedColor(
       int[][] board,
       int xx,
       int yy) {
@@ -45,7 +45,7 @@ public class Count {
         pointsToCheck.offer(x + 1, y);
       }
     }
-    throw new RuntimeException("empty board");
+    return 0;
   }
 
   static void markStonesAround(
@@ -54,6 +54,12 @@ public class Count {
       int xx,
       int yy) {
     int color = getImpliedColor(board, xx, yy);
+    if (color == 0) { // empty board
+      for (int[] row : acc) {
+        Arrays.fill(row, 0);
+      }
+      return;
+    }
     if ((color & TERRITORY) == 0) {
       acc[yy][xx] = color;
       return;

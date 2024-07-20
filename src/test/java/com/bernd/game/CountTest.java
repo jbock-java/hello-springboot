@@ -6,6 +6,7 @@ import static com.bernd.game.Board.B;
 import static com.bernd.game.Board.TERRITORY;
 import static com.bernd.game.Board.W;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CountTest {
 
@@ -155,5 +156,23 @@ class CountTest {
         new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
         new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
     }, result);
+  }
+
+  @Test
+  void testNoBufferOverflow() {
+    // fails if the assumption in PointQueue is incorrect
+    for (int dim = 1; dim < 40; dim++) {
+      int[][] board = createEmptyBoard(dim);
+      int result = Count.getImpliedColor(board, dim / 2, dim / 2);
+      assertEquals(0, result);
+    }
+  }
+
+  private static int[][] createEmptyBoard(int dim) {
+    int[][] board = new int[dim][];
+    for (int i = 0; i < board.length; i++) {
+      board[i] = new int[dim];
+    }
+    return board;
   }
 }
