@@ -28,4 +28,17 @@ class PointSetTest {
     assertFalse(pointSet.has(10, 11));
     assertFalse(pointSet.has(11, 10));
   }
+
+  @Test
+  void testFullCapacity() {
+    int dim = 64;
+    PointSet pointSet = PointSet.create(dim);
+    for (int x = 0; x < dim; x++) {
+      for (int y = 0; y < dim; y++) {
+        assertFalse(pointSet.has(x, y));
+        pointSet.add(x, y);
+        assertTrue(pointSet.has(x, y));
+      }
+    }
+  }
 }

@@ -10,6 +10,7 @@ final class PointQueue {
   private final int capacity;
   private final int dim;
 
+  private boolean empty = true;
   private int write;
   private int read;
   private final int[] buffer;
@@ -24,24 +25,33 @@ final class PointQueue {
   }
 
   static PointQueue create(int dim) {
-    // Assumption 1: All algorithms proceed from the starting point outward in a diamond shape.
-    // Assumption 2: The circumference of the diamond shape is not greater than 2 * dim + 1.
-    int capacity = 2 * dim + 1;
+    // Assumption:
+    // All algorithms proceed from the starting point outward in a diamond shape.
+    // The diamond contains at most two points per row, see testDiamond().
+    return byCapacity(dim, 2 * dim);
+  }
+
+  // visible for testing
+  static PointQueue byCapacity(int dim, int capacity) {
     return new PointQueue(capacity, dim, new int[divideUp(capacity, 2)]);
   }
 
   void offer(int x, int y) {
+    if (!empty && write == read) {
+      throw new RuntimeException("buffer overflow");
+    }
+    empty = false;
     int ptId = dim * y + x;
     set(ptId);
     write = (write + 1) % capacity;
-    if (write == read) {
-      throw new RuntimeException("buffer overflow");
-    }
   }
 
   int poll() {
     int ptId = get();
     read = (read + 1) % capacity;
+    if (read == write) {
+      empty = true;
+    }
     return ptId;
   }
 
@@ -60,6 +70,10 @@ final class PointQueue {
   }
 
   boolean isEmpty() {
-    return write == read;
+    return empty;
+  }
+
+  int dim() {
+    return dim;
   }
 }

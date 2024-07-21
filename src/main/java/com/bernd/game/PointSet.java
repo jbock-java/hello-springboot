@@ -13,7 +13,7 @@ final class PointSet {
   }
 
   static PointSet create(int dim) {
-    return new PointSet(dim, new int[divideUp(dim * dim, 0x11)]);
+    return new PointSet(dim, new int[divideUp(dim * dim, 0x20)]);
   }
 
   void add(int x, int y) {

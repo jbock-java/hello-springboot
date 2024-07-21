@@ -1,5 +1,6 @@
 package com.bernd.game;
 
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.Test;
 
 import static com.bernd.game.Board.B;
@@ -160,15 +161,24 @@ class CountTest {
 
   @Test
   void testNoBufferOverflow() {
-    // fails if the assumption in PointQueue is incorrect
+    // fails if the capacity assumption in PointQueue is wrong
     for (int dim = 1; dim < 40; dim++) {
-      int[][] board = createEmptyBoard(dim);
-      int result = Count.getImpliedColor(board, dim / 2, dim / 2);
-      assertEquals(0, result);
+      assertEquals(0, Count.getImpliedColor(
+          createEmptyBoard(dim),
+          dim / 2,
+          dim / 2));
+      assertEquals(0, Count.getImpliedColor(
+          createEmptyBoard(dim),
+          0,
+          0));
+      assertEquals(0, Count.getImpliedColor(
+          createEmptyBoard(dim),
+          ThreadLocalRandom.current().nextInt(dim),
+          ThreadLocalRandom.current().nextInt(dim)));
     }
   }
 
-  private static int[][] createEmptyBoard(int dim) {
+  static int[][] createEmptyBoard(int dim) {
     int[][] board = new int[dim][];
     for (int i = 0; i < board.length; i++) {
       board[i] = new int[dim];
