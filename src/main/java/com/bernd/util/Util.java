@@ -16,4 +16,8 @@ public final class Util {
     sb.append("};");
     return sb.toString();
   }
+
+  public static int divideUp(int i, int div) {
+    return i % div == 0 ? i / div : (i / div) + 1;
+  }
 }

@@ -6,7 +6,8 @@ import java.util.function.Function;
 
 public class BoardUpdate implements Function<int[][], int[][]> {
 
-  private static final int SHIFT = 256; // > max(B, W)
+  private static final int LO = 0xffff;
+
   private int pos;
   private final int dim;
   private int[] updates;
@@ -38,7 +39,7 @@ public class BoardUpdate implements Function<int[][], int[][]> {
       updates = Arrays.copyOf(updates, dim * dim);
     }
     int ptId = dim * y + x;
-    updates[pos] = SHIFT * ptId + value;
+    updates[pos] = (value << 16) | ptId;
     pos++;
   }
 
@@ -52,13 +53,13 @@ public class BoardUpdate implements Function<int[][], int[][]> {
 
   public int x(int i) {
     int code = updates[i];
-    int ptId = code / SHIFT;
+    int ptId = code & LO;
     return ptId % dim;
   }
 
   public int y(int i) {
     int code = updates[i];
-    int ptId = code / SHIFT;
+    int ptId = code & LO;
     return ptId / dim;
   }
 
@@ -71,8 +72,8 @@ public class BoardUpdate implements Function<int[][], int[][]> {
     int[][] result = Arrays.copyOf(board, board.length);
     for (int i = 0; i < pos; i++) {
       int code = updates[i];
-      int value = code % SHIFT;
-      int ptId = code / SHIFT;
+      int value = code >> 16;
+      int ptId = code & LO;
       int x = ptId % dim;
       int y = ptId / dim;
       if (result[y] == board[y]) {

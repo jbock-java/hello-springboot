@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CountTest {
 
-  private static final int C = B + TERRITORY;
-  private static final int X = W + TERRITORY;
+  private static final int b = B + TERRITORY;
+  private static final int w = W + TERRITORY;
 
   @Test
   void testRemoveOneStone() {
@@ -39,11 +39,11 @@ class CountTest {
     };
     int[][] result = Count.count(position);
     assertArrayEquals(new int[][]{
-        new int[]{C, C, C, C, C},
-        new int[]{C, B, B, B, C},
-        new int[]{C, B, C, B, C},
-        new int[]{C, B, B, B, C},
-        new int[]{C, C, C, C, C},
+        new int[]{b, b, b, b, b},
+        new int[]{b, B, B, B, b},
+        new int[]{b, B, b, B, b},
+        new int[]{b, B, B, B, b},
+        new int[]{b, b, b, b, b},
     }, result);
   }
 
@@ -57,10 +57,10 @@ class CountTest {
     };
     int[][] result = Count.count(position);
     assertArrayEquals(new int[][]{
-        new int[]{C, C, C, C},
+        new int[]{b, b, b, b},
         new int[]{B, B, B, B},
         new int[]{W, W, W, W},
-        new int[]{X, X, X, X},
+        new int[]{w, w, w, w},
     }, result);
   }
 
@@ -77,7 +77,7 @@ class CountTest {
         new int[]{0, W, 0, 0},
         new int[]{B, B, B, B},
         new int[]{W, W, W, W},
-        new int[]{X, X, X, X},
+        new int[]{w, w, w, w},
     }, result);
   }
 
@@ -95,12 +95,12 @@ class CountTest {
         new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
     };
     int[][] acc = Count.createAcc(position);
-    acc[0] = new int[]{B, C, B, B, B, W, -1, -1, -1};
+    acc[0] = new int[]{B, b, B, B, B, W, -1, -1, -1};
     acc[1] = new int[]{B, B, B, W, W, B, -1, -1, -1};
     acc[2] = new int[]{W, W, W, W, -1, -1, -1, -1, -1};
     Count.markStonesAround(acc, position, 6, 0);
     assertArrayEquals(new int[][]{
-        new int[]{B, C, B, B, B, W, 0, 0, 0},
+        new int[]{B, b, B, B, B, W, 0, 0, 0},
         new int[]{B, B, B, W, W, B, 0, 0, 0},
         new int[]{W, W, W, W, 0, 0, 0, 0, 0},
         new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -128,7 +128,7 @@ class CountTest {
     int[][] acc = Count.createAcc(position);
     acc[0][0] = B;
     Count.markStonesAround(acc, position, 1, 0);
-    assertArrayEquals(new int[]{B, C, -1, -1, -1, -1, -1, -1, -1}, acc[0]);
+    assertArrayEquals(new int[]{B, b, -1, -1, -1, -1, -1, -1, -1}, acc[0]);
   }
 
   @Test
@@ -146,7 +146,7 @@ class CountTest {
     };
     int[][] result = Count.count(position);
     assertArrayEquals(new int[][]{
-        new int[]{B, C, B, B, B, W, 0, 0, 0},
+        new int[]{B, b, B, B, B, W, 0, 0, 0},
         new int[]{B, B, B, W, W, B, 0, 0, 0},
         new int[]{W, W, W, W, 0, 0, 0, 0, 0},
         new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0},

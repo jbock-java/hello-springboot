@@ -1,5 +1,7 @@
 package com.bernd.game;
 
+import static com.bernd.util.Util.divideUp;
+
 final class PointSet {
 
   private final int dim;
@@ -11,22 +13,20 @@ final class PointSet {
   }
 
   static PointSet create(int dim) {
-    return new PointSet(dim, new int[1 + ((dim * dim) / 16)]);
+    return new PointSet(dim, new int[divideUp(dim * dim, 0x11)]);
   }
 
   void add(int x, int y) {
     int ptId = y * dim + x;
-    int base = ptId / 16;
-    int off = ptId % 16;
-    int shift = 1 << off;
-    points[base] = points[base] | shift;
+    int pos = ptId >> 5;
+    int test = 1 << (ptId & 0x1f);
+    points[pos] = points[pos] | test;
   }
 
   boolean has(int x, int y) {
     int ptId = y * dim + x;
-    int base = ptId / 16;
-    int off = ptId % 16;
-    int shift = 1 << off;
-    return (points[base] & shift) != 0;
+    int pos = ptId >> 5;
+    int test = 1 << (ptId & 0x1f);
+    return (points[pos] & test) != 0;
   }
 }
