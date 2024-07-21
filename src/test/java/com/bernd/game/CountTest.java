@@ -1,18 +1,24 @@
 package com.bernd.game;
 
+import com.bernd.util.Util;
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.Test;
 
 import static com.bernd.game.Board.B;
+import static com.bernd.game.Board.REMOVED;
 import static com.bernd.game.Board.TERRITORY;
 import static com.bernd.game.Board.W;
+import static com.bernd.game.Count.colorEmptyTerritory;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CountTest {
 
-  private static final int b = B + TERRITORY;
-  private static final int w = W + TERRITORY;
+  private static final int b = B | TERRITORY;
+  private static final int p = B | TERRITORY | REMOVED;
+  private static final int w = W | TERRITORY;
+  private static final int v = W | REMOVED;
 
   @Test
   void testRemoveOneStone() {
@@ -32,20 +38,21 @@ class CountTest {
   @Test
   void testCountBlackTerritory() {
     int[][] position = new int[][]{
-        new int[]{0, 0, 0, 0, 0},
-        new int[]{0, B, B, B, 0},
-        new int[]{0, B, 0, B, 0},
-        new int[]{0, B, B, B, 0},
-        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, B, 0, v, 0},
+        new int[]{0, B, 0, v, v},
+        new int[]{B, B, 0, 0, 0},
+        new int[]{0, B, 0, 0, 0},
+        new int[]{0, B, 0, 0, 0},
     };
-    int[][] result = Count.count(position);
+    int[][] acc = createAccWithoutRemovedStones(position);
+    colorEmptyTerritory(position, acc, 2, 0);
     assertArrayEquals(new int[][]{
-        new int[]{b, b, b, b, b},
-        new int[]{b, B, B, B, b},
-        new int[]{b, B, b, B, b},
-        new int[]{b, B, B, B, b},
-        new int[]{b, b, b, b, b},
-    }, result);
+        new int[]{-1, B, b, p, b},
+        new int[]{-1, B, b, p, p},
+        new int[]{B, B, b, b, b},
+        new int[]{-1, B, b, b, b},
+        new int[]{-1, B, b, b, b},
+    }, acc);
   }
 
   @Test
@@ -99,7 +106,7 @@ class CountTest {
     acc[0] = new int[]{B, b, B, B, B, W, -1, -1, -1};
     acc[1] = new int[]{B, B, B, W, W, B, -1, -1, -1};
     acc[2] = new int[]{W, W, W, W, -1, -1, -1, -1, -1};
-    Count.markStonesAround(acc, position, 6, 0);
+    colorEmptyTerritory(position, acc, 6, 0);
     assertArrayEquals(new int[][]{
         new int[]{B, b, B, B, B, W, 0, 0, 0},
         new int[]{B, B, B, W, W, B, 0, 0, 0},
@@ -128,7 +135,7 @@ class CountTest {
     };
     int[][] acc = Count.createAcc(position);
     acc[0][0] = B;
-    Count.markStonesAround(acc, position, 1, 0);
+    colorEmptyTerritory(position, acc, 1, 0);
     assertArrayEquals(new int[]{B, b, -1, -1, -1, -1, -1, -1, -1}, acc[0]);
   }
 
@@ -180,9 +187,22 @@ class CountTest {
 
   static int[][] createEmptyBoard(int dim) {
     int[][] board = new int[dim][];
-    for (int i = 0; i < board.length; i++) {
-      board[i] = new int[dim];
+    for (int y = 0; y < dim; y++) {
+      board[y] = new int[dim];
     }
     return board;
+  }
+
+  static int[][] createAccWithoutRemovedStones(int[][] board) {
+    int[][] result = new int[board.length][];
+    for (int y = 0; y < board.length; y++) {
+      result[y] = Arrays.copyOf(board[y], board[y].length);
+      for (int x = 0; x < result[y].length; x++) {
+        if (Util.isEmpty(result[y][x])) {
+          result[y][x] = -1;
+        }
+      }
+    }
+    return result;
   }
 }

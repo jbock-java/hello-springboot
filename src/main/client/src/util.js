@@ -7,6 +7,8 @@ export const StompContext = createContext()
 export const base = "/app"
 export const BLACK = 32
 export const WHITE = 64
+export const TERRITORY = 2
+export const REMOVED = 4
 
 export async function tfetch(url, options) {
   let response
@@ -47,4 +49,16 @@ export function getRandomString() {
 
 function dec2hex(dec) {
   return dec.toString(16).padStart(2, "0")
+}
+
+export function hasColor(color) {
+  return hasBlack(color) || hasWhite(color)
+}
+
+export function hasBlack(color) {
+  return (color & BLACK) !== 0
+}
+
+export function hasWhite(color) {
+  return (color & WHITE) !== 0
 }

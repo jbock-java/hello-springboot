@@ -1,30 +1,36 @@
 package com.bernd.game;
 
 import com.bernd.util.BoardUpdate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Function;
 
-public class Remove {
+import static com.bernd.game.Board.REMOVED;
+import static com.bernd.game.Board.TERRITORY;
 
-  private static List<Point> findGroup(
+public class Toggle {
+
+  private static Function<int[][], int[][]> toggle(
       int[][] board,
       int xx,
       int yy) {
     int color = board[yy][xx];
-    if (color == 0) {
-      return List.of();
+    if ((color & TERRITORY) != 0) {
+      return BoardUpdate.identity();
     }
+    if (color == 0) {
+      return BoardUpdate.identity();
+    }
+    int toggleColor = color ^ REMOVED;
     int dim = board.length;
+    BoardUpdate result = BoardUpdate.builder(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
     PointSet pointsChecked = PointSet.create(dim);
     pointsChecked.add(xx, yy);
     pointsToCheck.offer(xx, yy);
-    List<Point> result = new ArrayList<>();
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      result.add(new Point(x, y));
+      result.add(x, y, toggleColor);
       if (y > 0) {
         int c = board[y - 1][x];
         if (c == color && !pointsChecked.has(x, y - 1)) {
@@ -57,16 +63,9 @@ public class Remove {
     return result;
   }
 
-  public static int[][] removeStonesAt(
+  public static int[][] toggleStonesAt(
       int[][] board, int x, int y) {
-    List<Point> group = findGroup(board, x, y);
-    if (group.isEmpty()) {
-      return board;
-    }
-    BoardUpdate update = BoardUpdate.builder(board.length, group.size());
-    for (Point point : group) {
-      update.add(point, 0);
-    }
+    Function<int[][], int[][]> update = toggle(board, x, y);
     return update.apply(board);
   }
 }

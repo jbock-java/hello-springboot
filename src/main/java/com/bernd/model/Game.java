@@ -2,6 +2,7 @@ package com.bernd.model;
 
 import com.bernd.game.Board;
 import com.bernd.game.Count;
+import com.bernd.game.Toggle;
 import com.bernd.util.BoardUpdate;
 import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -29,12 +30,14 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
+    if (counting) {
+      return game(Count.count(Toggle.toggleStonesAt(board, move.x(), move.y())));
+    }
     if (move.pass()) {
-      if (!opponentPassed) {
-        return game(board, counting, true);
+      if (opponentPassed) {
+        return startCounting();
       }
-      int[][] counted = Count.count(board);
-      return game(counted, true);
+      return game(board, counting, true);
     }
     int x = move.x();
     int y = move.y();
@@ -57,15 +60,12 @@ public record Game(
         board);
   }
 
-  private Game game(
-      int[][] board) {
-    return game(board, counting, opponentPassed);
+  private Game game(int[][] board) {
+    return game(board, counting, false);
   }
 
-  private Game game(
-      int[][] board,
-      boolean counting) {
-    return game(board, counting, opponentPassed);
+  private Game startCounting() {
+    return game(Count.count(board), true, true);
   }
 
   private String nextPlayer() {

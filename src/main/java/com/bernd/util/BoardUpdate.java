@@ -34,6 +34,10 @@ public class BoardUpdate implements Function<int[][], int[][]> {
     return result;
   }
 
+  public static Function<int[][], int[][]> identity() {
+    return Function.identity();
+  }
+
   public void add(int x, int y, int value) {
     if (pos >= updates.length) {
       updates = Arrays.copyOf(updates, dim * dim);

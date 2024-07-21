@@ -1,6 +1,6 @@
 package com.bernd.game;
 
-import static com.bernd.util.Util.divideUp;
+import static com.bernd.util.Util.divUp;
 
 final class PointQueue {
 
@@ -27,13 +27,14 @@ final class PointQueue {
   static PointQueue create(int dim) {
     // Assumption:
     // All algorithms proceed from the starting point outward in a diamond shape.
-    // The diamond contains at most two points per row, see testDiamond().
+    // The diamond contains at most two points per row.
+    // See testDiamond() for a visualization.
     return byCapacity(dim, 2 * dim);
   }
 
   // visible for testing
   static PointQueue byCapacity(int dim, int capacity) {
-    return new PointQueue(capacity, dim, new int[divideUp(capacity, 2)]);
+    return new PointQueue(capacity, dim, new int[divUp(capacity, 2)]);
   }
 
   void offer(int x, int y) {

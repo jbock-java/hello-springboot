@@ -2,6 +2,7 @@ package com.bernd.game;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,5 +41,7 @@ class PointSetTest {
         assertTrue(pointSet.has(x, y));
       }
     }
+    assertEquals(128, pointSet.length());
+    assertEquals(128 * 32, dim * dim, "one bit per element");
   }
 }

@@ -13,8 +13,14 @@ import {
 import {
   StompContext,
   BLACK,
-  WHITE,
+  TERRITORY,
+  REMOVED,
+  hasColor,
+  hasBlack,
 } from "./util.js"
+import {
+  Button,
+} from "./component/Button.jsx"
 import {
   IconContext,
 } from "react-icons"
@@ -36,8 +42,7 @@ export const Play = () => {
   let setGameState = useGameStore(state => state.setGameState)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
-  let board = useGameStore(state => state.gameState.board)
-  let currentPlayer = useGameStore(state => state.gameState.currentPlayer)
+  let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
   let initialized = useRef()
   let opponent = auth.name === black.name ? white : black
   useEffect(() => {
@@ -98,7 +103,8 @@ export const Play = () => {
             board.map((row, y) => (
               row.map((check, x) => (
                 <Tile
-                  disabled={currentPlayer !== auth.name}
+                  disabled={!counting && currentPlayer !== auth.name}
+                  counting={counting}
                   key={y + "_" + x}
                   onClick={() => onClick(x, y)}
                   check={check} />
@@ -109,58 +115,92 @@ export const Play = () => {
       </div>
       <div className="fixed right-12 ml-4">
       <div>
-        <button
+        <Button
           onClick={onPass}
-          type="button"
-          className="bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded-lg">
+          disabled={counting || currentPlayer !== auth.name}>
           Pass
-        </button>
+        </Button>
       </div>
       <div className="mt-2">
       {
+        counting ? "" : (
         currentPlayer === auth.name ?
           "Jetzt bin ich dran" : 
           (opponent.name + " ist dran...")
+        )
       }
       </div>
       </div>
     </div>
   )
 }
+
 function GridTile() {
   return <div className={gridTileClasses} />
 }
 
-function Tile({check, onClick, disabled}) {
-  let color = check === BLACK ? "black" : "white"
-  if (!check) {
+function Tile({check, onClick, disabled, counting}) {
+  if (counting && hasColor(check) && (check & TERRITORY) === 0) {
     return (
-      <TileHover disabled={disabled} onClick={onClick} />
+      <CountingActive check={check} onClick={onClick} />
     )
+  }
+  if (!hasColor(check) && !counting) {
+    if (disabled) {
+      return <div className={twJoin(tileClasses, "text-transparent")} />
+    }
+    return (
+      <EmptyActive onClick={onClick} />
+    )
+  }
+  if (!hasColor(check)) {
+    return <div className={twJoin(tileClasses, "text-transparent")} />
   }
   return (
     <div className={tileClasses}>
-      <IconContext.Provider value={{ color: color, size: "2.75em" }}>
+      <IconContext.Provider value={getStyle(check)}>
         <FaCircle />
       </IconContext.Provider>
     </div>
   )
 }
 
-function TileHover({disabled, onClick}) {
+function getStyle(check) {
+  let size = (check & TERRITORY) !== 0 ? "1em" : "2.75em"
+  if ((check & BLACK) !== 0) {
+    return { color: "black", size: size }
+  }
+  return { color: "white", size: size }
+}
+
+function EmptyActive({ onClick }) {
   let symbol = useGameStore(state => state.symbol)
-  let hovercolor = symbol === BLACK ? "hover:text-asch" : "hover:text-esch"
+  let hovercolor = symbol === BLACK ? "hover:text-black" : "hover:text-white"
   let classes = twJoin(
     tileClasses,
     "text-transparent",
-    !disabled && "cursor-pointer",
-    !disabled && hovercolor,
+    "cursor-pointer opacity-25",
+    hovercolor,
   )
-  if (disabled) {
-    return <div className={classes} />
-  }
   return (
-    <div className={classes} onClick={!disabled ? onClick : undefined}>
+    <div className={classes} onClick={onClick}>
+      <IconContext.Provider value={{ size: "2.75em" }}>
+        <FaCircle />
+      </IconContext.Provider>
+    </div>
+  )
+}
+
+function CountingActive({ check, onClick }) {
+  let color = hasBlack(check) ? "text-black" : "text-white"
+  let classes = twJoin(
+    tileClasses,
+    "cursor-pointer",
+    color,
+    (check & REMOVED) !== 0 ? "opacity-25" : "hover:opacity-25",
+  )
+  return (
+    <div className={classes} onClick={onClick}>
       <IconContext.Provider value={{ size: "2.75em" }}>
         <FaCircle />
       </IconContext.Provider>

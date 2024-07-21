@@ -39,6 +39,7 @@ export const useGameStore = create((set, get) => ({
   },
   gameState: {
     currentPlayer: undefined,
+    counting: false,
   },
   setGameState: (game, auth) => {
     set(produce(state => {
@@ -51,6 +52,7 @@ export const useGameStore = create((set, get) => ({
       }
       state.gameState.board = game.board
       state.gameState.currentPlayer = game.currentPlayer
+      state.gameState.counting = game.counting
       let symbol = game.black.name === auth.name? BLACK : WHITE 
       if (oldState.symbol !== symbol) {
         state.symbol = symbol

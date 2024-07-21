@@ -1,6 +1,6 @@
 package com.bernd.game;
 
-import static com.bernd.util.Util.divideUp;
+import static com.bernd.util.Util.divUp;
 
 final class PointSet {
 
@@ -13,7 +13,7 @@ final class PointSet {
   }
 
   static PointSet create(int dim) {
-    return new PointSet(dim, new int[divideUp(dim * dim, 0x20)]);
+    return new PointSet(dim, new int[divUp(dim * dim, 0x20)]);
   }
 
   void add(int x, int y) {
@@ -28,5 +28,10 @@ final class PointSet {
     int pos = ptId >> 5;
     int test = 1 << (ptId & 0x1f);
     return (points[pos] & test) != 0;
+  }
+
+  // visible for testing
+  int length() {
+    return points.length;
   }
 }
