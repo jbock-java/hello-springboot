@@ -64,6 +64,10 @@ public final class PointList {
     return ptId / dim;
   }
 
+  public int size() {
+    return pos;
+  }
+
   public void forEach(PointConsumer consumer) {
     for (int i = 0; i < pos; i++) {
       consumer.accept(x(i), y(i));

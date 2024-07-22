@@ -20,7 +20,7 @@ final class PointSet {
     int ptId = y * dim + x;
     int pos = ptId >> 5;
     int test = 1 << (ptId & 0x1f);
-    points[pos] = points[pos] | test;
+    points[pos] |= test;
   }
 
   boolean has(int x, int y) {
