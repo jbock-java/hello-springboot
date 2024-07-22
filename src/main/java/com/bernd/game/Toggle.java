@@ -8,7 +8,7 @@ import static com.bernd.game.Board.TERRITORY;
 
 public class Toggle {
 
-  private static Function<int[][], int[][]> toggle(
+  private static Function<int[][], int[][]> toggleRemoved(
       int[][] board,
       int xx,
       int yy) {
@@ -65,7 +65,7 @@ public class Toggle {
 
   public static int[][] toggleStonesAt(
       int[][] board, int x, int y) {
-    Function<int[][], int[][]> update = toggle(board, x, y);
+    Function<int[][], int[][]> update = toggleRemoved(board, x, y);
     return update.apply(board);
   }
 }

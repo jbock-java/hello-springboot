@@ -9,6 +9,9 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
+  Button,
+} from "./component/Button.jsx"
+import {
   base,
   StompContext,
 } from "./util.js"
@@ -51,27 +54,37 @@ export function Lobby() {
       }),
     })
     return () => {
-      sub1.unsubscribe
-      sub2.unsubscribe
-      sub3.unsubscribe
+      sub1.unsubscribe()
+      sub2.unsubscribe()
+      sub3.unsubscribe()
     }
   }, [setInit, setUsers, setMatchRequested, auth, initialized, stompClient, navigate])
-  let matchRequest = useCallback(() => {
+  let matchRequest = useCallback((editMode) => {
     stompClient.publish({
       destination: "/app/lobby/match",
       body: JSON.stringify({
         name: auth.name,
+        dim: 9,
+        editMode: editMode,
       }),
     })
   }, [auth, stompClient])
   if (!matchRequested) {
     return (
       <div className="m-4">
-        <button type="button"
-          className="p-2 border border-black"
-          onClick={matchRequest}>
-          Find match
-        </button>
+        <div>
+          <button type="Button"
+            onClick={() => matchRequest(true)}>
+            Create
+          </button>
+        </div>
+        <div className="mt-2">
+          <button type="button"
+            className="p-2 border border-black"
+            onClick={() => matchRequest(false)}>
+            Find match
+          </button>
+        </div>
         <div className="mt-2">
           {users.map(user => (
             <div key={user.name}>{user.name}</div>

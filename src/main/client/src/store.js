@@ -29,8 +29,9 @@ export const useAuthStore = create((set) => ({
   },
 }))
 
-export const useGameStore = create((set, get) => ({
+export const useGameStore = create((set) => ({
   symbol: 0,
+  editMode: false,
   black: {
     name: "",
   },
@@ -39,24 +40,20 @@ export const useGameStore = create((set, get) => ({
   },
   gameState: {
     currentPlayer: undefined,
+    currentColor: BLACK,
     counting: false,
   },
   setGameState: (game, auth) => {
     set(produce(state => {
-      let oldState = get()
-      if (oldState.black.name !== game.black.name) {
-        state.black = game.black
-      }
-      if (oldState.white.name !== game.white.name) {
-        state.white = game.white
-      }
+      state.black = game.black
+      state.white = game.white
+      state.editMode = game.editMode
       state.gameState.board = game.board
       state.gameState.currentPlayer = game.currentPlayer
+      state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting
       let symbol = game.black.name === auth.name? BLACK : WHITE 
-      if (oldState.symbol !== symbol) {
-        state.symbol = symbol
-      }
+      state.symbol = symbol
     }))
   },
 }))

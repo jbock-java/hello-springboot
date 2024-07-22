@@ -61,7 +61,7 @@ export const Play = () => {
       }),
     })
     return () => {
-      sub1.unsubscribe
+      sub1.unsubscribe()
     }
   }, [setGameState, initialized, stompClient, auth, gameId])
   let onPass = useCallback(() => {
@@ -174,8 +174,8 @@ function getStyle(check) {
 }
 
 function EmptyActive({ onClick }) {
-  let symbol = useGameStore(state => state.symbol)
-  let hovercolor = symbol === BLACK ? "hover:text-black" : "hover:text-white"
+  let currentColor = useGameStore(state => state.gameState.currentColor)
+  let hovercolor = currentColor === BLACK ? "hover:text-black" : "hover:text-white"
   let classes = twJoin(
     tileClasses,
     "text-transparent",

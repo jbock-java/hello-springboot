@@ -8,12 +8,17 @@ import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.bernd.game.Board.B;
+import static com.bernd.game.Board.W;
+
 public record Game(
     String id,
     User black,
     User white,
+    boolean editMode,
     boolean counting,
     String currentPlayer,
+    int currentColor,
     boolean opponentPassed,
     int[][] board
 ) {
@@ -31,7 +36,9 @@ public record Game(
 
   private Game updateInternal(Move move) {
     if (counting) {
-      return game(Count.count(Toggle.toggleStonesAt(board, move.x(), move.y())));
+      int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
+      int[][] counted = Count.count(toggled);
+      return game(counted);
     }
     if (move.pass()) {
       if (opponentPassed) {
@@ -54,8 +61,10 @@ public record Game(
         id,
         black,
         white,
+        editMode,
         counting,
         nextPlayer(),
+        nextColor(),
         opponentPassed,
         board);
   }
@@ -69,10 +78,13 @@ public record Game(
   }
 
   private String nextPlayer() {
+    if (editMode) {
+      return currentPlayer;
+    }
     return currentPlayer.equals(black.name()) ? white().name() : black().name();
   }
 
-  private int currentColor() {
-    return currentPlayer.equals(black().name()) ? Board.B : Board.W;
+  private int nextColor() {
+    return currentColor == B ? W : B;
   }
 }

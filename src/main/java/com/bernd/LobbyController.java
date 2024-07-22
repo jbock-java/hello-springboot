@@ -11,6 +11,8 @@ import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
+import static com.bernd.game.Board.B;
+
 @Controller
 public class LobbyController {
 
@@ -36,31 +38,55 @@ public class LobbyController {
   }
 
   @MessageMapping("/lobby/match")
-  public void matchAction(MatchRequest message, Principal principal) {
+  public void matchAction(MatchRequest request, Principal principal) {
     User user = lobbyUsers.get(principal);
+    if (request.editMode()) {
+      lobbyUsers.remove(principal.getName());
+      operations.convertAndSend("/topic/lobby/users",
+          new UserList(lobbyUsers.users()));
+      Game game = games.put(new Game(
+          RandomString.get(),
+          user,
+          user,
+          true,
+          false,
+          user.name(),
+          B,
+          false,
+          createEmptyBoard(request)));
+      operations.convertAndSend("/topic/lobby/gamestart", game);
+    }
     if (lookingForMatch == null) {
       lookingForMatch = user;
       operations.convertAndSend("/topic/lobby/gamerequest",
-          new Status(message.name(), "ready"));
+          new Status(request.name(), "ready"));
       return;
     }
+    User black = lookingForMatch;
+    lookingForMatch = null;
     lobbyUsers.remove(principal.getName());
-    lobbyUsers.remove(lookingForMatch.name());
+    lobbyUsers.remove(black.name());
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
-    String gameId = RandomString.get();
-    Game game = games.put(new Game(gameId, user, lookingForMatch, false, user.name(), false, new int[][]{
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9],
-        new int[9]
-    }));
+    Game game = games.put(new Game(
+        RandomString.get(),
+        black,
+        user,
+        false,
+        false,
+        user.name(),
+        B,
+        false,
+        createEmptyBoard(request)));
     operations.convertAndSend("/topic/lobby/gamestart", game);
-    lookingForMatch = null;
+  }
+
+  private static int[][] createEmptyBoard(MatchRequest request) {
+    int dim = Math.max(request.dim(), 2);
+    int[][] board = new int[dim][];
+    for (int y = 0; y < dim; y++) {
+      board[y] = new int[dim];
+    }
+    return board;
   }
 }

@@ -6,6 +6,7 @@ import static com.bernd.game.Board.W;
 
 public final class Util {
   private static final int MARKERS = ~B & ~W;
+  private static final int COLORS = B | W;
 
   private Util() {
   }
@@ -33,5 +34,9 @@ public final class Util {
 
   public static int divUp(int i, int div) {
     return i % div == 0 ? i / div : (i / div) + 1;
+  }
+
+  public static boolean isPlainColor(int color) {
+    return (color & COLORS) != 0 && (color & MARKERS) == 0;
   }
 }

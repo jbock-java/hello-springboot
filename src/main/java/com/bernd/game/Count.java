@@ -4,9 +4,9 @@ import com.bernd.util.Util;
 import java.util.Arrays;
 
 import static com.bernd.game.Board.B;
-import static com.bernd.game.Board.REMOVED;
 import static com.bernd.game.Board.TERRITORY;
 import static com.bernd.game.Board.W;
+import static com.bernd.util.Util.isPlainColor;
 import static com.bernd.util.Util.keepMarkers;
 
 public class Count {
@@ -15,7 +15,7 @@ public class Count {
       int[][] board,
       int xx,
       int yy) {
-    if (board[yy][xx] != 0) {
+    if (isPlainColor(board[yy][xx])) {
       return board[yy][xx];
     }
     int dim = board.length;
@@ -27,7 +27,7 @@ public class Count {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      if (board[y][x] != 0 && (board[y][x] & REMOVED) == 0) {
+      if (isPlainColor(board[y][x])) {
         return board[y][x] | TERRITORY;
       }
       if (y > 0 && !pointsChecked.has(x, y - 1)) {

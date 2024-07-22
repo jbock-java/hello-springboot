@@ -76,9 +76,11 @@ public final class PointList {
       return "[]";
     }
     StringBuilder sb = new StringBuilder("[");
-    forEach((x, y) -> sb.append("(")
-        .append(x).append(" ").append(y)
-        .append("), "));
+    for (int i = 0; i < pos; i++) {
+      sb.append("(")
+          .append(x(i)).append(" ").append(y(i))
+          .append("), ");
+    }
     sb.setLength(sb.length() - 2);
     sb.append("]");
     return sb.toString();

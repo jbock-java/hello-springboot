@@ -10,6 +10,7 @@ import static com.bernd.game.Board.REMOVED;
 import static com.bernd.game.Board.TERRITORY;
 import static com.bernd.game.Board.W;
 import static com.bernd.game.Count.colorEmptyTerritory;
+import static com.bernd.game.Count.getImpliedColor;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -170,19 +171,56 @@ class CountTest {
   void testNoBufferOverflow() {
     // fails if the capacity assumption in PointQueue is wrong
     for (int dim = 1; dim < 40; dim++) {
-      assertEquals(0, Count.getImpliedColor(
+      assertEquals(0, getImpliedColor(
           createEmptyBoard(dim),
           dim / 2,
           dim / 2));
-      assertEquals(0, Count.getImpliedColor(
+      assertEquals(0, getImpliedColor(
           createEmptyBoard(dim),
           0,
           0));
-      assertEquals(0, Count.getImpliedColor(
+      assertEquals(0, getImpliedColor(
           createEmptyBoard(dim),
           ThreadLocalRandom.current().nextInt(dim),
           ThreadLocalRandom.current().nextInt(dim)));
     }
+  }
+
+  @Test
+  void testCornerEyeCount() {
+    int b = B | REMOVED;
+    int w = W | TERRITORY;
+    int k = W | TERRITORY | REMOVED;
+    int t = B | TERRITORY;
+    int[][] result = Count.count(new int[][]{
+        new int[]{t, b, W, 0, 0},
+        new int[]{b, b, W, 0, 0},
+        new int[]{W, W, W, B, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    });
+    assertArrayEquals(new int[][]{
+        new int[]{w, k, W, 0, 0},
+        new int[]{k, k, W, 0, 0},
+        new int[]{W, W, W, B, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    }, result);
+  }
+
+  @Test
+  void testCornerEyeCountImpliedColor() {
+    int b = B | REMOVED;
+    int t = B | TERRITORY;
+    int[][] board = {
+        new int[]{t, b, W},
+        new int[]{b, b, W},
+        new int[]{W, W, W},
+    };
+    assertEquals(W | TERRITORY, getImpliedColor(board, 0, 0));
+    assertEquals(W | TERRITORY, getImpliedColor(board, 0, 1));
+    assertEquals(W | TERRITORY, getImpliedColor(board, 1, 0));
+    assertEquals(W | TERRITORY, getImpliedColor(board, 1, 1));
   }
 
   static int[][] createEmptyBoard(int dim) {
