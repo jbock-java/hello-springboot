@@ -1,10 +1,9 @@
 package com.bernd.util;
 
-import com.bernd.game.Point;
 import java.util.Arrays;
 import java.util.function.Function;
 
-public class BoardUpdate implements Function<int[][], int[][]> {
+public final class BoardUpdate implements Function<int[][], int[][]> {
 
   private static final int LO = 0xffff;
 
@@ -49,10 +48,6 @@ public class BoardUpdate implements Function<int[][], int[][]> {
 
   public void add(int x, int y) {
     add(x, y, 0);
-  }
-
-  public void add(Point point, int value) {
-    add(point.x(), point.y(), value);
   }
 
   public int x(int i) {

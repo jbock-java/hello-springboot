@@ -1,6 +1,5 @@
 package com.bernd.game;
 
-import com.bernd.util.BoardUpdate;
 import com.bernd.util.Util;
 import java.util.Arrays;
 
@@ -70,7 +69,7 @@ public class Count {
     boolean oppositeStonesFound = false;
     int oppositeColor = (color & W) != 0 ? B : W;
     int dim = board.length;
-    BoardUpdate tracker = BoardUpdate.builder(dim, 64);
+    PointList tracker = PointList.create(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
     acc[yy][xx] = color;
     tracker.add(xx, yy);
@@ -122,9 +121,7 @@ public class Count {
       }
     }
     if (oppositeStonesFound) {
-      for (int i = 0; i < tracker.size(); i++) {
-        acc[tracker.y(i)][tracker.x(i)] = 0;
-      }
+      tracker.forEach((x, y) -> acc[y][x] = 0);
     }
   }
 
