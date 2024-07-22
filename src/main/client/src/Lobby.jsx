@@ -73,10 +73,10 @@ export function Lobby() {
     return (
       <div className="m-4">
         <div>
-          <button type="Button"
+          <Button type="Button"
             onClick={() => matchRequest(true)}>
             Create
-          </button>
+          </Button>
         </div>
         <div className="mt-2">
           <button type="button"

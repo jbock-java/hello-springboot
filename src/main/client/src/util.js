@@ -10,6 +10,9 @@ export const WHITE = 64
 export const TERRITORY = 2
 export const REMOVED = 4
 
+const MARKERS = ~BLACK & ~WHITE;
+const COLORS = BLACK | WHITE;
+
 export async function tfetch(url, options) {
   let response
   try {
@@ -51,8 +54,8 @@ function dec2hex(dec) {
   return dec.toString(16).padStart(2, "0")
 }
 
-export function hasColor(color) {
-  return hasBlack(color) || hasWhite(color)
+export function hasStone(color) {
+  return (color & COLORS) != 0 && (color & MARKERS) == 0;
 }
 
 export function hasBlack(color) {
@@ -61,4 +64,8 @@ export function hasBlack(color) {
 
 export function hasWhite(color) {
   return (color & WHITE) !== 0
+}
+
+export function getColorClassName(color) {
+  return hasWhite(color) ? "white" : "black"
 }

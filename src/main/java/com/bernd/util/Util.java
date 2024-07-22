@@ -36,7 +36,7 @@ public final class Util {
     return i % div == 0 ? i / div : (i / div) + 1;
   }
 
-  public static boolean isPlainColor(int color) {
+  public static boolean isStone(int color) {
     return (color & COLORS) != 0 && (color & MARKERS) == 0;
   }
 }

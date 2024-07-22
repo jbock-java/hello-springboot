@@ -15,8 +15,9 @@ import {
   BLACK,
   TERRITORY,
   REMOVED,
-  hasColor,
   hasBlack,
+  hasStone,
+  getColorClassName,
 } from "./util.js"
 import {
   Button,
@@ -103,7 +104,6 @@ export const Play = () => {
             board.map((row, y) => (
               row.map((check, x) => (
                 <Tile
-                  disabled={!counting && currentPlayer !== auth.name}
                   counting={counting}
                   key={y + "_" + x}
                   onClick={() => onClick(x, y)}
@@ -139,48 +139,46 @@ function GridTile() {
   return <div className={gridTileClasses} />
 }
 
-function Tile({check, onClick, disabled, counting}) {
-  if (counting && hasColor(check) && (check & TERRITORY) === 0) {
+function Tile({check, onClick, counting}) {
+  if (!hasStone(check)) {
+    return <EmptyTile onClick={onClick} check={check} />
+  }
+  if (counting) {
     return (
       <CountingActive check={check} onClick={onClick} />
     )
   }
-  if (!hasColor(check) && !counting) {
-    if (disabled) {
-      return <div className={twJoin(tileClasses, "text-transparent")} />
-    }
-    return (
-      <EmptyActive onClick={onClick} />
-    )
-  }
-  if (!hasColor(check)) {
-    return <div className={twJoin(tileClasses, "text-transparent")} />
-  }
   return (
     <div className={tileClasses}>
-      <IconContext.Provider value={getStyle(check)}>
+      <IconContext.Provider value={{ color: getColorClassName(check), size: "2.75em" }}>
         <FaCircle />
       </IconContext.Provider>
     </div>
   )
 }
 
-function getStyle(check) {
-  let size = (check & TERRITORY) !== 0 ? "1em" : "2.75em"
-  if ((check & BLACK) !== 0) {
-    return { color: "black", size: size }
-  }
-  return { color: "white", size: size }
-}
-
-function EmptyActive({ onClick }) {
+function EmptyTile({ onClick, check }) {
+  let { counting, currentPlayer } = useGameStore(state => state.gameState)
+  let auth = useAuthStore(state => state.auth)
   let currentColor = useGameStore(state => state.gameState.currentColor)
-  let hovercolor = currentColor === BLACK ? "hover:text-black" : "hover:text-white"
+  if ((check & TERRITORY) !== 0) {
+    return (
+      <div className={tileClasses}>
+        <IconContext.Provider value={{ color: getColorClassName(check), size: "1em" }}>
+          <FaCircle />
+        </IconContext.Provider>
+      </div>
+    )
+  }
+  if (counting || currentPlayer !== auth.name) {
+      return <div className={tileClasses} />
+  }
   let classes = twJoin(
     tileClasses,
+    "cursor-pointer",
     "text-transparent",
-    "cursor-pointer opacity-25",
-    hovercolor,
+    "opacity-25",
+    currentColor === BLACK ? "hover:text-black" : "hover:text-white",
   )
   return (
     <div className={classes} onClick={onClick}>

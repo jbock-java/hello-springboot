@@ -55,6 +55,7 @@ public class LobbyController {
           false,
           createEmptyBoard(request)));
       operations.convertAndSend("/topic/lobby/gamestart", game);
+      return;
     }
     if (lookingForMatch == null) {
       lookingForMatch = user;

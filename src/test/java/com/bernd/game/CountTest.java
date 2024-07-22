@@ -231,7 +231,7 @@ class CountTest {
     return board;
   }
 
-  static int[][] createAccWithoutRemovedStones(int[][] board) {
+  private static int[][] createAccWithoutRemovedStones(int[][] board) {
     int[][] result = new int[board.length][];
     for (int y = 0; y < board.length; y++) {
       result[y] = Arrays.copyOf(board[y], board[y].length);
