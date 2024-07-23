@@ -1,8 +1,8 @@
 export class PointSet {
 
   constructor(dim) {
-   this.dim = dim
-   this.points = new Int32Array(Math.ceil((dim * dim) / 0x20)) 
+    this.dim = dim
+    this.points = new Int32Array(Math.ceil((dim * dim) / 0x20)) 
   }
 
   add(x, y) {
