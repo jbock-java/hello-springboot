@@ -102,12 +102,12 @@ export const Play = () => {
         <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-9">
           {
             board.map((row, y) => (
-              row.map((check, x) => (
+              row.map((color, x) => (
                 <Tile
                   counting={counting}
                   key={y + "_" + x}
                   onClick={() => onClick(x, y)}
-                  check={check} />
+                  color={color} />
               ))
             ))
           }
@@ -139,32 +139,32 @@ function GridTile() {
   return <div className={gridTileClasses} />
 }
 
-function Tile({check, onClick, counting}) {
-  if (!hasStone(check)) {
-    return <EmptyTile onClick={onClick} check={check} />
+function Tile({ color, onClick, counting }) {
+  if (!hasStone(color)) {
+    return <EmptyTile onClick={onClick} color={color} />
   }
   if (counting) {
     return (
-      <CountingActive check={check} onClick={onClick} />
+      <CountingActive color={color} onClick={onClick} />
     )
   }
   return (
     <div className={tileClasses}>
-      <IconContext.Provider value={{ color: getColorClassName(check), size: "2.75em" }}>
+      <IconContext.Provider value={{ color: getColorClassName(color), size: "2.75em" }}>
         <FaCircle />
       </IconContext.Provider>
     </div>
   )
 }
 
-function EmptyTile({ onClick, check }) {
+function EmptyTile({ onClick, color }) {
   let { counting, currentPlayer } = useGameStore(state => state.gameState)
   let auth = useAuthStore(state => state.auth)
   let currentColor = useGameStore(state => state.gameState.currentColor)
-  if ((check & TERRITORY) !== 0) {
+  if ((color & TERRITORY) !== 0) {
     return (
       <div className={tileClasses}>
-        <IconContext.Provider value={{ color: getColorClassName(check), size: "1em" }}>
+        <IconContext.Provider value={{ color: getColorClassName(color), size: "1em" }}>
           <FaCircle />
         </IconContext.Provider>
       </div>
@@ -189,13 +189,12 @@ function EmptyTile({ onClick, check }) {
   )
 }
 
-function CountingActive({ check, onClick }) {
-  let color = hasBlack(check) ? "text-black" : "text-white"
+function CountingActive({ color, onClick }) {
   let classes = twJoin(
     tileClasses,
     "cursor-pointer",
-    color,
-    (check & REMOVED) !== 0 ? "opacity-25" : "hover:opacity-25",
+    hasBlack(color) ? "text-black" : "text-white",
+    (color & REMOVED) !== 0 ? "opacity-25" : "hover:opacity-25",
   )
   return (
     <div className={classes} onClick={onClick}>
