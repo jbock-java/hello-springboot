@@ -16,6 +16,7 @@ import {
 import {
   StompContext,
   BLACK,
+  WHITE,
   TERRITORY,
   getColorClassName,
 } from "./util.js"
@@ -41,11 +42,8 @@ export const Play = () => {
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
-  let black = useGameStore(state => state.black)
-  let white = useGameStore(state => state.white)
   let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
   let initialized = useRef()
-  let opponent = auth.name === black.name ? white : black
   useEffect(() => {
     if (initialized.current) {
       return
@@ -74,6 +72,15 @@ export const Play = () => {
       }),
     })
   }, [stompClient, gameId])
+  let onResetCounting = useCallback(() => {
+    stompClient.publish({
+      destination: "/app/game/move",
+      body: JSON.stringify({
+        id: gameId,
+        resetCounting: true,
+      }),
+    })
+  }, [stompClient, gameId])
   let onClick = useCallback(({ x, y }) => {
     stompClient.publish({
       destination: "/app/game/move",
@@ -87,6 +94,7 @@ export const Play = () => {
   if (!board) {
     return <div>Spieldaten werden geladen...</div>
   }
+  let result = counting ? getResult(board) : undefined
   return (
     <div className="mt-2 ml-4">
       <div className="relative w-full h-1">
@@ -120,15 +128,24 @@ export const Play = () => {
           Pass
         </Button>
       </div>
-      <div className="mt-2">
-      {
-        counting ? "" : (
-        currentPlayer === auth.name ?
-          "Jetzt bin ich dran" : 
-          (opponent.name + " ist dran...")
-        )
-      }
-      </div>
+      {counting && (
+         <div className="mt-2">
+           <Button
+             onClick={onResetCounting}>
+             Reset Counting
+           </Button>
+         </div>
+      )}
+      {result && (
+         <div className="mt-2">
+           {"w: " + result.w + ", b: " + result.b}
+         </div>
+      )}
+      {!counting && (
+         <div className="mt-2">
+           {currentPlayer + " ist dran..."}
+         </div>
+      )}
       </div>
     </div>
   )
@@ -214,4 +231,20 @@ function CountingTile({ groupInfo, onClick }) {
       </IconContext.Provider>
     </div>
   )
+}
+
+function getResult(board) {
+  let w = 0, b = 0
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      let { color } = board[y][x]
+      if ((color & WHITE) !== 0) {
+        w++
+      }
+      if ((color & BLACK) !== 0) {
+        b++
+      }
+    }
+  }
+  return { w, b }
 }

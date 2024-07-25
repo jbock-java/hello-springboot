@@ -3,9 +3,9 @@ package com.bernd.game;
 import com.bernd.util.Util;
 import java.util.Arrays;
 
-import static com.bernd.game.Board.B;
 import static com.bernd.game.Board.TERRITORY;
-import static com.bernd.game.Board.W;
+import static com.bernd.util.Util.COLORS;
+import static com.bernd.util.Util.MARKERS;
 import static com.bernd.util.Util.isStone;
 import static com.bernd.util.Util.keepMarkers;
 
@@ -67,12 +67,11 @@ public class Count {
       return;
     }
     boolean oppositeStonesFound = false;
-    int oppositeColor = (color & W) != 0 ? B : W;
+    int oppositeColor = (color & COLORS) ^ COLORS;
     int dim = board.length;
     PointList tracker = PointList.create(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
-    acc[yy][xx] = color;
-    tracker.add(xx, yy);
+    acc[yy][xx] = keepMarkers(color, board[yy][xx]);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
@@ -81,47 +80,39 @@ public class Count {
       tracker.add(x, y);
       if (y > 0) {
         int c = board[y - 1][x];
-        if (c == oppositeColor) {
-          oppositeStonesFound = true;
-        }
+        oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y - 1][x] == -1) {
-          acc[y - 1][x] = keepMarkers(color, c);
+          acc[y - 1][x] = color | c & MARKERS;
           pointsToCheck.offer(x, y - 1);
         }
       }
       if (y < dim - 1) {
         int c = board[y + 1][x];
-        if (c == oppositeColor) {
-          oppositeStonesFound = true;
-        }
+        oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y + 1][x] == -1) {
-          acc[y + 1][x] = keepMarkers(color, c);
+          acc[y + 1][x] = color | c & MARKERS;
           pointsToCheck.offer(x, y + 1);
         }
       }
       if (x > 0) {
         int c = board[y][x - 1];
-        if (c == oppositeColor) {
-          oppositeStonesFound = true;
-        }
+        oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y][x - 1] == -1) {
-          acc[y][x - 1] = keepMarkers(color, c);
+          acc[y][x - 1] = color | c & MARKERS;
           pointsToCheck.offer(x - 1, y);
         }
       }
       if (x < dim - 1) {
         int c = board[y][x + 1];
-        if (c == oppositeColor) {
-          oppositeStonesFound = true;
-        }
+        oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y][x + 1] == -1) {
-          acc[y][x + 1] = keepMarkers(color, c);
+          acc[y][x + 1] = color | c & MARKERS;
           pointsToCheck.offer(x + 1, y);
         }
       }
     }
     if (oppositeStonesFound) {
-      tracker.forEach((x, y) -> acc[y][x] = 0);
+      tracker.forEach((x, y) -> acc[y][x] = board[y][x] & ~TERRITORY);
     }
   }
 

@@ -1,14 +1,12 @@
 package com.bernd.util;
 
-import java.util.Arrays;
-
 import static com.bernd.game.Board.B;
 import static com.bernd.game.Board.REMOVED;
 import static com.bernd.game.Board.W;
 
 public final class Util {
-  private static final int MARKERS = ~B & ~W;
-  private static final int COLORS = B | W;
+  public static final int MARKERS = ~B & ~W;
+  public static final int COLORS = B | W;
 
   private Util() {
   }
@@ -40,13 +38,5 @@ public final class Util {
 
   public static boolean isStone(int color) {
     return (color & COLORS) != 0 && (color & MARKERS) == 0;
-  }
-
-  public static int[][] copyBoard(int[][] board) {
-    int[][] result = new int[board.length][];
-    for (int y = 0; y < board.length; y++) {
-      result[y] = Arrays.copyOf(board[y], board[y].length);
-    }
-    return result;
   }
 }

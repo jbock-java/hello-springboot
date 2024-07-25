@@ -3,6 +3,8 @@ package com.bernd.game;
 import com.bernd.util.BoardUpdate;
 import java.util.function.Function;
 
+import static com.bernd.game.Board.B;
+import static com.bernd.game.Board.W;
 import static com.bernd.game.Board.REMOVED;
 import static com.bernd.game.Board.TERRITORY;
 
@@ -66,6 +68,27 @@ public class Toggle {
   public static int[][] toggleStonesAt(
       int[][] board, int x, int y) {
     Function<int[][], int[][]> update = toggleRemoved(board, x, y);
+    return update.apply(board);
+  }
+
+  public static int[][] resetCounting(
+      int[][] board) {
+    int dim = board.length;
+    BoardUpdate update = BoardUpdate.builder(dim);
+    for (int y = 0; y < dim; y++) {
+      for (int x = 0; x < board[y].length; x++) {
+        int color = board[y][x];
+        if ((color & REMOVED) != 0) {
+          color = color ^ (B | W);
+          color &= ~REMOVED;
+          color &= ~TERRITORY;
+        }
+        if ((color & TERRITORY) != 0) {
+          color = 0;
+        }
+        update.add(x, y, color);
+      }
+    }
     return update.apply(board);
   }
 }

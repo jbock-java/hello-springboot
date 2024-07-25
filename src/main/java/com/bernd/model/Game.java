@@ -36,9 +36,12 @@ public record Game(
 
   private Game updateInternal(Move move) {
     if (counting) {
+      if (move.resetCounting()) {
+        int[][] resetted = Toggle.resetCounting(board);
+        return game(Count.count(resetted));
+      }
       int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
-      int[][] counted = Count.count(toggled);
-      return game(counted);
+      return game(Count.count(toggled));
     }
     if (move.pass()) {
       if (opponentPassed) {

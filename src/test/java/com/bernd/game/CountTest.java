@@ -223,6 +223,27 @@ class CountTest {
     assertEquals(W | TERRITORY, getImpliedColor(board, 1, 1));
   }
 
+  @Test
+  void testCountWhiteL() {
+    int r = W | REMOVED;
+    int f = B | REMOVED | TERRITORY;
+    int t = B | TERRITORY;
+    int[][] result = Count.count(new int[][]{
+        new int[]{t, B, r, 0, 0},
+        new int[]{B, B, r, 0, 0},
+        new int[]{r, r, r, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    });
+    assertArrayEquals(new int[][]{
+        new int[]{t, B, f, t, t},
+        new int[]{B, B, f, t, t},
+        new int[]{f, f, f, t, t},
+        new int[]{t, t, t, t, t},
+        new int[]{t, t, t, t, t},
+    }, result);
+  }
+
   static int[][] createEmptyBoard(int dim) {
     int[][] board = new int[dim][];
     for (int y = 0; y < dim; y++) {

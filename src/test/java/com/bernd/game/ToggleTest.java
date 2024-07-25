@@ -67,4 +67,46 @@ class ToggleTest {
         new int[]{0, 0, 0, 0, 0},
     }, result);
   }
+
+  @Test
+  void testToggleWhiteL() {
+    int r = W | REMOVED;
+    int t = B | TERRITORY;
+    int[][] position = new int[][]{
+        new int[]{t, B, W, 0, 0},
+        new int[]{B, B, W, 0, 0},
+        new int[]{W, W, W, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    };
+    int[][] result = Toggle.toggleStonesAt(position, 0, 2);
+    assertArrayEquals(new int[][]{
+        new int[]{t, B, r, 0, 0},
+        new int[]{B, B, r, 0, 0},
+        new int[]{r, r, r, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    }, result);
+  }
+
+  @Test
+  void testResetCounting() {
+    int f = B | REMOVED | TERRITORY;
+    int t = B | TERRITORY;
+    int[][] position = new int[][]{
+        new int[]{t, B, f, t, t},
+        new int[]{B, B, f, t, t},
+        new int[]{f, f, f, t, t},
+        new int[]{t, t, t, t, t},
+        new int[]{t, t, t, t, t},
+    };
+    int[][] result = Toggle.resetCounting(position);
+    assertArrayEquals(new int[][]{
+        new int[]{0, B, W, 0, 0},
+        new int[]{B, B, W, 0, 0},
+        new int[]{W, W, W, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    }, result);
+  }
 }
