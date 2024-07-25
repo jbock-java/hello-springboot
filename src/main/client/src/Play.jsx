@@ -53,7 +53,7 @@ export const Play = () => {
     initialized.current = true
     let sub1 = stompClient.subscribe("/topic/game/" + gameId, (message) => {
       let game = JSON.parse(message.body)
-      setGameState(game, auth)
+      setGameState(game)
     })
     stompClient.publish({
       destination: "/app/game/hello",
@@ -161,10 +161,14 @@ function Tile({ groupInfo, onClick }) {
 function EmptyTile({ groupInfo, onClick }) {
   let { board, counting, currentPlayer, currentColor } = useGameStore(state => state.gameState)
   let auth = useAuthStore(state => state.auth)
+  let setIsInCountingGroup = useGameStore(state => state.setIsInCountingGroup)
+  let setNoCountingGroup = useCallback(() => {
+    setIsInCountingGroup(undefined)
+  }, [setIsInCountingGroup])
   let { color } = groupInfo
   if ((color & TERRITORY) !== 0) {
     return (
-      <div className={tileClasses}>
+      <div onMouseEnter={setNoCountingGroup} className={tileClasses}>
         <IconContext.Provider value={{ color: getColorClassName(color), size: "1em" }}>
           <FaCircle />
         </IconContext.Provider>
@@ -172,7 +176,7 @@ function EmptyTile({ groupInfo, onClick }) {
     )
   }
   if (counting || currentPlayer !== auth.name || isForbidden(board, groupInfo, currentColor)) {
-      return <div className={tileClasses} />
+      return <div onMouseEnter={setNoCountingGroup} className={tileClasses} />
   }
   let classes = twJoin(
     tileClasses,
@@ -191,15 +195,20 @@ function EmptyTile({ groupInfo, onClick }) {
 }
 
 function CountingTile({ groupInfo, onClick }) {
-  let { color } = groupInfo
+  let { color, has, x, y } = groupInfo
+  let isInCountingGroup = useGameStore(state => state.isInCountingGroup)
+  let setIsInCountingGroup = useGameStore(state => state.setIsInCountingGroup)
+  let setCountingGroup = useCallback(() => {
+    setIsInCountingGroup(has)
+  }, [has, setIsInCountingGroup])
   let classes = twJoin(
     tileClasses,
     "cursor-pointer",
     color === BLACK ? "text-black" : "text-white",
-    "hover:opacity-25",
+    isInCountingGroup && isInCountingGroup(x, y) && "opacity-25",
   )
   return (
-    <div className={classes} onClick={onClick}>
+    <div onMouseEnter={setCountingGroup} className={classes} onClick={onClick}>
       <IconContext.Provider value={{ size: "2.75em" }}>
         <FaCircle />
       </IconContext.Provider>

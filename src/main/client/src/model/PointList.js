@@ -1,3 +1,7 @@
+import {
+  PointSet,
+} from "./PointSet.js"
+
 export class PointList {
 
   static LO = 0xffff
@@ -48,6 +52,12 @@ export class PointList {
 
   size() {
     return this.pos
+  }
+
+  toSet() {
+    let result = new PointSet(this.dim)
+    this.forEach((x, y) => result.add(x, y))
+    return result
   }
 
   forEach(consumer) {

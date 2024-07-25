@@ -6,7 +6,6 @@ import {
 } from "immer"
 import {
   BLACK,
-  WHITE,
 } from "./util.js"
 import {
   createBoardWithGroups,
@@ -33,7 +32,6 @@ export const useAuthStore = create((set) => ({
 }))
 
 export const useGameStore = create((set) => ({
-  symbol: 0,
   editMode: false,
   black: {
     name: "",
@@ -41,12 +39,18 @@ export const useGameStore = create((set) => ({
   white: {
     name: "",
   },
+  isInCountingGroup: undefined,
+  setIsInCountingGroup: (has) => {
+    set(produce(state => {
+      state.isInCountingGroup = has
+    }))
+  },
   gameState: {
     currentPlayer: undefined,
     currentColor: BLACK,
     counting: false,
   },
-  setGameState: (game, auth) => {
+  setGameState: (game) => {
     set(produce(state => {
       state.black = game.black
       state.white = game.white
@@ -55,8 +59,6 @@ export const useGameStore = create((set) => ({
       state.gameState.currentPlayer = game.currentPlayer
       state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting
-      let symbol = game.black.name === auth.name? BLACK : WHITE 
-      state.symbol = symbol
     }))
   },
 }))

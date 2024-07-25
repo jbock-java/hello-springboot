@@ -11,7 +11,7 @@ import {
   hasStone,
 } from "../util.js"
 
-function getGroup(board, xx, yy) {
+export function getGroup(board, xx, yy) {
   let color = board[yy][xx]
   let dim = board.length
   if (!hasStone(color)) {
@@ -76,6 +76,7 @@ function getGroup(board, xx, yy) {
       }
     }
   }
+  let set = points.toSet()
   return {
     x: xx,
     y: yy,
@@ -83,7 +84,7 @@ function getGroup(board, xx, yy) {
     color: color,
     hasStone: true,
     liberties: liberties,
-    has: pointsChecked.has,
+    has: (x, y) => set.has(x, y),
     points: points,
   }
 }
