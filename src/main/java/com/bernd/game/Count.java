@@ -3,11 +3,11 @@ package com.bernd.game;
 import com.bernd.util.Util;
 import java.util.Arrays;
 
-import static com.bernd.game.Board.TERRITORY;
+import static com.bernd.util.Util.ANY_REMOVED;
+import static com.bernd.util.Util.ANY_TERRITORY;
 import static com.bernd.util.Util.COLORS;
-import static com.bernd.util.Util.MARKERS;
+import static com.bernd.util.Util.getBaseColor;
 import static com.bernd.util.Util.isStone;
-import static com.bernd.util.Util.keepMarkers;
 
 public class Count {
 
@@ -28,7 +28,7 @@ public class Count {
       int y = ptId / dim;
       int x = ptId % dim;
       if (isStone(board[y][x])) {
-        return board[y][x] | TERRITORY;
+        return Util.getTerritory(board[y][x]);
       }
       if (y > 0 && !pointsChecked.has(x, y - 1)) {
         pointsChecked.add(x, y - 1);
@@ -55,23 +55,23 @@ public class Count {
       int[][] acc,
       int xx,
       int yy) {
-    int color = getImpliedColor(board, xx, yy);
-    if (color == 0) { // empty board => no color
+    int impliedColor = getImpliedColor(board, xx, yy);
+    if (impliedColor == 0) { // empty board => no color
       for (int[] row : acc) {
         Arrays.fill(row, 0);
       }
       return;
     }
-    if ((color & TERRITORY) == 0) {
-      acc[yy][xx] = color;
+    if ((impliedColor & ANY_TERRITORY) == 0) {
+      acc[yy][xx] = impliedColor;
       return;
     }
     boolean oppositeStonesFound = false;
-    int oppositeColor = (color & COLORS) ^ COLORS;
+    int oppositeColor = getBaseColor(impliedColor) ^ COLORS;
     int dim = board.length;
     PointList tracker = PointList.create(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
-    acc[yy][xx] = keepMarkers(color, board[yy][xx]);
+    acc[yy][xx] = impliedWin(impliedColor, board[yy][xx]);
     pointsToCheck.offer(xx, yy);
     while (!pointsToCheck.isEmpty()) {
       int ptId = pointsToCheck.poll();
@@ -82,7 +82,7 @@ public class Count {
         int c = board[y - 1][x];
         oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y - 1][x] == -1) {
-          acc[y - 1][x] = color | c & MARKERS;
+          acc[y - 1][x] = impliedWin(impliedColor, c);
           pointsToCheck.offer(x, y - 1);
         }
       }
@@ -90,7 +90,7 @@ public class Count {
         int c = board[y + 1][x];
         oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y + 1][x] == -1) {
-          acc[y + 1][x] = color | c & MARKERS;
+          acc[y + 1][x] = impliedWin(impliedColor, c);
           pointsToCheck.offer(x, y + 1);
         }
       }
@@ -98,7 +98,7 @@ public class Count {
         int c = board[y][x - 1];
         oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y][x - 1] == -1) {
-          acc[y][x - 1] = color | c & MARKERS;
+          acc[y][x - 1] = impliedWin(impliedColor, c);
           pointsToCheck.offer(x - 1, y);
         }
       }
@@ -106,14 +106,22 @@ public class Count {
         int c = board[y][x + 1];
         oppositeStonesFound |= c == oppositeColor;
         if (Util.isEmpty(c) && acc[y][x + 1] == -1) {
-          acc[y][x + 1] = color | c & MARKERS;
+          acc[y][x + 1] = impliedWin(impliedColor, c);
           pointsToCheck.offer(x + 1, y);
         }
       }
     }
     if (oppositeStonesFound) {
-      tracker.forEach((x, y) -> acc[y][x] = board[y][x] & ~TERRITORY);
+      tracker.forEach((x, y) -> acc[y][x] = board[y][x] & ~ANY_TERRITORY);
     }
+  }
+
+  private static int impliedWin(int impliedColor, int c) {
+    if ((c & ANY_REMOVED) != 0 && getBaseColor(impliedColor) == getBaseColor(c)) {
+      // resurrect
+      return getBaseColor(c);
+    }
+    return impliedColor | (c & ~ANY_TERRITORY);
   }
 
   public static int[][] count(

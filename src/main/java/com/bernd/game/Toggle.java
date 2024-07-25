@@ -1,12 +1,11 @@
 package com.bernd.game;
 
 import com.bernd.util.BoardUpdate;
+import com.bernd.util.Util;
 import java.util.function.Function;
 
-import static com.bernd.game.Board.B;
-import static com.bernd.game.Board.W;
-import static com.bernd.game.Board.REMOVED;
-import static com.bernd.game.Board.TERRITORY;
+import static com.bernd.util.Util.ANY_STONE;
+import static com.bernd.util.Util.COLORS;
 
 public class Toggle {
 
@@ -15,13 +14,9 @@ public class Toggle {
       int xx,
       int yy) {
     int color = board[yy][xx];
-    if ((color & TERRITORY) != 0) {
+    if ((color & ANY_STONE) == 0) {
       return BoardUpdate.identity();
     }
-    if (color == 0) {
-      return BoardUpdate.identity();
-    }
-    int toggleColor = color ^ REMOVED;
     int dim = board.length;
     BoardUpdate result = BoardUpdate.builder(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
@@ -32,7 +27,7 @@ public class Toggle {
       int ptId = pointsToCheck.poll();
       int y = ptId / dim;
       int x = ptId % dim;
-      result.add(x, y, toggleColor);
+      result.add(x, y, Util.toggleRemoved(color));
       if (y > 0) {
         int c = board[y - 1][x];
         if (c == color && !pointsChecked.has(x, y - 1)) {
@@ -77,15 +72,7 @@ public class Toggle {
     BoardUpdate update = BoardUpdate.builder(dim);
     for (int y = 0; y < dim; y++) {
       for (int x = 0; x < board[y].length; x++) {
-        int color = board[y][x];
-        if ((color & REMOVED) != 0) {
-          color = color ^ (B | W);
-          color &= ~REMOVED;
-          color &= ~TERRITORY;
-        }
-        if ((color & TERRITORY) != 0) {
-          color = 0;
-        }
+        int color = Util.unremove(board[y][x]) & COLORS;
         update.add(x, y, color);
       }
     }

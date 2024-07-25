@@ -73,17 +73,16 @@ export function Lobby() {
     return (
       <div className="m-4">
         <div>
-          <Button type="Button"
+          <Button
             onClick={() => matchRequest(true)}>
             Create
           </Button>
         </div>
         <div className="mt-2">
-          <button type="button"
-            className="p-2 border border-black"
+          <Button
             onClick={() => matchRequest(false)}>
             Find match
-          </button>
+          </Button>
         </div>
         <div className="mt-2">
           {users.map(user => (

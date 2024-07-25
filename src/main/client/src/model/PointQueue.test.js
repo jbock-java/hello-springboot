@@ -22,7 +22,7 @@ function poll(queue, expect_x, expect_y) {
   expect(queue.isEmpty()).toBe(false)
   let ptId = queue.poll()
   let x = ptId % queue.dim
-  let y = Math.floor(ptId / queue.dim)
+  let y = Math.trunc(ptId / queue.dim)
   expect(x).toBe(expect_x)
   expect(y).toBe(expect_y)
 }

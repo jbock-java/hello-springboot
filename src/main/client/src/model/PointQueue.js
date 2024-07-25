@@ -32,12 +32,12 @@ export class PointQueue {
   }
 
   #get() {
-    let code = this.buffer[Math.floor(this.read / 2)]
+    let code = this.buffer[Math.trunc(this.read / 2)]
     return this.read % 2 === 0 ? code & PointQueue.LO : (code >> 16)
   }
 
   #set(ptId) {
-    let pos = Math.floor(this.write / 2)
+    let pos = Math.trunc(this.write / 2)
     if (this.write % 2 === 0) {
       this.buffer[pos] = (this.buffer[pos] & PointQueue.HI) | ptId
     } else {

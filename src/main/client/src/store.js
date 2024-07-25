@@ -46,6 +46,7 @@ export const useGameStore = create((set) => ({
     }))
   },
   gameState: {
+    board: [],
     currentPlayer: undefined,
     currentColor: BLACK,
     counting: false,

@@ -3,7 +3,10 @@ import {
 } from "./Form.jsx"
 import {
   Input,
-} from "./Input.jsx"
+} from "./component/Input.jsx"
+import {
+  Button,
+} from "./component/Button.jsx"
 import {
   useNavigate,
 } from "react-router-dom"
@@ -45,11 +48,11 @@ export function Login() {
       <div>
         <Input name="name" />
       </div>
-      <button
-        className="mt-2 p-2 border border-black"
+      <Button
+        className="mt-2"
         type="submit">
           Join
-      </button>
+      </Button>
     </Form>
     <Toaster position="top-right"/>
   </>

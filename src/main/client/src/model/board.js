@@ -36,7 +36,7 @@ export function getGroup(board, xx, yy) {
   pointsChecked.add(xx, yy)
   while (!pointsToCheck.isEmpty()) {
     let ptId = pointsToCheck.poll()
-    let y = Math.floor(ptId / dim)
+    let y = Math.trunc(ptId / dim)
     let x = ptId % dim
     points.add(x, y)
     if (y > 0 && !pointsChecked.has(x, y - 1)) {
@@ -114,7 +114,7 @@ export function isForbidden(board, groupInfo, currentColor) {
   let { x, y } = groupInfo
   let dim = board.length
   if (board[y][x].hasStone) {
-    return false 
+    return true
   }
   if (y > 0) {
     let { color, liberties, hasStone } = board[y - 1][x]

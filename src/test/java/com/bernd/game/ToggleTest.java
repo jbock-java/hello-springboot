@@ -3,18 +3,19 @@ package com.bernd.game;
 import org.junit.jupiter.api.Test;
 
 import static com.bernd.game.Board.B;
-import static com.bernd.game.Board.REMOVED;
-import static com.bernd.game.Board.TERRITORY;
+import static com.bernd.game.Board.REMOVED_B;
+import static com.bernd.game.Board.REMOVED_W;
+import static com.bernd.game.Board.TERRITORY_B;
+import static com.bernd.game.Board.TERRITORY_W;
 import static com.bernd.game.Board.W;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class ToggleTest {
 
-  private static final int w = W | REMOVED;
-  private static final int b = B | REMOVED;
 
   @Test
   void testToggleTwoStones() {
+    int w = REMOVED_W;
     int[][] position = new int[][]{
         new int[]{0, W, W, 0},
         new int[]{B, B, B, B},
@@ -32,6 +33,7 @@ class ToggleTest {
 
   @Test
   void testToggleTwoStonesAgain() {
+    int w = REMOVED_W;
     int[][] position = new int[][]{
         new int[]{0, w, w, 0},
         new int[]{B, B, B, B},
@@ -49,8 +51,8 @@ class ToggleTest {
 
   @Test
   void testCornerEyeToggle() {
-    int b = B | REMOVED;
-    int t = B | TERRITORY;
+    int b = REMOVED_B;
+    int t = TERRITORY_B;
     int[][] position = new int[][]{
         new int[]{t, B, W, 0, 0},
         new int[]{B, B, W, 0, 0},
@@ -70,8 +72,8 @@ class ToggleTest {
 
   @Test
   void testToggleWhiteL() {
-    int r = W | REMOVED;
-    int t = B | TERRITORY;
+    int r = REMOVED_W;
+    int t = TERRITORY_B;
     int[][] position = new int[][]{
         new int[]{t, B, W, 0, 0},
         new int[]{B, B, W, 0, 0},
@@ -91,8 +93,8 @@ class ToggleTest {
 
   @Test
   void testResetCounting() {
-    int f = B | REMOVED | TERRITORY;
-    int t = B | TERRITORY;
+    int f = REMOVED_W | TERRITORY_B;
+    int t = TERRITORY_B;
     int[][] position = new int[][]{
         new int[]{t, B, f, t, t},
         new int[]{B, B, f, t, t},
@@ -108,5 +110,27 @@ class ToggleTest {
         new int[]{0, 0, 0, 0, 0},
         new int[]{0, 0, 0, 0, 0},
     }, result);
+  }
+
+  @Test
+  void testToggleTwice() {
+    int t = TERRITORY_W;
+    int r = TERRITORY_W | REMOVED_B;
+    int k = REMOVED_W;
+    int[][] position = new int[][]{
+        new int[]{t, r, W, 0, 0},
+        new int[]{r, r, W, 0, 0},
+        new int[]{W, W, W, B, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    };
+    int[][] toggled = Toggle.toggleStonesAt(position, 0, 2);
+    assertArrayEquals(new int[][]{
+        new int[]{t, r, k, 0, 0},
+        new int[]{r, r, k, 0, 0},
+        new int[]{k, k, k, B, 0},
+        new int[]{0, 0, 0, 0, 0},
+        new int[]{0, 0, 0, 0, 0},
+    }, toggled);
   }
 }

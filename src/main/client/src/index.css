@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body, input {
+    @apply bg-slate-800;
+    @apply font-sans;
+    @apply text-slate-100;
+  }
+
+  button {
+    @apply border-2;
+    @apply border-slate-600;
+    @apply rounded-lg;
+    @apply px-8;
+    @apply py-2;
+  }
+
+  input {
+    @apply border;
+    @apply border-white;
+    @apply rounded-lg;
+    @apply p-2;
+  }
+}

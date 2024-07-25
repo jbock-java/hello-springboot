@@ -27,12 +27,12 @@ export class PointList {
   }
 
   #get(i) {
-    let code = this.buffer[Math.floor(i / 2)]
+    let code = this.buffer[Math.trunc(i / 2)]
     return i % 2 === 0 ? code & PointList.LO : (code >> 16)
   }
 
   #set(ptId) {
-    let i = Math.floor(this.pos / 2)
+    let i = Math.trunc(this.pos / 2)
     if (this.pos % 2 === 0) {
       this.buffer[i] = (this.buffer[i] & PointList.HI) | ptId
     } else {
@@ -47,7 +47,7 @@ export class PointList {
 
   y(i) {
     let ptId = this.#get(i)
-    return Math.floor(ptId / this.dim)
+    return Math.trunc(ptId / this.dim)
   }
 
   size() {

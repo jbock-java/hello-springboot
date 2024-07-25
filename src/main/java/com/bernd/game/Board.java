@@ -7,9 +7,10 @@ public class Board {
 
   public static final int B = 32;
   public static final int W = 64;
-  public static final int FORBIDDEN = 1;
-  public static final int TERRITORY = 2;
-  public static final int REMOVED = 4;
+  public static final int TERRITORY_B = 2;
+  public static final int TERRITORY_W = 4;
+  public static final int REMOVED_B = 8;
+  public static final int REMOVED_W = 16;
 
   private static Function<int[][], int[][]> getStoneGroup(
       int[][] board,

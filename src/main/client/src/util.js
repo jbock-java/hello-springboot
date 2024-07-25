@@ -7,11 +7,15 @@ export const StompContext = createContext()
 export const base = "/app"
 export const BLACK = 32
 export const WHITE = 64
-export const TERRITORY = 2
-export const REMOVED = 4
+export const TERRITORY_B = 2
+export const TERRITORY_W = 4
+export const ANY_TERRITORY = TERRITORY_W | TERRITORY_B
+export const REMOVED_B = 8
+export const REMOVED_W = 16
+export const ANY_REMOVED = REMOVED_W | REMOVED_B
 
-const MARKERS = ~BLACK & ~WHITE;
 const COLORS = BLACK | WHITE;
+const MARKERS = ~COLORS;
 
 export async function tfetch(url, options) {
   let response
@@ -56,6 +60,16 @@ function dec2hex(dec) {
 
 export function hasStone(color) {
   return (color & COLORS) != 0 && (color & MARKERS) == 0;
+}
+
+export function getBaseColor(color) {
+  if ((color & (BLACK | TERRITORY_B | REMOVED_B)) !== 0) {
+    return BLACK
+  }
+  if ((color & (WHITE | TERRITORY_W | REMOVED_W)) !== 0) {
+    return WHITE
+  }
+  return 0
 }
 
 function hasWhite(color) {

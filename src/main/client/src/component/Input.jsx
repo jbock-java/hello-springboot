@@ -13,7 +13,6 @@ export const Input = ({
 }) => {
   let { register } = useFormContext()
   let classes = twJoin(
-    "border border-black p-2",
     className,
   )
   return (

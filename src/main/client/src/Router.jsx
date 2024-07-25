@@ -21,8 +21,8 @@ import {
   Lobby,
 } from "./Lobby.jsx"
 import {
-  Play,
-} from "./Play.jsx"
+  Game,
+} from "./Game.jsx"
 import {
   base,
   StompContext,
@@ -38,7 +38,7 @@ export const Router = createBrowserRouter(
         element={<Lobby />} />
       <Route
         path={base + "/game/:gameId"}
-        element={<Play />} />
+        element={<Game />} />
     </Route>
     <Route
       path={base + "/login"}
