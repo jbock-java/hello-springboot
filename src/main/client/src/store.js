@@ -8,6 +8,9 @@ import {
   BLACK,
   WHITE,
 } from "./util.js"
+import {
+  createBoardWithGroups,
+} from "./model/board.js"
 
 export const useAuthStore = create((set) => ({
   auth: {
@@ -48,7 +51,7 @@ export const useGameStore = create((set) => ({
       state.black = game.black
       state.white = game.white
       state.editMode = game.editMode
-      state.gameState.board = game.board
+      state.gameState.board = createBoardWithGroups(game.board)
       state.gameState.currentPlayer = game.currentPlayer
       state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting

@@ -58,11 +58,7 @@ export function hasStone(color) {
   return (color & COLORS) != 0 && (color & MARKERS) == 0;
 }
 
-export function hasBlack(color) {
-  return (color & BLACK) !== 0
-}
-
-export function hasWhite(color) {
+function hasWhite(color) {
   return (color & WHITE) !== 0
 }
 

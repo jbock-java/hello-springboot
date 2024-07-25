@@ -11,12 +11,12 @@ import {
   twJoin,
 } from "tailwind-merge"
 import {
+  isForbidden,
+} from "./model/board.js"
+import {
   StompContext,
   BLACK,
   TERRITORY,
-  REMOVED,
-  hasBlack,
-  hasStone,
   getColorClassName,
 } from "./util.js"
 import {
@@ -74,7 +74,7 @@ export const Play = () => {
       }),
     })
   }, [stompClient, gameId])
-  let onClick = useCallback((x, y) => {
+  let onClick = useCallback(({ x, y }) => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
@@ -101,13 +101,12 @@ export const Play = () => {
         </div>
         <div className="absolute z-5 left-6 top-6 inline-grid grid-cols-9">
           {
-            board.map((row, y) => (
-              row.map((color, x) => (
+            board.map((row) => (
+              row.map((groupInfo) => (
                 <Tile
-                  counting={counting}
-                  key={y + "_" + x}
-                  onClick={() => onClick(x, y)}
-                  color={color} />
+                  groupInfo={groupInfo}
+                  key={groupInfo.ptId}
+                  onClick={() => onClick(groupInfo)} />
               ))
             ))
           }
@@ -139,13 +138,15 @@ function GridTile() {
   return <div className={gridTileClasses} />
 }
 
-function Tile({ color, onClick, counting }) {
-  if (!hasStone(color)) {
-    return <EmptyTile onClick={onClick} color={color} />
+function Tile({ groupInfo, onClick }) {
+  let { counting } = useGameStore(state => state.gameState)
+  let { color, hasStone } = groupInfo
+  if (!hasStone) {
+    return <EmptyTile groupInfo={groupInfo} onClick={onClick} />
   }
   if (counting) {
     return (
-      <CountingActive color={color} onClick={onClick} />
+      <CountingTile groupInfo={groupInfo} onClick={onClick} />
     )
   }
   return (
@@ -157,10 +158,10 @@ function Tile({ color, onClick, counting }) {
   )
 }
 
-function EmptyTile({ onClick, color }) {
-  let { counting, currentPlayer } = useGameStore(state => state.gameState)
+function EmptyTile({ groupInfo, onClick }) {
+  let { board, counting, currentPlayer, currentColor } = useGameStore(state => state.gameState)
   let auth = useAuthStore(state => state.auth)
-  let currentColor = useGameStore(state => state.gameState.currentColor)
+  let { color } = groupInfo
   if ((color & TERRITORY) !== 0) {
     return (
       <div className={tileClasses}>
@@ -170,7 +171,7 @@ function EmptyTile({ onClick, color }) {
       </div>
     )
   }
-  if (counting || currentPlayer !== auth.name) {
+  if (counting || currentPlayer !== auth.name || isForbidden(board, groupInfo, currentColor)) {
       return <div className={tileClasses} />
   }
   let classes = twJoin(
@@ -189,12 +190,13 @@ function EmptyTile({ onClick, color }) {
   )
 }
 
-function CountingActive({ color, onClick }) {
+function CountingTile({ groupInfo, onClick }) {
+  let { color } = groupInfo
   let classes = twJoin(
     tileClasses,
     "cursor-pointer",
-    hasBlack(color) ? "text-black" : "text-white",
-    (color & REMOVED) !== 0 ? "opacity-25" : "hover:opacity-25",
+    color === BLACK ? "text-black" : "text-white",
+    "hover:opacity-25",
   )
   return (
     <div className={classes} onClick={onClick}>
