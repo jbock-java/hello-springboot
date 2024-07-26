@@ -20,7 +20,8 @@ public record Game(
     String currentPlayer,
     int currentColor,
     boolean opponentPassed,
-    int[][] board
+    int[][] board,
+    int handicap
 ) {
 
   private static final Logger logger = LogManager.getLogger(Game.class);
@@ -69,7 +70,8 @@ public record Game(
         nextPlayer(),
         nextColor(),
         opponentPassed,
-        board);
+        board,
+        Math.max(0, handicap - 1));
   }
 
   private Game game(int[][] board) {
@@ -81,13 +83,16 @@ public record Game(
   }
 
   private String nextPlayer() {
-    if (editMode) {
+    if (editMode || handicap > 0) {
       return currentPlayer;
     }
     return currentPlayer.equals(black.name()) ? white().name() : black().name();
   }
 
   private int nextColor() {
+    if (handicap > 0) {
+      return currentColor;
+    }
     return currentColor == B ? W : B;
   }
 }

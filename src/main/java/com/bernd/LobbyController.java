@@ -53,7 +53,8 @@ public class LobbyController {
           user.name(),
           B,
           false,
-          createEmptyBoard(request)));
+          createEmptyBoard(request),
+          0));
       operations.convertAndSend("/topic/lobby/gamestart", game);
       return;
     }
@@ -78,7 +79,8 @@ public class LobbyController {
         user.name(),
         B,
         false,
-        createEmptyBoard(request)));
+        createEmptyBoard(request),
+        0));
     operations.convertAndSend("/topic/lobby/gamestart", game);
   }
 
