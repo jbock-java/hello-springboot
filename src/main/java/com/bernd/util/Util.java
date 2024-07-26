@@ -33,7 +33,7 @@ public final class Util {
   }
 
   public static boolean isEmpty(int color) {
-    return color == 0 || (color & REMOVED_B) != 0 || (color & REMOVED_W) != 0;
+    return (color & COLORS) == 0;
   }
 
   public static int unremove(int color) {
@@ -57,10 +57,16 @@ public final class Util {
   }
 
   public static int getBaseColor(int color) {
-    if ((color & (B | TERRITORY_B | REMOVED_B)) != 0) {
+    if ((color & (B | REMOVED_B)) != 0) {
       return B;
     }
-    if ((color & (W | TERRITORY_W | REMOVED_W)) != 0) {
+    if ((color & (W | REMOVED_W)) != 0) {
+      return W;
+    }
+    if ((color & TERRITORY_B) != 0) {
+      return B;
+    }
+    if ((color & TERRITORY_W) != 0) {
       return W;
     }
     return 0;
@@ -81,6 +87,6 @@ public final class Util {
   }
 
   public static boolean isStone(int color) {
-    return (color & COLORS) != 0 && (color & MARKERS) == 0;
+    return (color & COLORS) != 0;
   }
 }

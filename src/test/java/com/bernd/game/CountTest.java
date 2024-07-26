@@ -190,7 +190,7 @@ class CountTest {
 
   @Test
   void testCornerEyeCount() {
-    int b =  REMOVED_B;
+    int b = REMOVED_B;
     int w = TERRITORY_W;
     int k = TERRITORY_W | REMOVED_B;
     int t = TERRITORY_B;
@@ -267,6 +267,47 @@ class CountTest {
         new int[]{s, s, s, B, v},
         new int[]{v, v, v, v, v},
         new int[]{v, v, v, v, v},
+    }, counted);
+  }
+
+  @Test
+  void testTerritoryBorderRemoved() {
+    int b = TERRITORY_B;
+    int k = REMOVED_B;
+    int[][] position = new int[][]{
+        new int[]{W, B, b, b, b},
+        new int[]{W, B, b, b, b},
+        new int[]{W, B, b, b, b},
+        new int[]{B, B, b, k, k},
+        new int[]{B, b, B, W, W},
+    };
+    int[][] counted = Count.count(position);
+    assertArrayEquals(new int[][]{
+        new int[]{W, B, 0, 0, 0},
+        new int[]{W, B, 0, 0, 0},
+        new int[]{W, B, 0, 0, 0},
+        new int[]{B, B, 0, k, k},
+        new int[]{B, b, B, W, W},
+    }, counted);
+  }
+
+  @Test
+  void testResurrect() {
+    int b = TERRITORY_B;
+    int w = TERRITORY_B | REMOVED_W;
+    int k = REMOVED_B;
+    int[][] position = new int[][]{
+        new int[]{B, b, B, w},
+        new int[]{b, k, w, w},
+        new int[]{w, k, w, b},
+        new int[]{B, w, w, b}
+    };
+    int[][] counted = Count.count(position);
+    assertArrayEquals(new int[][]{
+        new int[]{B, b, B, w},
+        new int[]{b, B, w, w},
+        new int[]{w, B, w, b},
+        new int[]{B, w, w, b}
     }, counted);
   }
 

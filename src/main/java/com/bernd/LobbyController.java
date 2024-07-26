@@ -90,6 +90,17 @@ public class LobbyController {
     for (int y = 0; y < dim; y++) {
       board[y] = new int[dim];
     }
+//    board = new int[][]{
+//        new int[]{0, 0, 0, 0, W, B, 0, 0, 0},
+//        new int[]{0, 0, 0, 0, W, B, 0, 0, 0},
+//        new int[]{0, 0, W, W, W, B, 0, 0, 0},
+//        new int[]{0, 0, W, B, B, B, 0, B, B},
+//        new int[]{W, 0, W, B, B, 0, B, W, W},
+//        new int[]{B, W, W, B, 0, B, W, W, 0},
+//        new int[]{B, B, B, B, W, B, W, 0, 0},
+//        new int[]{0, 0, 0, B, B, W, W, 0, 0},
+//        new int[]{0, 0, 0, B, W, W, W, 0, 0},
+//    };
     return board;
   }
 }
