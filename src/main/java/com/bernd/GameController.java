@@ -4,7 +4,6 @@ import com.bernd.model.Game;
 import com.bernd.model.JoinGameRequest;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
-import com.bernd.model.OpenGameList;
 import com.bernd.util.RandomString;
 import java.util.Objects;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +45,14 @@ public class GameController {
     operations.convertAndSend("/topic/game/" + game.id(), updated);
   }
 
-  @PostMapping(value = "/api/create", consumes = "application/json")
   @ResponseBody
-  public ResponseEntity<?> newGame(@RequestBody OpenGame openGame) {
+  @PostMapping(value = "/api/create", consumes = "application/json")
+  public ResponseEntity<?> newGame(@RequestBody OpenGame game) {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    openGames.put(RandomString.get(), openGame.withUser(Objects.toString(principal, "")));
+    openGames.put(game.withUser(Objects.toString(principal, ""))
+        .withId(RandomString.get()));
     operations.convertAndSend("/topic/lobby/open",
-        new OpenGameList(openGames.games()));
+        openGames.games());
     return ResponseEntity.ok().build();
   }
 }

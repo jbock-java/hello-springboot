@@ -2,7 +2,6 @@ package com.bernd;
 
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
-import com.bernd.model.OpenGameList;
 import com.bernd.model.Status;
 import com.bernd.model.User;
 import com.bernd.model.UserList;
@@ -40,7 +39,7 @@ public class LobbyController {
     operations.convertAndSend("/topic/lobby/users",
         new UserList(lobbyUsers.users()));
     operations.convertAndSend("/topic/lobby/open",
-        new OpenGameList(openGames.games()));
+        openGames.games());
   }
 
   @MessageMapping("/lobby/match")
