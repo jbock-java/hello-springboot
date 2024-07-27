@@ -24,7 +24,7 @@ export const GamePanel = () => {
   return (
     <div className="fixed top-0 right-0 h-full bg-slate-800 border-l-2 border-slate-700">
       <div className="pr-12 pt-8 pl-8">
-      <Panel />
+        <Panel />
       </div>
     </div>
   )
@@ -56,7 +56,7 @@ function Panel() {
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = counting ? getResult(board) : undefined
+  let result = counting ? getScore(board) : undefined
   return (
     <>
       <div>
@@ -96,7 +96,7 @@ function Panel() {
   )
 }
 
-function getResult(board) {
+function getScore(board) {
   let w = 0, b = 0
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {

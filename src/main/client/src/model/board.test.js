@@ -4,7 +4,7 @@ import {
 } from "vitest"
 import {
   getGroup,
-  createBoardWithGroups,
+  rehydrate,
 } from "./board.js"
 import {
   BLACK,
@@ -20,7 +20,7 @@ test("liberties", () => {
     [w, w, w, 0], 
     [0, 0, 0, 0], 
   ]
-  let result = createBoardWithGroups(board)
+  let result = rehydrate(board)
   expect(result[0][1].liberties).toBe(1)
 })
 

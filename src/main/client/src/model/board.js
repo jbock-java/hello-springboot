@@ -89,7 +89,7 @@ export function getGroup(board, xx, yy) {
   }
 }
 
-export function createBoardWithGroups(board) {
+export function rehydrate(board) {
   let dim = board.length
   let result = []
   for (let i = 0; i < board.length; i++) {

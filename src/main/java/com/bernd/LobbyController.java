@@ -61,7 +61,7 @@ public class LobbyController {
     if (lookingForMatch == null) {
       lookingForMatch = user;
       operations.convertAndSend("/topic/lobby/gamerequest",
-          new Status(request.name(), "ready"));
+          new Status(principal.getName(), "ready"));
       return;
     }
     User black = lookingForMatch;
@@ -84,7 +84,7 @@ public class LobbyController {
     operations.convertAndSend("/topic/lobby/gamestart", game);
   }
 
-  private static int[][] createEmptyBoard(MatchRequest request) {
+  static int[][] createEmptyBoard(MatchRequest request) {
     int dim = Math.max(request.dim(), 2);
     int[][] board = new int[dim][];
     for (int y = 0; y < dim; y++) {

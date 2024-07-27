@@ -32,9 +32,14 @@ public class LoginController {
       @RequestBody LoginRequest request) {
     if (users.contains(request.name())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(new Error("Name bereits vergeben"));
+          .body(new Error("Please choose another name"));
     }
-    Algorithm algorithm = Algorithm.HMAC512(environment.getProperty("jwt.secret.key"));
+    String key = environment.getProperty("jwt.secret.key");
+    if (key == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(new Error("Server configuration error"));
+    }
+    Algorithm algorithm = Algorithm.HMAC512(key);
     String token = JWT.create()
         .withIssuer("auth0")
         .withClaim("name", request.name())

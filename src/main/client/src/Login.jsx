@@ -1,6 +1,6 @@
 import {
   Form,
-} from "./Form.jsx"
+} from "./component/Form.jsx"
 import {
   Input,
 } from "./component/Input.jsx"
