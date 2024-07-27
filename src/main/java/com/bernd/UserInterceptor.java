@@ -38,7 +38,7 @@ class UserInterceptor implements ChannelInterceptor {
       }
       DecodedJWT jwt = verifier.verify(tokens.get(0));
       Claim name = jwt.getClaim("name");
-      if (name == null) {
+      if (name.asString() == null) {
         return null;
       }
       accessor.setUser(new StompUser(name.asString()));

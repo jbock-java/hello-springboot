@@ -6,9 +6,11 @@ import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.OpenGameList;
 import com.bernd.util.RandomString;
+import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,7 +49,8 @@ public class GameController {
   @PostMapping(value = "/api/create", consumes = "application/json")
   @ResponseBody
   public ResponseEntity<?> newGame(@RequestBody OpenGame openGame) {
-    openGames.put(RandomString.get(), openGame);
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    openGames.put(RandomString.get(), openGame.withUser(Objects.toString(principal, "")));
     operations.convertAndSend("/topic/lobby/open",
         new OpenGameList(openGames.games()));
     return ResponseEntity.ok().build();

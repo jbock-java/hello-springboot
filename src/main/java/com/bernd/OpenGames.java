@@ -15,7 +15,7 @@ public class OpenGames {
   }
 
   OpenGame put(String id, OpenGame game) {
-    map.put(game.id(), game);
+    map.put(game.id(), game.withId(id));
     return game;
   }
 

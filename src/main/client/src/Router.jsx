@@ -12,6 +12,9 @@ import {
   Navigate,
 } from "react-router-dom"
 import {
+  Toaster,
+} from "react-hot-toast"
+import {
   useAuthStore,
 } from "./store.js"
 import {
@@ -34,11 +37,18 @@ export const Router = createBrowserRouter(
     <Route
       element={<WithConnection />}>
       <Route
-        path={base + "/lobby"}
-        element={<Lobby />} />
-      <Route
-        path={base + "/game/:gameId"}
-        element={<Game />} />
+        element={
+          <div>
+            <Outlet />
+            <Toaster position="top-right" />
+          </div>}>
+        <Route
+          path={base + "/lobby"}
+          element={<Lobby />} />
+        <Route
+          path={base + "/game/:gameId"}
+          element={<Game />} />
+      </Route>
     </Route>
     <Route
       path={base + "/login"}

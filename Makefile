@@ -21,3 +21,6 @@ show: pack
 
 build: pack
 	./gradlew bootJar
+
+check: lint
+	cd src/main/client && npm run test

@@ -9,4 +9,8 @@ public record OpenGame(
   public OpenGame withId(String id) {
     return new OpenGame(id, user, dim, handicap);
   }
+
+  public OpenGame withUser(String name) {
+    return new OpenGame(id, new User(name), dim, handicap);
+  }
 }

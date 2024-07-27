@@ -12,7 +12,7 @@ import {
 } from "react-router-dom"
 import toast, {
   Toaster,
-} from "react-hot-toast";
+} from "react-hot-toast"
 import {
   base,
   tfetch,
@@ -54,7 +54,7 @@ export function Login() {
           Join
       </Button>
     </Form>
-    <Toaster position="top-right"/>
+    <Toaster position="top-right" />
   </>
   )
 }
