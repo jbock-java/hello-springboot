@@ -1,19 +1,19 @@
 package com.bernd;
 
 import com.bernd.model.User;
-import org.springframework.stereotype.Component;
-
+import com.bernd.model.UserList;
 import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class LobbyUsers {
   private final Map<String, User> map = new LinkedHashMap<>();
 
-  void add(Principal principal) {
-    map.put(principal.getName(), new User(principal.getName()));
+  void add(String name) {
+    map.put(name, new User(name));
   }
 
   User get(Principal principal) {
@@ -27,7 +27,7 @@ public class LobbyUsers {
     map.remove(principal);
   }
 
-  List<User> users() {
-    return List.copyOf(map.values());
+  UserList users() {
+    return new UserList(List.copyOf(map.values()));
   }
 }

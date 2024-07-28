@@ -1,6 +1,7 @@
 package com.bernd;
 
 import com.bernd.model.UserList;
+import java.security.Principal;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.stereotype.Component;
@@ -12,22 +13,29 @@ public class SessionDisconnectEventListener implements ApplicationListener<Sessi
   private final MessageSendingOperations<String> operations;
   private final LobbyUsers lobbyUsers;
   private final Users users;
+  private final OpenGames openGames;
 
   SessionDisconnectEventListener(
       MessageSendingOperations<String> operations,
       LobbyUsers lobbyUsers,
-      Users users) {
+      Users users,
+      OpenGames openGames) {
     this.operations = operations;
     this.lobbyUsers = lobbyUsers;
     this.users = users;
+    this.openGames = openGames;
   }
 
   @Override
   public void onApplicationEvent(SessionDisconnectEvent event) {
-    String name = event.getUser().getName();
+    Principal user = event.getUser();
+    if (user == null) {
+      return;
+    }
+    String name = user.getName();
     lobbyUsers.remove(name);
     users.logout(name);
-    operations.convertAndSend("/topic/lobby/users",
-        new UserList(lobbyUsers.users()));
+    openGames.remove(name);
+    operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
   }
 }

@@ -47,12 +47,21 @@ public class GameController {
 
   @ResponseBody
   @PostMapping(value = "/api/create", consumes = "application/json")
-  public ResponseEntity<?> newGame(@RequestBody OpenGame game) {
+  public OpenGame newGame(@RequestBody OpenGame game) {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    openGames.put(game.withUser(Objects.toString(principal, ""))
+    OpenGame result = openGames.put(game.withUser(Objects.toString(principal, ""))
         .withId(RandomString.get()));
-    operations.convertAndSend("/topic/lobby/open",
-        openGames.games());
+    operations.convertAndSend("/topic/lobby/open", openGames.games());
+    return result;
+  }
+
+  @PostMapping(value = "/api/accept", consumes = "application/json")
+  public ResponseEntity<?> accept(@RequestBody OpenGame game) {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    OpenGame openGame = openGames.remove(game.user().name());
+    Game fullGame = games.put(openGame.accept(principal.toString()));
+    operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame);
+    operations.convertAndSend("/topic/lobby/open", openGames.games());
     return ResponseEntity.ok().build();
   }
 }

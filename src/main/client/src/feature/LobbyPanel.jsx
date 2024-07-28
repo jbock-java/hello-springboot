@@ -4,14 +4,19 @@ import {
   useEffect,
   useState,
 } from "react"
+import toast from "react-hot-toast"
 import {
+  tfetch,
   StompContext,
 } from "../util.js"
+import {
+  useAuthStore,
+} from "../store.js"
 
 export const LobbyPanel = () => {
   return (
     <div className="fixed top-0 right-0 w-64 h-full bg-slate-800 border-l-2 border-slate-700">
-      <div className="pt-2 pl-4">
+      <div className="pt-2">
         <Panel />
       </div>
     </div>
@@ -19,32 +24,44 @@ export const LobbyPanel = () => {
 }
 
 function Panel() {
+  let auth = useAuthStore(state => state.auth)
   let stompClient = useContext(StompContext)
   let [users, setUsers] = useState([])
-  let initialized = useRef()
   useEffect(() => {
-    if (initialized.current) {
-      return
+    let sayHello = async() => {
+      try {
+        let response = await tfetch("/api/lobby/hello", {
+          headers: {
+            "Authorization": "Bearer " + auth.token,
+          },
+        })
+      } catch (e) {
+        toast.error(e.message)
+      }
     }
-    initialized.current = true
+    sayHello()
+  }, [setUsers])
+  useEffect(() => {
     let sub1 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)
       setUsers(r.users)
     })
-    stompClient.publish({
-      destination: "/app/lobby/hello",
-      body: JSON.stringify({
-      }),
-    })
     return () => {
       sub1.unsubscribe()
     }
-  }, [setUsers, initialized, stompClient])
+  }, [setUsers, stompClient])
   return (
     <div className="mt-2">
-      {users.map(user => (
-        <div key={user.name}>{user.name}</div>
-      ))}
+      <div className="pl-2 pb-2 border-b border-b-slate-700">
+        {auth.name}
+      </div>
+      <div className="pl-2 mt-2">
+        {users.map(user => (
+          <div key={user.name}>
+            {user.name}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

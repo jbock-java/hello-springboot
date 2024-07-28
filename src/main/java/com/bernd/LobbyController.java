@@ -4,12 +4,15 @@ import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
 import com.bernd.model.Status;
 import com.bernd.model.User;
-import com.bernd.model.UserList;
 import com.bernd.util.RandomString;
 import java.security.Principal;
+import java.util.Objects;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static com.bernd.game.Board.B;
 
@@ -33,13 +36,13 @@ public class LobbyController {
     this.openGames = openGames;
   }
 
-  @MessageMapping("/lobby/hello")
-  public void lobbyJoinedAction(Principal principal) {
-    lobbyUsers.add(principal);
-    operations.convertAndSend("/topic/lobby/users",
-        new UserList(lobbyUsers.users()));
-    operations.convertAndSend("/topic/lobby/open",
-        openGames.games());
+  @GetMapping(value = "/api/lobby/hello")
+  public ResponseEntity<?> sayHello() {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    lobbyUsers.add(Objects.toString(principal));
+    operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
+    operations.convertAndSend("/topic/lobby/open", openGames.games());
+    return ResponseEntity.ok().build();
   }
 
   @MessageMapping("/lobby/match")
@@ -47,8 +50,7 @@ public class LobbyController {
     User user = lobbyUsers.get(principal);
     if (request.editMode()) {
       lobbyUsers.remove(principal.getName());
-      operations.convertAndSend("/topic/lobby/users",
-          new UserList(lobbyUsers.users()));
+      operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
       Game game = games.put(new Game(
           RandomString.get(),
           user,
@@ -58,7 +60,7 @@ public class LobbyController {
           user.name(),
           B,
           false,
-          createEmptyBoard(request),
+          createEmptyBoard(request.dim()),
           0));
       operations.convertAndSend("/topic/lobby/gamestart", game);
       return;
@@ -73,8 +75,7 @@ public class LobbyController {
     lookingForMatch = null;
     lobbyUsers.remove(principal.getName());
     lobbyUsers.remove(black.name());
-    operations.convertAndSend("/topic/lobby/users",
-        new UserList(lobbyUsers.users()));
+    operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
     Game game = games.put(new Game(
         RandomString.get(),
         black,
@@ -84,13 +85,13 @@ public class LobbyController {
         user.name(),
         B,
         false,
-        createEmptyBoard(request),
+        createEmptyBoard(request.dim()),
         0));
     operations.convertAndSend("/topic/lobby/gamestart", game);
   }
 
-  static int[][] createEmptyBoard(MatchRequest request) {
-    int dim = Math.max(request.dim(), 2);
+  public static int[][] createEmptyBoard(int dimension) {
+    int dim = Math.max(dimension, 2);
     int[][] board = new int[dim][];
     for (int y = 0; y < dim; y++) {
       board[y] = new int[dim];

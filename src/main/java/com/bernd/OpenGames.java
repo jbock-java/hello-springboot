@@ -11,16 +11,16 @@ import org.springframework.stereotype.Component;
 public class OpenGames {
   private final Map<String, OpenGame> map = new LinkedHashMap<>();
 
-  OpenGame get(String id) {
-    return map.get(id);
-  }
-
   OpenGame put(OpenGame game) {
-    map.put(game.id(), game);
+    map.put(game.user().name(), game);
     return game;
   }
 
   OpenGameList games() {
     return new OpenGameList(List.copyOf(map.values()));
+  }
+
+  OpenGame remove(String name) {
+    return map.remove(name);
   }
 }
