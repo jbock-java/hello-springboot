@@ -1,7 +1,7 @@
 package com.bernd.game;
 
 import com.bernd.util.BoardUpdate;
-import java.util.function.Function;
+import com.bernd.util.BoardUpdateImpl;
 
 public class Board {
 
@@ -12,22 +12,22 @@ public class Board {
   public static final int REMOVED_B = 8;
   public static final int REMOVED_W = 16;
 
-  private static Function<int[][], int[][]> getStoneGroup(
+  private static BoardUpdate getStoneGroup(
       int[][] board,
       int xx,
       int yy) {
     int dim = board.length;
     if (yy > 0 && board[yy - 1][xx] == 0) {
-      return Function.identity();
+      return BoardUpdateImpl.identity();
     }
     if (yy < dim - 1 && board[yy + 1][xx] == 0) {
-      return Function.identity();
+      return BoardUpdateImpl.identity();
     }
     if (xx > 0 && board[yy][xx - 1] == 0) {
-      return Function.identity();
+      return BoardUpdateImpl.identity();
     }
     if (xx < dim - 1 && board[yy][xx + 1] == 0) {
-      return Function.identity();
+      return BoardUpdateImpl.identity();
     }
     int color = board[yy][xx];
     PointList acc = PointList.create(dim);
@@ -43,7 +43,7 @@ public class Board {
       if (y > 0) {
         int bpt = board[y - 1][x];
         if (bpt == 0) {
-          return Function.identity();
+          return BoardUpdateImpl.identity();
         } else if (bpt == color && !pointsChecked.has(x, y - 1)) {
           pointsChecked.add(x, y - 1);
           pointsToCheck.offer(x, y - 1);
@@ -52,7 +52,7 @@ public class Board {
       if (y < dim - 1) {
         int bpt = board[y + 1][x];
         if (bpt == 0) {
-          return Function.identity();
+          return BoardUpdateImpl.identity();
         } else if (bpt == color && !pointsChecked.has(x, y + 1)) {
           pointsChecked.add(x, y + 1);
           pointsToCheck.offer(x, y + 1);
@@ -61,7 +61,7 @@ public class Board {
       if (x > 0) {
         int bpt = board[y][x - 1];
         if (bpt == 0) {
-          return Function.identity();
+          return BoardUpdateImpl.identity();
         } else if (bpt == color && !pointsChecked.has(x - 1, y)) {
           pointsChecked.add(x - 1, y);
           pointsToCheck.offer(x - 1, y);
@@ -70,14 +70,14 @@ public class Board {
       if (x < dim - 1) {
         int bpt = board[y][x + 1];
         if (bpt == 0) {
-          return Function.identity();
+          return BoardUpdateImpl.identity();
         } else if (bpt == color && !pointsChecked.has(x + 1, y)) {
           pointsChecked.add(x + 1, y);
           pointsToCheck.offer(x + 1, y);
         }
       }
     }
-    BoardUpdate update = BoardUpdate.builder(dim, acc.size());
+    BoardUpdateImpl update = BoardUpdateImpl.builder(dim, acc.size());
     acc.forEach(update::add);
     return update;
   }

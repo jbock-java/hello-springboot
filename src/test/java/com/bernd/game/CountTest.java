@@ -12,7 +12,7 @@ import static com.bernd.game.Board.TERRITORY_B;
 import static com.bernd.game.Board.TERRITORY_W;
 import static com.bernd.game.Board.W;
 import static com.bernd.game.Count.colorEmptyTerritory;
-import static com.bernd.game.Count.getImpliedColor;
+import static com.bernd.game.Count.findStone;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -173,15 +173,15 @@ class CountTest {
   void testNoBufferOverflow() {
     // fails if the capacity assumption in PointQueue is wrong
     for (int dim = 1; dim < 40; dim++) {
-      assertEquals(0, getImpliedColor(
+      assertEquals(0, findStone(
           createEmptyBoard(dim),
           dim / 2,
           dim / 2));
-      assertEquals(0, getImpliedColor(
+      assertEquals(0, findStone(
           createEmptyBoard(dim),
           0,
           0));
-      assertEquals(0, getImpliedColor(
+      assertEquals(0, findStone(
           createEmptyBoard(dim),
           ThreadLocalRandom.current().nextInt(dim),
           ThreadLocalRandom.current().nextInt(dim)));
@@ -219,10 +219,10 @@ class CountTest {
         new int[]{b, b, W},
         new int[]{W, W, W},
     };
-    assertEquals(TERRITORY_W, getImpliedColor(board, 0, 0));
-    assertEquals(TERRITORY_W, getImpliedColor(board, 0, 1));
-    assertEquals(TERRITORY_W, getImpliedColor(board, 1, 0));
-    assertEquals(TERRITORY_W, getImpliedColor(board, 1, 1));
+    assertEquals(W, findStone(board, 0, 0));
+    assertEquals(W, findStone(board, 0, 1));
+    assertEquals(W, findStone(board, 1, 0));
+    assertEquals(W, findStone(board, 1, 1));
   }
 
   @Test

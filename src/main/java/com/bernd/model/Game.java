@@ -3,7 +3,7 @@ package com.bernd.model;
 import com.bernd.game.Board;
 import com.bernd.game.Count;
 import com.bernd.game.Toggle;
-import com.bernd.util.BoardUpdate;
+import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +53,7 @@ public record Game(
     int x = move.x();
     int y = move.y();
     int color = currentColor();
-    int[][] updated = BoardUpdate.create(board.length, x, y, color).apply(board);
+    int[][] updated = BoardUpdateImpl.create(board.length, x, y, color).apply(board);
     return game(Board.removeDeadStonesAround(updated, x, y));
   }
 

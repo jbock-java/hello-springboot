@@ -1,6 +1,6 @@
 package com.bernd.game;
 
-import com.bernd.util.BoardUpdate;
+import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
 import java.util.function.Function;
 
@@ -15,10 +15,10 @@ public class Toggle {
       int yy) {
     int color = board[yy][xx];
     if ((color & ANY_STONE) == 0) {
-      return BoardUpdate.identity();
+      return Function.identity();
     }
     int dim = board.length;
-    BoardUpdate result = BoardUpdate.builder(dim);
+    BoardUpdateImpl result = BoardUpdateImpl.builder(dim);
     PointQueue pointsToCheck = PointQueue.create(dim);
     PointSet pointsChecked = PointSet.create(dim);
     pointsChecked.add(xx, yy);
@@ -69,10 +69,10 @@ public class Toggle {
   public static int[][] resetCounting(
       int[][] board) {
     int dim = board.length;
-    BoardUpdate update = BoardUpdate.builder(dim);
+    BoardUpdateImpl update = BoardUpdateImpl.builder(dim);
     for (int y = 0; y < dim; y++) {
       for (int x = 0; x < board[y].length; x++) {
-        int color = Util.unremove(board[y][x]) & COLORS;
+        int color = Util.resurrect(board[y][x]) & COLORS;
         update.add(x, y, color);
       }
     }

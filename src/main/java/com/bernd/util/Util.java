@@ -36,7 +36,7 @@ public final class Util {
     return (color & COLORS) == 0;
   }
 
-  public static int unremove(int color) {
+  public static int resurrect(int color) {
     if ((color & REMOVED_B) != 0) {
       return (color & ~REMOVED_B) | B;
     }
@@ -72,12 +72,22 @@ public final class Util {
     return 0;
   }
 
-  public static int getTerritory(int color) {
+  public static int asTerritory(int color) {
     if ((color & B) != 0) {
       return TERRITORY_B;
     }
     if ((color & W) != 0) {
       return TERRITORY_W;
+    }
+    return color;
+  }
+
+  public static int asRemoved(int color) {
+    if ((color & B) != 0) {
+      return REMOVED_B;
+    }
+    if ((color & W) != 0) {
+      return REMOVED_W;
     }
     return color;
   }

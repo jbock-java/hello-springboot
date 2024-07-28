@@ -8,7 +8,7 @@ class BoardUpdateTest {
 
   @Test
   void testAdd() {
-    BoardUpdate update = BoardUpdate.builder(9);
+    BoardUpdateImpl update = BoardUpdateImpl.builder(9);
     update.add(1, 8);
     update.add(2, 3);
     assertEquals(2, update.size());
@@ -20,7 +20,7 @@ class BoardUpdateTest {
 
   @Test
   void testGrow() {
-    BoardUpdate update = BoardUpdate.builder(9);
+    BoardUpdateImpl update = BoardUpdateImpl.builder(9);
     for (int i = 0; i < 9; i++) {
       update.add(i, 0);
     }
