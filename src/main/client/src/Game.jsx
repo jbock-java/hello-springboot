@@ -89,22 +89,25 @@ export const Game = () => {
     if (!board.length) {
       return
     }
-    if (!counting && currentPlayer !== auth.name) {
-      return
-    }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (counting && !board[cursor_y][cursor_x].hasStone) {
-      return
-    }
-    if (!counting && isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
-      return
-    }
-    if (!counting && cursor_x == forbidden_x && cursor_y == forbidden_y) {
-      return
+    if (counting) {
+      if (!board[cursor_y][cursor_x].hasStone) {
+        return
+      }
+    } else {
+      if (isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+        return
+      }
+      if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
+        return
+      }
+      if (currentPlayer !== auth.name) {
+        return
+      }
     }
     stompClient.publish({
       destination: "/app/game/move",
@@ -122,19 +125,20 @@ export const Game = () => {
     paintGrid(context)
     if (counting) {
       paintStonesCounting(context, board, countingGroup)
+      return
     } else {
       paintStones(context, board)
     }
-    if (!counting && currentPlayer !== auth.name) {
+    if (currentPlayer !== auth.name) {
       return
     }
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (!counting && isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+    if (isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
       return
     }
-    if (!counting && cursor_x == forbidden_x && cursor_y == forbidden_y) {
+    if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
     let style = currentColor === BLACK ?
@@ -260,13 +264,14 @@ function paintStonesCounting(context, board, countingGroup) {
             "rgba(255,255,255)"
           showStone(context, grid_x, grid_y, style)
         }
-      } else if (color & ANY_TERRITORY) {
-        if (color & ANY_REMOVED) {
-          let style = (color & ANY_REMOVED) === REMOVED_B ?
-            "rgba(0,0,0,0.25)" :
-            "rgba(255,255,255,0.25)"
-          showShadow(context, grid_x, grid_y, style)
-        }
+      }
+      if (color & ANY_REMOVED) {
+        let style = (color & ANY_REMOVED) === REMOVED_B ?
+          "rgba(0,0,0,0.25)" :
+          "rgba(255,255,255,0.25)"
+        showShadow(context, grid_x, grid_y, style)
+      }
+      if (color & ANY_TERRITORY) {
         let style = (color & ANY_TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"

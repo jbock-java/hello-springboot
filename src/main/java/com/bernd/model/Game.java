@@ -91,9 +91,10 @@ public record Game(
       int[][] board,
       int[][] updated) {
     int row = -1, col = -1;
+    int max = board.length - 1;
     int min_y = Math.max(yy - 2, 0);
-    int max_y = Math.min(yy + 2, board.length);
-    for (int y = min_y; y < max_y; y++) {
+    int max_y = Math.min(yy + 2, max);
+    for (int y = min_y; y <= max_y; y++) {
       if (board[y] != updated[y]) {
         if (row != -1) {
           return Direction.NONE;
@@ -105,8 +106,8 @@ public record Game(
       return Direction.NONE;
     }
     int min_x = Math.max(xx - 2, 0);
-    int max_x = Math.min(xx + 2, board.length);
-    for (int x = min_x; x < max_x; x++) {
+    int max_x = Math.min(xx + 2, max);
+    for (int x = min_x; x <= max_x; x++) {
       if (board[row][x] != updated[row][x]) {
         if (col != -1) {
           return Direction.NONE;
