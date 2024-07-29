@@ -2,7 +2,6 @@ package com.bernd;
 
 import com.bernd.model.User;
 import com.bernd.model.UserList;
-import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,15 +15,12 @@ public class LobbyUsers {
     map.put(name, new User(name));
   }
 
-  User get(Principal principal) {
-    if (principal == null) {
-      return null;
-    }
-    return map.get(principal.getName());
+  User get(String name) {
+    return map.get(name);
   }
 
-  void remove(String principal) {
-    map.remove(principal);
+  User remove(String principal) {
+    return map.remove(principal);
   }
 
   UserList users() {

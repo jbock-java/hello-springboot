@@ -32,7 +32,6 @@ import {
 } from "./store.js"
 
 export function Lobby() {
-  let [matchRequested, setMatchRequested] = useState(false)
   let [isNewGameOpen, setNewGameOpen] = useState(false)
   let [openGames, setOpenGames] = useState([])
   let stompClient = useContext(StompContext)
@@ -45,31 +44,14 @@ export function Lobby() {
       return
     }
     initialized.current = true
-    let sub1 = stompClient.subscribe("/topic/lobby/gamestart", (message) => {
-      let game = JSON.parse(message.body)
-      navigate(base + "/game/" + game.id)
-    })
-    let sub2 = stompClient.subscribe("/topic/lobby/gamerequest", (message) => {
-      let r = JSON.parse(message.body)
-      if (r.name === auth.name) {
-        setMatchRequested(true)
-      }
-    })
-    let sub3 = stompClient.subscribe("/topic/lobby/open", (message) => {
+    let sub1 = stompClient.subscribe("/topic/lobby/open_games", (message) => {
       let r = JSON.parse(message.body)
       setOpenGames(r.games)
     })
-    stompClient.publish({
-      destination: "/app/lobby/hello",
-      body: JSON.stringify({
-      }),
-    })
     return () => {
       sub1.unsubscribe()
-      sub2.unsubscribe()
-      sub3.unsubscribe()
     }
-  }, [setInit, setMatchRequested, auth, initialized, stompClient, navigate])
+  }, [setInit, auth, initialized, stompClient, navigate])
   let onNewGame = useCallback(async (d) => {
     try {
       let response = await tfetch("/api/create", {
@@ -105,34 +87,30 @@ export function Lobby() {
       toast.error(e.message)
     }
   }, [auth, navigate])
-  let matchRequest = useCallback((editMode) => {
-    stompClient.publish({
-      destination: "/app/lobby/match",
-      body: JSON.stringify({
-        dim: 9,
-        editMode: editMode,
-      }),
-    })
+  let startEdit = useCallback(async () => {
+    try {
+      let response = await tfetch("/api/start_edit", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + auth.token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dim: 9,
+          editMode: true,
+        }),
+      })
+      navigate(base + "/game/" + response.id)
+    } catch (e) {
+      toast.error(e.message)
+    }
   }, [stompClient])
-  if (matchRequested) {
-    return (
-      <div className="m-4">
-        Waiting for match...
-      </div>
-    )
-  }
   return (
     <div className="mt-4">
       <div className="ml-2">
         <Button
-          onClick={() => matchRequest(true)}>
+          onClick={() => startEdit()}>
           Create
-        </Button>
-      </div>
-      <div className="mt-2 ml-2">
-        <Button
-          onClick={() => matchRequest(false)}>
-          Find match
         </Button>
       </div>
       {!isNewGameOpen && (

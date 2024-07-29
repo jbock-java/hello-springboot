@@ -51,7 +51,7 @@ public class GameController {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     OpenGame result = openGames.put(game.withUser(Objects.toString(principal, ""))
         .withId(RandomString.get()));
-    operations.convertAndSend("/topic/lobby/open", openGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     return result;
   }
 
@@ -61,7 +61,7 @@ public class GameController {
     OpenGame openGame = openGames.remove(game.user().name());
     Game fullGame = games.put(openGame.accept(principal.toString()));
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame);
-    operations.convertAndSend("/topic/lobby/open", openGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     return ResponseEntity.ok().build();
   }
 }
