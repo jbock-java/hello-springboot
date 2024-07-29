@@ -15,18 +15,24 @@ public enum Direction {
     this.inc_y = inc_y;
   }
 
-  boolean isOpposite(Direction other) {
+  public boolean isOpposite(Direction other) {
     return inc_x + other.inc_x == 0 && inc_y + other.inc_y == 0;
   }
 
-  Direction oppositeDirection() {
-    return switch (this) {
-      case EAST -> WEST;
-      case WEST -> EAST;
-      case NORTH -> SOUTH;
-      case SOUTH -> NORTH;
-      case NONE -> NONE;
-    };
+  public static Direction from(int source_x, int source_y, int target_x, int target_y) {
+    if (target_x > source_x) {
+      return EAST;
+    }
+    if (target_x < source_x) {
+      return WEST;
+    }
+    if (target_y > source_y) {
+      return SOUTH;
+    }
+    if (target_y < source_y) {
+      return NORTH;
+    }
+    return NONE;
   }
 
   public int moveX(int xx) {

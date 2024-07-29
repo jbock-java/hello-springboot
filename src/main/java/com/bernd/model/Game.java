@@ -2,7 +2,6 @@ package com.bernd.model;
 
 import com.bernd.game.Count;
 import com.bernd.game.Direction;
-import com.bernd.game.RemoveResult;
 import com.bernd.game.Toggle;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
@@ -12,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import static com.bernd.game.Board.B;
 import static com.bernd.game.Board.W;
 import static com.bernd.game.Board.removeDeadStonesAround;
+import static com.bernd.util.Util.COLORS;
 
 public record Game(
     String id,
@@ -58,12 +58,59 @@ public record Game(
     int y = move.y();
     int color = currentColor();
     int[][] updated = BoardUpdateImpl.create(board.length, x, y, color).apply(board);
-    RemoveResult result = removeDeadStonesAround(updated, x, y);
-    if (result.isKo(x, y, color)) {
-      Direction direction = result.direction();
-      return game(result.board(), new int[]{direction.moveX(x), direction.moveY(y)});
+    int[][] result = removeDeadStonesAround(updated, x, y);
+    Direction direction = getDirection(x, y, result, updated);
+    if (isKo(x, y, color, result, direction)) {
+      return game(result, new int[]{direction.moveX(x), direction.moveY(y)});
     }
-    return game(result.board(), NOT_FORBIDDEN);
+    return game(result, NOT_FORBIDDEN);
+  }
+
+  private boolean isKo(
+      int xx,
+      int yy,
+      int color,
+      int[][] board,
+      Direction direction) {
+    if (direction == Direction.NONE) {
+      return false;
+    }
+    int x = direction.moveX(xx);
+    int y = direction.moveY(yy);
+    int oppositeColor = color ^ COLORS;
+    int[][] updated = BoardUpdateImpl.create(board.length, x, y, oppositeColor).apply(board);
+    int[][] result = removeDeadStonesAround(updated, x, y);
+    Direction newDirection = getDirection(x, y, updated, result);
+    return newDirection.isOpposite(direction);
+  }
+
+  // check if a single stone was removed, get its location relative to [xx, yy]
+  private Direction getDirection(
+      int xx,
+      int yy,
+      int[][] board,
+      int[][] updated) {
+    int row = -1, col = -1;
+    for (int y = 0; y < board.length; y++) {
+      if (board[y] != updated[y]) {
+        if (row != -1) {
+          return Direction.NONE;
+        }
+        row = y;
+      }
+    }
+    if (row == -1) {
+      return Direction.NONE;
+    }
+    for (int x = 0; x < board[row].length; x++) {
+      if (board[row][x] != updated[row][x]) {
+        if (col != -1) {
+          return Direction.NONE;
+        }
+        col = x;
+      }
+    }
+    return Direction.from(xx, yy, col, row);
   }
 
   private Game game(
