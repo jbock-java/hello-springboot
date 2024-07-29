@@ -28,6 +28,7 @@ public record OpenGame(
         B,
         false,
         createEmptyBoard(dim),
-        handicap);
+        handicap,
+        new int[]{-1, -1});
   }
 }

@@ -50,6 +50,7 @@ export const useGameStore = create((set) => ({
     currentPlayer: undefined,
     currentColor: BLACK,
     counting: false,
+    forbidden: [-1, -1],
   },
   setGameState: (game) => {
     set(produce(state => {
@@ -60,6 +61,7 @@ export const useGameStore = create((set) => ({
       state.gameState.currentPlayer = game.currentPlayer
       state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting
+      state.gameState.forbidden = game.forbidden
     }))
   },
 }))

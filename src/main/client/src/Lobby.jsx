@@ -89,10 +89,10 @@ export function Lobby() {
     } catch (e) {
       toast.error(e.message)
     }
-  }, [auth.token])
+  }, [auth.token, navigate, stompClient])
   let onAccept = useCallback(async (game) => {
     try {
-      let response = await tfetch("/api/accept", {
+      await tfetch("/api/accept", {
         method: "POST",
         headers: {
           "Authorization": "Bearer " + auth.token,
@@ -104,7 +104,7 @@ export function Lobby() {
     } catch (e) {
       toast.error(e.message)
     }
-  }, [])
+  }, [auth, navigate])
   let matchRequest = useCallback((editMode) => {
     stompClient.publish({
       destination: "/app/lobby/match",

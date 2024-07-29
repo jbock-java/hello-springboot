@@ -2,7 +2,7 @@ package com.bernd.game;
 
 import java.util.Arrays;
 
-import static com.bernd.util.Util.ANY_TERRITORY;
+import static com.bernd.util.Util.TERRITORY;
 import static com.bernd.util.Util.COLORS;
 import static com.bernd.util.Util.asRemoved;
 import static com.bernd.util.Util.asTerritory;
@@ -112,7 +112,7 @@ public class Count {
       }
     }
     if (disputed) {
-      territory.forEach((x, y) -> acc[y][x] = board[y][x] & ~ANY_TERRITORY);
+      territory.forEach((x, y) -> acc[y][x] = board[y][x] & ~TERRITORY);
     }
   }
 
@@ -121,7 +121,7 @@ public class Count {
       // resurrect
       return found;
     }
-    return asTerritory(found) | (empty & ~ANY_TERRITORY);
+    return asTerritory(found) | (empty & ~TERRITORY);
   }
 
   public static int[][] count(int[][] board) {

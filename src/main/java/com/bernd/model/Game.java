@@ -1,7 +1,8 @@
 package com.bernd.model;
 
-import com.bernd.game.Board;
 import com.bernd.game.Count;
+import com.bernd.game.Direction;
+import com.bernd.game.RemoveResult;
 import com.bernd.game.Toggle;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import static com.bernd.game.Board.B;
 import static com.bernd.game.Board.W;
+import static com.bernd.game.Board.removeDeadStonesAround;
 
 public record Game(
     String id,
@@ -21,10 +23,12 @@ public record Game(
     int currentColor,
     boolean opponentPassed,
     int[][] board,
-    int handicap
+    int handicap,
+    int[] forbidden
 ) {
 
   private static final Logger logger = LogManager.getLogger(Game.class);
+  public static final int[] NOT_FORBIDDEN = {-1, -1};
 
   public Game update(Move move) {
     try {
@@ -39,28 +43,34 @@ public record Game(
     if (counting) {
       if (move.resetCounting()) {
         int[][] resetted = Toggle.resetCounting(board);
-        return game(Count.count(resetted));
+        return game(Count.count(resetted), NOT_FORBIDDEN);
       }
       int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
-      return game(Count.count(toggled));
+      return game(Count.count(toggled), NOT_FORBIDDEN);
     }
     if (move.pass()) {
       if (opponentPassed) {
         return startCounting();
       }
-      return game(board, counting, true);
+      return game(board, counting, true, NOT_FORBIDDEN);
     }
     int x = move.x();
     int y = move.y();
     int color = currentColor();
     int[][] updated = BoardUpdateImpl.create(board.length, x, y, color).apply(board);
-    return game(Board.removeDeadStonesAround(updated, x, y));
+    RemoveResult result = removeDeadStonesAround(updated, x, y);
+    if (result.isKo(x, y, color)) {
+      Direction direction = result.direction();
+      return game(result.board(), new int[]{direction.moveX(x), direction.moveY(y)});
+    }
+    return game(result.board(), NOT_FORBIDDEN);
   }
 
   private Game game(
       int[][] board,
       boolean counting,
-      boolean opponentPassed) {
+      boolean opponentPassed,
+      int[] forbidden) {
     return new Game(
         id,
         black,
@@ -71,15 +81,16 @@ public record Game(
         nextColor(),
         opponentPassed,
         board,
-        Math.max(0, handicap - 1));
+        Math.max(0, handicap - 1),
+        forbidden);
   }
 
-  private Game game(int[][] board) {
-    return game(board, counting, false);
+  private Game game(int[][] board, int[] forbidden) {
+    return game(board, counting, false, forbidden);
   }
 
   private Game startCounting() {
-    return game(Count.count(board), true, true);
+    return game(Count.count(board), true, true, NOT_FORBIDDEN);
   }
 
   private String nextPlayer() {

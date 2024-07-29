@@ -82,33 +82,58 @@ public class Board {
     return update;
   }
 
-  public static int[][] removeDeadStonesAround(
+  public static RemoveResult removeDeadStonesAround(
       int[][] board,
       int x,
       int y) {
     int color = board[y][x];
     if (color == 0) {
-      return board;
+      return new RemoveResult(board, Direction.NONE);
     }
     int oppositeColor = color == W ? B : W;
     int size = board.length;
     int[][] result = board;
+    int removed = 0;
+    Direction direction = Direction.NONE;
     // Above
     if (y > 0 && board[y - 1][x] == oppositeColor) {
-      result = getStoneGroup(board, x, y - 1).apply(result);
+      BoardUpdate north = getStoneGroup(board, x, y - 1);
+      removed += north.size();
+      if (north.size() != 0) {
+        direction = Direction.NORTH;
+      }
+      result = north.apply(result);
     }
     // Below
     if (y < size - 1 && board[y + 1][x] == oppositeColor) {
-      result = getStoneGroup(board, x, y + 1).apply(result);
+      BoardUpdate south = getStoneGroup(board, x, y + 1);
+      removed += south.size();
+      if (south.size() != 0) {
+        direction = Direction.SOUTH;
+      }
+      result = south.apply(result);
     }
     // Left
     if (x > 0 && board[y][x - 1] == oppositeColor) {
-      result = getStoneGroup(board, x - 1, y).apply(result);
+      BoardUpdate west = getStoneGroup(board, x - 1, y);
+      removed += west.size();
+      if (west.size() != 0) {
+        direction = Direction.WEST;
+      }
+      result = west.apply(result);
     }
     // Right
     if (x < size - 1 && board[y][x + 1] == oppositeColor) {
-      result = getStoneGroup(board, x + 1, y).apply(result);
+      BoardUpdate east = getStoneGroup(board, x + 1, y);
+      removed += east.size();
+      if (east.size() != 0) {
+        direction = Direction.EAST;
+      }
+      result = east.apply(result);
     }
-    return result;
+    if (removed == 1) {
+      return new RemoveResult(result, direction);
+    }
+    return new RemoveResult(result, Direction.NONE);
   }
 }

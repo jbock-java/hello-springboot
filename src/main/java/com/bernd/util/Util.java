@@ -9,12 +9,10 @@ import static com.bernd.game.Board.W;
 
 public final class Util {
   public static final int COLORS = B | W;
-  public static final int MARKERS = ~COLORS;
-  public static final int ANY_REMOVED = REMOVED_B | REMOVED_W;
-  public static final int ANY_STONE = COLORS | ANY_REMOVED;
-  public static final int ANY_B = REMOVED_B | B;
-  public static final int ANY_W = REMOVED_W | W;
-  public static final int ANY_TERRITORY = TERRITORY_B | TERRITORY_W;
+  private static final int TOGGLE_B = REMOVED_B | B;
+  private static final int TOGGLE_W = REMOVED_W | W;
+  public static final int TOGGLE = TOGGLE_B | TOGGLE_W;
+  public static final int TERRITORY = TERRITORY_B | TERRITORY_W;
 
   private Util() {
   }
@@ -38,55 +36,39 @@ public final class Util {
 
   public static int resurrect(int color) {
     if ((color & REMOVED_B) != 0) {
-      return (color & ~REMOVED_B) | B;
+      return color ^ TOGGLE_B;
     }
     if ((color & REMOVED_W) != 0) {
-      return (color & ~REMOVED_W) | W;
+      return color ^ TOGGLE_W;
     }
     return color;
   }
 
   public static int toggleRemoved(int color) {
-    if ((color & ANY_B) != 0) {
-      return (color & REMOVED_B) != 0 ? B : REMOVED_B;
+    if ((color & TOGGLE_B) != 0) {
+      return color ^ TOGGLE_B;
     }
-    if ((color & ANY_W) != 0) {
-      return (color & REMOVED_W) != 0 ? W : REMOVED_W;
+    if ((color & TOGGLE_W) != 0) {
+      return color ^ TOGGLE_W;
     }
     return color;
   }
 
-  public static int getBaseColor(int color) {
-    if ((color & (B | REMOVED_B)) != 0) {
-      return B;
-    }
-    if ((color & (W | REMOVED_W)) != 0) {
-      return W;
-    }
-    if ((color & TERRITORY_B) != 0) {
-      return B;
-    }
-    if ((color & TERRITORY_W) != 0) {
-      return W;
-    }
-    return 0;
-  }
-
   public static int asTerritory(int color) {
-    if ((color & B) != 0) {
+    if (color == B) {
       return TERRITORY_B;
     }
-    if ((color & W) != 0) {
+    if (color == W) {
       return TERRITORY_W;
     }
     return color;
   }
 
   public static int asRemoved(int color) {
-    if ((color & B) != 0) {
+    if (color == B) {
       return REMOVED_B;
     }
-    if ((color & W) != 0) {
+    if (color == W) {
       return REMOVED_W;
     }
     return color;

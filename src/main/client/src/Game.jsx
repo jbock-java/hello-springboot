@@ -40,7 +40,8 @@ export const Game = () => {
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
-  let { board, currentColor, currentPlayer, counting } = useGameStore(state => state.gameState)
+  let { board, currentColor, currentPlayer, counting, forbidden } = useGameStore(state => state.gameState)
+  let [forbidden_x, forbidden_y] = forbidden
   let initialized = useRef()
   let canvasRef = useRef()
   let context = useMemo(() => {
@@ -59,7 +60,17 @@ export const Game = () => {
         ]
       }
     }
-    return { width, margin, dim, step, grid, canvasRef }
+    return {
+      width,
+      margin,
+      dim,
+      step,
+      grid,
+      canvasRef,
+      isCursorInBounds: function(x, y) {
+        return x >= 0 && x < dim && y >= 0 && y < dim
+      },
+    }
   }, [width, margin, board.length, canvasRef])
   let onMouseMove = useCallback((e) => {
     if (!board.length) {
@@ -83,21 +94,27 @@ export const Game = () => {
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
-    if (cursor_x >= 0 &&
-        cursor_x < context.dim &&
-        cursor_y >= 0 &&
-        cursor_y < context.dim &&
-        (counting && board[cursor_y][cursor_x].hasStone || !isForbidden(board, board[cursor_y][cursor_x], currentColor))) {
-        stompClient.publish({
-          destination: "/app/game/move",
-          body: JSON.stringify({
-            id: gameId,
-            x: cursor_x,
-            y: cursor_y,
-          }),
-        })
+    if (!context.isCursorInBounds(cursor_x, cursor_y)) {
+      return
     }
-  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting])
+    if (counting && !board[cursor_y][cursor_x].hasStone) {
+      return
+    }
+    if (!counting && isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+      return
+    }
+    if (!counting && cursor_x == forbidden_x && cursor_y == forbidden_y) {
+      return
+    }
+    stompClient.publish({
+      destination: "/app/game/move",
+      body: JSON.stringify({
+        id: gameId,
+        x: cursor_x,
+        y: cursor_y,
+      }),
+    })
+  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y])
   useEffect(() => {
     if (!board.length) {
       return
@@ -108,20 +125,23 @@ export const Game = () => {
     } else {
       paintStones(context, board)
     }
-    if (!counting &&
-        currentPlayer === auth.name &&
-        cursor_x >= 0 &&
-        cursor_x < context.dim &&
-        cursor_y >= 0 &&
-        cursor_y < context.dim &&
-        !isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
-      let [x, y] = context.grid[cursor_y][cursor_x]
-      let style = currentColor === BLACK ?
-        "rgba(0,0,0,0.25)" :
-        "rgba(255,255,255,0.25)"
-      showShadow(context, x, y, style)
+    if (!counting && currentPlayer !== auth.name) {
+      return
     }
-  }, [cursor_x, cursor_y, width, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup])
+    if (!context.isCursorInBounds(cursor_x, cursor_y)) {
+      return
+    }
+    if (!counting && isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+      return
+    }
+    if (!counting && cursor_x == forbidden_x && cursor_y == forbidden_y) {
+      return
+    }
+    let style = currentColor === BLACK ?
+      "rgba(0,0,0,0.25)" :
+      "rgba(255,255,255,0.25)"
+    showShadow(context, cursor_x, cursor_y, style)
+  }, [cursor_x, cursor_y, width, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y])
   useEffect(() => {
     if (initialized.current) {
       return
@@ -147,6 +167,10 @@ export const Game = () => {
   return (
     <div className="grid justify-center mt-8">
       <canvas ref={canvasRef}
+        onMouseLeave={() => {
+          setCursor_x(-1)
+          setCursor_y(-1)
+        }}
         onMouseMove={onMouseMove}
         onClick={onClick}
         width={width} height={width}>
@@ -172,7 +196,8 @@ function showStone({ canvasRef, step }, x, y, style) {
   ctx.fill()
 }
 
-function showShadow({ canvasRef, step }, x, y, style) {
+function showShadow({ canvasRef, step, grid }, grid_x, grid_y, style) {
+  let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
@@ -204,11 +229,11 @@ function paintGrid({ width, canvasRef, grid }) {
 }
 
 function paintStones(context, board) {
-  for (let logical_y = 0; logical_y < board.length; logical_y++) {
-    for (let logical_x = 0; logical_x < board.length; logical_x++) {
-      let { hasStone, color } = board[logical_y][logical_x]
+  for (let grid_y = 0; grid_y < board.length; grid_y++) {
+    for (let grid_x = 0; grid_x < board.length; grid_x++) {
+      let { hasStone, color } = board[grid_y][grid_x]
       if (hasStone) {
-        let [x, y] = context.grid[logical_y][logical_x]
+        let [x, y] = context.grid[grid_y][grid_x]
         let style = color === BLACK ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
@@ -219,16 +244,15 @@ function paintStones(context, board) {
 }
 
 function paintStonesCounting(context, board, countingGroup) {
-  for (let logical_y = 0; logical_y < board.length; logical_y++) {
-    for (let logical_x = 0; logical_x < board.length; logical_x++) {
-      let { hasStone, color } = board[logical_y][logical_x]
-      let [x, y] = context.grid[logical_y][logical_x]
+  for (let grid_y = 0; grid_y < board.length; grid_y++) {
+    for (let grid_x = 0; grid_x < board.length; grid_x++) {
+      let { hasStone, color } = board[grid_y][grid_x]
       if (hasStone) {
-        if (countingGroup && countingGroup(logical_x, logical_y)) {
+        if (countingGroup && countingGroup(grid_x, grid_y)) {
           let style = color & BLACK ?
             "rgba(0,0,0,0.25)" :
             "rgba(255,255,255,0.25)"
-          showShadow(context, x, y, style)
+          showShadow(context, grid_x, grid_y, style)
         } else {
           let style = color & BLACK ?
             "rgba(0,0,0)" :
@@ -240,7 +264,7 @@ function paintStonesCounting(context, board, countingGroup) {
           let style = (color & ANY_REMOVED) === REMOVED_B ?
             "rgba(0,0,0,0.25)" :
             "rgba(255,255,255,0.25)"
-          showShadow(context, x, y, style)
+          showShadow(context, grid_x, grid_y, style)
         }
         let style = (color & ANY_TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :

@@ -61,7 +61,8 @@ public class LobbyController {
           B,
           false,
           createEmptyBoard(request.dim()),
-          0));
+          0,
+          new int[]{-1, -1}));
       operations.convertAndSend("/topic/lobby/gamestart", game);
       return;
     }
@@ -86,7 +87,8 @@ public class LobbyController {
         B,
         false,
         createEmptyBoard(request.dim()),
-        0));
+        0,
+        new int[]{-1, -1}));
     operations.convertAndSend("/topic/lobby/gamestart", game);
   }
 

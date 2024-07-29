@@ -1,6 +1,5 @@
 import {
   useContext,
-  useRef,
   useEffect,
   useState,
 } from "react"
@@ -30,7 +29,7 @@ function Panel() {
   useEffect(() => {
     let sayHello = async() => {
       try {
-        let response = await tfetch("/api/lobby/hello", {
+        await tfetch("/api/lobby/hello", {
           headers: {
             "Authorization": "Bearer " + auth.token,
           },
@@ -40,7 +39,7 @@ function Panel() {
       }
     }
     sayHello()
-  }, [setUsers])
+  }, [setUsers, auth])
   useEffect(() => {
     let sub1 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)
