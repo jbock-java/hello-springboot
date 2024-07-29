@@ -84,14 +84,16 @@ public record Game(
     return newDirection.isOpposite(direction);
   }
 
-  // check if a single stone was removed, get its location relative to [xx, yy]
+  // if a single stone was removed next to [xx, yy], get its relative location
   private Direction getDirection(
       int xx,
       int yy,
       int[][] board,
       int[][] updated) {
     int row = -1, col = -1;
-    for (int y = 0; y < board.length; y++) {
+    int min_y = Math.max(yy - 2, 0);
+    int max_y = Math.min(yy + 2, board.length);
+    for (int y = min_y; y < max_y; y++) {
       if (board[y] != updated[y]) {
         if (row != -1) {
           return Direction.NONE;
@@ -102,7 +104,9 @@ public record Game(
     if (row == -1) {
       return Direction.NONE;
     }
-    for (int x = 0; x < board[row].length; x++) {
+    int min_x = Math.max(xx - 2, 0);
+    int max_x = Math.min(xx + 2, board.length);
+    for (int x = min_x; x < max_x; x++) {
       if (board[row][x] != updated[row][x]) {
         if (col != -1) {
           return Direction.NONE;

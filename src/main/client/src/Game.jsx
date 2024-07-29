@@ -180,7 +180,8 @@ export const Game = () => {
   )
 }
 
-function showTerritory({ canvasRef, step }, x, y, style) {
+function showTerritory({ canvasRef, step, grid }, grid_x, grid_y, style) {
+  let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
@@ -188,7 +189,8 @@ function showTerritory({ canvasRef, step }, x, y, style) {
   ctx.fill()
 }
 
-function showStone({ canvasRef, step }, x, y, style) {
+function showStone({ canvasRef, step, grid }, grid_x, grid_y, style) {
+  let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
@@ -233,11 +235,10 @@ function paintStones(context, board) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
       let { hasStone, color } = board[grid_y][grid_x]
       if (hasStone) {
-        let [x, y] = context.grid[grid_y][grid_x]
         let style = color === BLACK ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
-        showStone(context, x, y, style)
+        showStone(context, grid_x, grid_y, style)
       }
     }
   }
@@ -257,7 +258,7 @@ function paintStonesCounting(context, board, countingGroup) {
           let style = color & BLACK ?
             "rgba(0,0,0)" :
             "rgba(255,255,255)"
-          showStone(context, x, y, style)
+          showStone(context, grid_x, grid_y, style)
         }
       } else if (color & ANY_TERRITORY) {
         if (color & ANY_REMOVED) {
@@ -269,7 +270,7 @@ function paintStonesCounting(context, board, countingGroup) {
         let style = (color & ANY_TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
-        showTerritory(context, x, y, style)
+        showTerritory(context, grid_x, grid_y, style)
       }
     }
   }
