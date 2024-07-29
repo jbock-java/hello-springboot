@@ -8,7 +8,6 @@ import {
 import {
   useNavigate,
 } from "react-router-dom"
-import toast from "react-hot-toast"
 import {
   Form,
 } from "./component/Form.jsx"
@@ -22,6 +21,7 @@ import {
   base,
   StompContext,
   tfetch,
+  doTry,
 } from "./util.js"
 import {
   LobbyPanel,
@@ -52,59 +52,47 @@ export function Lobby() {
       sub1.unsubscribe()
     }
   }, [setInit, auth, initialized, stompClient, navigate])
-  let onNewGame = useCallback(async (d) => {
-    try {
-      let response = await tfetch("/api/create", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + auth.token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(d),
-      })
-      let sub = stompClient.subscribe("/topic/game/" + response.id, (message) => {
-        let game = JSON.parse(message.body)
-        navigate(base + "/game/" + game.id)
-        sub.unsubscribe()
-      })
-      setNewGameOpen(false)
-    } catch (e) {
-      toast.error(e.message)
-    }
-  }, [auth.token, navigate, stompClient])
-  let onAccept = useCallback(async (game) => {
-    try {
-      await tfetch("/api/accept", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + auth.token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(game),
-      })
+  let onNewGame = useCallback((d) => doTry(async () => {
+    let response = await tfetch("/api/create", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + auth.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(d),
+    })
+    let sub = stompClient.subscribe("/topic/game/" + response.id, (message) => {
+      let game = JSON.parse(message.body)
       navigate(base + "/game/" + game.id)
-    } catch (e) {
-      toast.error(e.message)
-    }
-  }, [auth, navigate])
-  let startEdit = useCallback(async () => {
-    try {
-      let response = await tfetch("/api/start_edit", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + auth.token,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dim: 9,
-          editMode: true,
-        }),
-      })
-      navigate(base + "/game/" + response.id)
-    } catch (e) {
-      toast.error(e.message)
-    }
-  }, [stompClient])
+      sub.unsubscribe()
+    })
+    setNewGameOpen(false)
+  }), [auth.token, navigate, stompClient])
+  let onAccept = useCallback((game) => doTry(async () => {
+    await tfetch("/api/accept", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + auth.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(game),
+    })
+    navigate(base + "/game/" + game.id)
+  }), [auth, navigate])
+  let startEdit = useCallback(() => doTry(async () => {
+    let response = await tfetch("/api/start_edit", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + auth.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        dim: 9,
+        editMode: true,
+      }),
+    })
+    navigate(base + "/game/" + response.id)
+  }), [auth, navigate])
   return (
     <div className="mt-4">
       <div className="ml-2">

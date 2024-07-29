@@ -16,6 +16,8 @@ import {
   TERRITORY_B,
   REMOVED_B,
   ANY_REMOVED,
+  tfetch,
+  doTry,
 } from "./util.js"
 import {
   isForbidden,
@@ -155,16 +157,22 @@ export const Game = () => {
       let game = JSON.parse(message.body)
       setGameState(game)
     })
-    stompClient.publish({
-      destination: "/app/game/hello",
-      body: JSON.stringify({
-        id: gameId,
-      }),
+    doTry(async () => {
+      await tfetch("/api/game/hello", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + auth.token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: gameId,
+        }),
+      })
     })
     return () => {
       sub1.unsubscribe()
     }
-  }, [setGameState, initialized, stompClient, gameId])
+  }, [setGameState, initialized, stompClient, gameId, auth])
   if (!board.length) {
     return <div>Loading...</div>
   }

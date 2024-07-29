@@ -3,10 +3,10 @@ import {
   useEffect,
   useState,
 } from "react"
-import toast from "react-hot-toast"
 import {
   tfetch,
   StompContext,
+  doTry,
 } from "../util.js"
 import {
   useAuthStore,
@@ -26,20 +26,13 @@ function Panel() {
   let auth = useAuthStore(state => state.auth)
   let stompClient = useContext(StompContext)
   let [users, setUsers] = useState([])
-  useEffect(() => {
-    let sayHello = async() => {
-      try {
-        await tfetch("/api/lobby/hello", {
-          headers: {
-            "Authorization": "Bearer " + auth.token,
-          },
-        })
-      } catch (e) {
-        toast.error(e.message)
-      }
-    }
-    sayHello()
-  }, [setUsers, auth])
+  useEffect(() => doTry(() => {
+    tfetch("/api/lobby/hello", {
+      headers: {
+        "Authorization": "Bearer " + auth.token,
+      },
+    })
+  }), [setUsers, auth])
   useEffect(() => {
     let sub1 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)

@@ -1,6 +1,7 @@
 import {
   createContext,
 } from "react"
+import toast from "react-hot-toast"
 
 export const StompContext = createContext()
 
@@ -78,4 +79,12 @@ function hasWhite(color) {
 
 export function getColorClassName(color) {
   return hasWhite(color) ? "white" : "black"
+}
+
+export function doTry(task) {
+  try {
+    task()
+  } catch (e) {
+    toast.error(e.message)
+  }
 }

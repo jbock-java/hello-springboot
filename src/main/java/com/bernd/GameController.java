@@ -31,10 +31,11 @@ public class GameController {
     this.openGames = openGames;
   }
 
-  @MessageMapping("/game/hello")
-  public void gameJoinedAction(JoinGameRequest request) {
+  @PostMapping(value ="/api/game/hello", consumes = "application/json")
+  public ResponseEntity<?> sayHello(@RequestBody JoinGameRequest request) {
     Game game = games.get(request.id());
     operations.convertAndSend("/topic/game/" + request.id(), game);
+    return ResponseEntity.ok().build();
   }
 
   @MessageMapping("/game/move")
