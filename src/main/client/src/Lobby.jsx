@@ -38,12 +38,15 @@ import {
 export function Lobby() {
   let [isNewGameOpen, setNewGameOpen] = useState(false)
   let [openGames, setOpenGames] = useState([])
-  let [activeGame, setActiveGame] = useState("")
+  let [acceptableGame, setAcceptableGame] = useState("")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
   let setInit = useGameStore(state => state.setInit)
+  let openGamesRef = useRef([])
+  let acceptableGameRef = useRef()
+  acceptableGameRef.current = acceptableGame
   useEffect(() => {
     if (initialized.current) {
       return
@@ -51,12 +54,19 @@ export function Lobby() {
     initialized.current = true
     let sub1 = stompClient.subscribe("/topic/lobby/open_games", (message) => {
       let r = JSON.parse(message.body)
-      setOpenGames(r.games)
+      openGamesRef.current = r.games
+      if (!acceptableGameRef.current) {
+        setOpenGames(r.games)
+      }
     })
     return () => {
       sub1.unsubscribe()
     }
-  }, [setInit, auth, initialized, stompClient, navigate])
+  }, [setInit, auth, initialized, stompClient, navigate, acceptableGameRef])
+  let closeAcceptDialog = useCallback(() => {
+    setAcceptableGame("")
+    setOpenGames(openGamesRef.current)
+  }, [setAcceptableGame])
   let onNewGame = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/create", {
       method: "POST",
@@ -129,11 +139,11 @@ export function Lobby() {
         <div className="float-left ml-4 grid grid-cols-[min-content_min-content]">
           {openGames.map((game) => (
             <OpenGame
-              activeGame={activeGame}
               game={game}
-              onClick={() => setActiveGame(game.id)}
-              setActiveGame={setActiveGame}
+              acceptableGame={acceptableGame}
+              setAcceptableGame={setAcceptableGame}
               onAccept={onAccept}
+              closeAcceptDialog={closeAcceptDialog}
               key={game.id} />
           ))}
         </div>
@@ -143,10 +153,10 @@ export function Lobby() {
   )
 }
 
-function OpenGame({game, onClick, activeGame, setActiveGame, onAccept}) {
+function OpenGame({game, acceptableGame, setAcceptableGame, onAccept, closeAcceptDialog}) {
   let auth = useAuthStore(state => state.auth)
-  let active = activeGame === game.id
-  let disabled = activeGame || auth.name === game.user.name
+  let active = acceptableGame === game.id
+  let disabled = acceptableGame || auth.name === game.user.name
   let classes = twJoin(
     "contents",
     "*:pr-2 *:py-1",
@@ -158,13 +168,13 @@ function OpenGame({game, onClick, activeGame, setActiveGame, onAccept}) {
   )
   return (
     <div
-      onClick={disabled ? undefined : onClick}
+      onClick={disabled ? undefined : () => setAcceptableGame(game.id)}
       className={classes}
       key={game.id}>
       <div className="pl-2 rounded-l-lg">{game.user.name}</div>
       <div className={dimClasses}>
         {active && (
-          <ClickAwayListener onClickAway={() => setActiveGame("")}>
+          <ClickAwayListener onClickAway={closeAcceptDialog}>
             <Form
               onSubmit={() => onAccept(game)}
               className="absolute left-10 bg-sky-200 px-6 py-4 rounded-lg">
