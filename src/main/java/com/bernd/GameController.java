@@ -59,6 +59,7 @@ public class GameController {
   @PostMapping(value = "/api/accept", consumes = "application/json")
   public ResponseEntity<?> accept(@RequestBody OpenGame game) {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    openGames.remove(Objects.toString(principal));
     OpenGame openGame = openGames.remove(game.user().name());
     Game fullGame = games.put(openGame.accept(principal.toString()));
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame);

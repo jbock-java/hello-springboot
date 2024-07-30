@@ -6,6 +6,9 @@ import {
   useContext,
 } from "react"
 import {
+  twJoin,
+} from "tailwind-merge"
+import {
   useNavigate,
 } from "react-router-dom"
 import {
@@ -26,6 +29,7 @@ import {
 import {
   LobbyPanel,
 } from "./feature/LobbyPanel.jsx"
+import ClickAwayListener from "react-click-away-listener"
 import {
   useAuthStore,
   useGameStore,
@@ -34,6 +38,7 @@ import {
 export function Lobby() {
   let [isNewGameOpen, setNewGameOpen] = useState(false)
   let [openGames, setOpenGames] = useState([])
+  let [activeGame, setActiveGame] = useState("")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
@@ -123,17 +128,52 @@ export function Lobby() {
         <div className="float-left pt-1">Open games:</div>
         <div className="float-left ml-4 grid grid-cols-[min-content_min-content]">
           {openGames.map((game) => (
-            <div
-              onClick={() => onAccept(game)}
-              className="contents cursor-pointer *:hover:bg-sky-200 *:hover:text-black *:pr-2 *:py-1"
-              key={game.id}>
-              <div className="pl-2 rounded-l-lg">{game.user.name}</div>
-              <div className="rounded-r-lg">{game.dim}x{game.dim}</div>
-            </div>
+            <OpenGame
+              activeGame={activeGame}
+              game={game}
+              onClick={() => setActiveGame(game.id)}
+              setActiveGame={setActiveGame}
+              onAccept={onAccept}
+              key={game.id} />
           ))}
         </div>
       </div>
       <LobbyPanel />
+    </div>
+  )
+}
+
+function OpenGame({game, onClick, activeGame, setActiveGame, onAccept}) {
+  let auth = useAuthStore(state => state.auth)
+  let active = activeGame === game.id
+  let disabled = activeGame || auth.name === game.user.name
+  let classes = twJoin(
+    "contents",
+    "*:pr-2 *:py-1",
+    !disabled && "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
+  )
+  let dimClasses = twJoin(
+    "rounded-r-lg",
+    active && "relative",
+  )
+  return (
+    <div
+      onClick={disabled ? undefined : onClick}
+      className={classes}
+      key={game.id}>
+      <div className="pl-2 rounded-l-lg">{game.user.name}</div>
+      <div className={dimClasses}>
+        {active && (
+          <ClickAwayListener onClickAway={() => setActiveGame("")}>
+            <Form
+              onSubmit={() => onAccept(game)}
+              className="absolute left-10 bg-sky-200 px-6 py-4 rounded-lg">
+              <Button type="submit" className="bg-slate-800 hover:border-slate-800">OK</Button>
+            </Form>
+          </ClickAwayListener>
+        )}
+        {game.dim}x{game.dim}
+      </div>
     </div>
   )
 }
