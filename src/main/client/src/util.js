@@ -81,10 +81,13 @@ export function getColorClassName(color) {
   return hasWhite(color) ? "white" : "black"
 }
 
-export function doTry(task) {
+export async function doTry(task, onError) {
   try {
-    task()
+    await task()
   } catch (e) {
+    if (onError) {
+      onError()
+    }
     toast.error(e.message)
   }
 }

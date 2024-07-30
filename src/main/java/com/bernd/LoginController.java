@@ -30,6 +30,10 @@ public class LoginController {
   @PostMapping(value = "/login", consumes = "application/json")
   public ResponseEntity<?> loginAction(
       @RequestBody LoginRequest request) {
+    if (request.name().isEmpty()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(new Error("The name must not be empty"));
+    }
     if (users.contains(request.name())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(new Error("Please choose another name"));

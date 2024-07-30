@@ -26,13 +26,16 @@ function Panel() {
   let auth = useAuthStore(state => state.auth)
   let stompClient = useContext(StompContext)
   let [users, setUsers] = useState([])
-  useEffect(() => doTry(() => {
-    tfetch("/api/lobby/hello", {
-      headers: {
-        "Authorization": "Bearer " + auth.token,
-      },
+  useEffect(() => {
+    doTry(() => {
+      tfetch("/api/lobby/hello", {
+        headers: {
+          "Authorization": "Bearer " + auth.token,
+        },
+      })
     })
-  }), [setUsers, auth])
+    return undefined
+  }, [setUsers, auth])
   useEffect(() => {
     let sub1 = stompClient.subscribe("/topic/lobby/users", (message) => {
       let r = JSON.parse(message.body)

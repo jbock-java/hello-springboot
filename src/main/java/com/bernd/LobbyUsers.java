@@ -2,6 +2,7 @@ package com.bernd;
 
 import com.bernd.model.User;
 import com.bernd.model.UserList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class LobbyUsers {
   }
 
   UserList users() {
-    return new UserList(List.copyOf(map.values()));
+    Collection<User> values = map.values();
+    return new UserList(List.copyOf(values));
   }
 }

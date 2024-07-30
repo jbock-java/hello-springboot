@@ -6,6 +6,13 @@ import {
   useParams,
 } from "react-router-dom"
 import {
+  FaAngleLeft,
+  FaAngleRight,
+} from "react-icons/fa"
+import {
+  IconContext,
+} from "react-icons"
+import {
   StompContext,
   BLACK,
   WHITE,
@@ -20,17 +27,17 @@ import {
   useGameStore,
 } from "../store.js"
 
-export const GamePanel = () => {
+export const GamePanel = ({zoom, setZoom}) => {
   return (
     <div className="fixed top-0 right-0 h-full bg-slate-800 border-l-2 border-slate-700">
       <div className="pr-12 pt-8 pl-8">
-        <Panel />
+        <Panel zoom={zoom} setZoom={setZoom} />
       </div>
     </div>
   )
 }
 
-function Panel() {
+function Panel({zoom, setZoom}) {
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
@@ -59,7 +66,28 @@ function Panel() {
   let result = counting ? getScore(board) : undefined
   return (
     <>
-      <div>
+      <div className="inline-flex gap-x-2">
+        <button
+          onClick={() => setZoom(zoom - 1)}>
+          <IconContext.Provider value={{
+            size: "1.25em",
+            className: "pl-[4px]",
+          }}>
+            <FaAngleLeft />
+          </IconContext.Provider>
+        </button>
+        <button onClick={() => setZoom(0)}>Zoom: {zoom}</button>
+        <button
+          onClick={() => setZoom(zoom + 1)}>
+          <IconContext.Provider value={{
+            size: "1.25em",
+            className: "pr-[4px]",
+          }}>
+            <FaAngleRight />
+          </IconContext.Provider>
+        </button>
+      </div>
+      <div className="mt-2">
         <Button
           onClick={onPass}
           disabled={counting || currentPlayer !== auth.name}>
@@ -75,7 +103,7 @@ function Panel() {
         </div>
       )}
       {result && (
-        <div className="mt-4 font-mono">
+        <div className="mt-4">
           <div>
             {"w:" + result.w}
           </div>
@@ -83,7 +111,7 @@ function Panel() {
             {"b:" + result.b}
           </div>
           <div className="mt-2">
-            {(result.w > result.b ? "w+" : "b+") + Math.abs(result.b - result.w)}
+            Result: {(result.w > result.b ? "w+" : "b+") + Math.abs(result.b - result.w)}
           </div>
         </div>
       )}

@@ -17,18 +17,20 @@ public record OpenGame(
     return new OpenGame(id, new User(name), dim, handicap);
   }
 
-  public Game accept(String white) {
+  public Game accept(String opponent, AcceptRequest acceptRequest) {
+    User userBlack = acceptRequest.flip() ? new User(opponent) : user;
+    User userWhite = acceptRequest.flip() ? user : new User(opponent);
     return new Game(
         id,
-        user,
-        new User(white),
+        userBlack,
+        userWhite,
         false,
         false,
-        user.name(),
+        userBlack.name(),
         B,
         false,
         createEmptyBoard(dim),
-        handicap,
+        acceptRequest.handicap(),
         new int[]{-1, -1});
   }
 }

@@ -34,10 +34,9 @@ const kirsch = "#dfbd6d"
 const asch = "#a78a48"
 
 export const Game = () => {
-  let width = 750
-  let margin = 80
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let [zoom, setZoom] = useState(0)
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
@@ -47,11 +46,17 @@ export const Game = () => {
   let initialized = useRef()
   let canvasRef = useRef()
   let context = useMemo(() => {
-    if (!board.length) {
+    let dim = board.length
+    if (!dim) {
       return
     }
-    let dim = board.length
+    let width = 0.9375 * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+    let margin = 1.125 * width / dim
     let step = (width - margin - margin) / (dim - 1)
+    let zoomFactor = 1 + (zoom * 0.0625)
+    width = Math.trunc(width * zoomFactor)
+    margin = Math.trunc(margin * zoomFactor)
+    step = Math.trunc(step * zoomFactor)
     let grid = []
     for (let y = 0; y < dim; y++) {
       grid[y] = []
@@ -73,7 +78,7 @@ export const Game = () => {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
     }
-  }, [width, margin, board.length, canvasRef])
+  }, [board.length, canvasRef, zoom])
   let onMouseMove = useCallback((e) => {
     if (!board.length) {
       return
@@ -147,7 +152,7 @@ export const Game = () => {
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
     showShadow(context, cursor_x, cursor_y, style)
-  }, [cursor_x, cursor_y, width, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y])
+  }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y])
   useEffect(() => {
     if (initialized.current) {
       return
@@ -185,9 +190,9 @@ export const Game = () => {
         }}
         onMouseMove={onMouseMove}
         onClick={onClick}
-        width={width} height={width}>
+        width={context.width} height={context.width}>
       </canvas>
-      <GamePanel />
+      <GamePanel zoom={zoom} setZoom={setZoom} />
     </div>
   )
 }

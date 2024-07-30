@@ -1,5 +1,6 @@
 package com.bernd;
 
+import com.bernd.model.AcceptRequest;
 import com.bernd.model.Game;
 import com.bernd.model.JoinGameRequest;
 import com.bernd.model.Move;
@@ -31,7 +32,7 @@ public class GameController {
     this.openGames = openGames;
   }
 
-  @PostMapping(value ="/api/game/hello", consumes = "application/json")
+  @PostMapping(value = "/api/game/hello", consumes = "application/json")
   public ResponseEntity<?> sayHello(@RequestBody JoinGameRequest request) {
     Game game = games.get(request.id());
     operations.convertAndSend("/topic/game/" + request.id(), game);
@@ -57,11 +58,11 @@ public class GameController {
   }
 
   @PostMapping(value = "/api/accept", consumes = "application/json")
-  public ResponseEntity<?> accept(@RequestBody OpenGame game) {
+  public ResponseEntity<?> accept(@RequestBody AcceptRequest acceptRequest) {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     openGames.remove(Objects.toString(principal));
-    OpenGame openGame = openGames.remove(game.user().name());
-    Game fullGame = games.put(openGame.accept(principal.toString()));
+    OpenGame openGame = openGames.remove(acceptRequest.game().user().name());
+    Game fullGame = games.put(openGame.accept(principal.toString(), acceptRequest));
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame);
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     return ResponseEntity.ok().build();

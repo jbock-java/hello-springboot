@@ -10,12 +10,13 @@ import {
 import {
   useNavigate,
 } from "react-router-dom"
-import toast, {
+import {
   Toaster,
 } from "react-hot-toast"
 import {
   base,
   tfetch,
+  doTry,
 } from "./util.js"
 import {
   useAuthStore,
@@ -25,23 +26,18 @@ export function Login() {
   let navigate = useNavigate()
   let setAuth = useAuthStore(state => state.setAuth)
   let setPending = useAuthStore(state => state.setPending)
-  let onSubmit = async (d) => {
+  let onSubmit = (d) => doTry(async () => {
     setPending(true)
-    try {
-      let response = await tfetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(d),
-      })
-      setAuth(response)
-      navigate(base + "/lobby")
-    } catch (e) {
-      setPending(false)
-      toast.error(e.message)
-    }
-  }
+    let response = await tfetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(d),
+    })
+    setAuth(response)
+    navigate(base + "/lobby")
+  }, () => setPending(false))
   return (
   <>
     <Form className="m-4" onSubmit={onSubmit}>

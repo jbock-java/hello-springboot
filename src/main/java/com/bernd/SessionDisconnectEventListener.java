@@ -1,6 +1,5 @@
 package com.bernd;
 
-import com.bernd.model.UserList;
 import java.security.Principal;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -37,5 +36,6 @@ public class SessionDisconnectEventListener implements ApplicationListener<Sessi
     users.logout(name);
     openGames.remove(name);
     operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
+    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
   }
 }
