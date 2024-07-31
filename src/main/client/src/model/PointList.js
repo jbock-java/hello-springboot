@@ -8,6 +8,9 @@ export class PointList {
   static HI = 0xffff0000
 
   constructor(dim) {
+    if (!dim) {
+      throw new Error("expecting argument: dim")
+    }
     this.capacity = 32
     this.dim = dim
     this.buffer = new Int32Array(16)

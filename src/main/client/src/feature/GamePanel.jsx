@@ -76,7 +76,13 @@ function Panel({zoom, setZoom}) {
             <FaAngleLeft />
           </IconContext.Provider>
         </button>
-        <button onClick={() => setZoom(0)}>Zoom: {zoom}</button>
+        <button onClick={() => {
+          if (!zoom) {
+            setZoom(-zoom) // force re-render
+          } else {
+            setZoom(0)
+          }
+        }}>Zoom: {zoom + 0}</button>
         <button
           onClick={() => setZoom(zoom + 1)}>
           <IconContext.Provider value={{

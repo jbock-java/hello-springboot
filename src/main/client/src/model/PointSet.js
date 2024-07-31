@@ -1,6 +1,9 @@
 export class PointSet {
 
   constructor(dim) {
+    if (!dim) {
+      throw new Error("expecting argument: dim")
+    }
     this.dim = dim
     this.points = new Int32Array(Math.ceil((dim * dim) / 0x20)) 
   }

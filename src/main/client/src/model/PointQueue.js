@@ -4,6 +4,9 @@ export class PointQueue {
   static HI = 0xffff0000;
 
   constructor(dim) {
+    if (!dim) {
+      throw new Error("expecting argument: dim")
+    }
     this.dim = dim
     this.capacity = 2 * dim
     this.buffer = new Int32Array(dim)

@@ -110,7 +110,10 @@ export function Lobby() {
           <StartEditDialog onStartEdit={onStartEdit} setStartEditOpen={setStartEditOpen} />
         ) : (
           <Button className="ml-2"
-            onClick={() => setStartEditOpen(true)}>
+            onClick={() => {
+              setStartEditOpen(true)
+              setNewGameOpen(false)
+            }}>
             Editor
           </Button>
         )}
@@ -124,7 +127,10 @@ export function Lobby() {
           <NewGameDialog onNewGame={onNewGame} setNewGameOpen={setNewGameOpen} />
         ) : (
           <Button className="ml-2"
-            onClick={() => setNewGameOpen(true)}>
+            onClick={() => {
+              setStartEditOpen(false)
+              setNewGameOpen(true)
+            }}>
             New Game
           </Button>
         )}

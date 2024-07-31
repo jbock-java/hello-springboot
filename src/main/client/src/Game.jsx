@@ -23,6 +23,9 @@ import {
   isForbidden,
 } from "./model/board.js"
 import {
+  PointList,
+} from "./model/PointList.js"
+import {
   GamePanel,
 } from "./feature/GamePanel.jsx"
 import {
@@ -31,7 +34,8 @@ import {
 } from "./store.js"
 
 const kirsch = "#dfbd6d"
-const asch = "#a78a48"
+const asch = "#8c7130"
+const TAU = 2 * Math.PI
 
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
@@ -62,10 +66,34 @@ export const Game = () => {
       grid[y] = []
       for (let x = 0; x < dim; x++) {
         grid[y][x] = [
-          Math.trunc(margin + (x * step)),
-          Math.trunc(margin + (y * step)),
+          Math.trunc(margin + (x * step)) + 0.5,
+          Math.trunc(margin + (y * step)) + 0.5,
         ]
       }
+    }
+    let hoshis = new PointList(dim)
+    if (dim === 9) {
+      hoshis.add(2, 2)
+      hoshis.add(2, 6)
+      hoshis.add(4, 4)
+      hoshis.add(6, 2)
+      hoshis.add(6, 6)
+    } else if (dim === 13) {
+      hoshis.add(3, 3)
+      hoshis.add(3, 9)
+      hoshis.add(6, 6)
+      hoshis.add(9, 3)
+      hoshis.add(9, 9)
+    } else if (dim === 19) {
+      hoshis.add(3, 3)
+      hoshis.add(3, 9)
+      hoshis.add(3, 15)
+      hoshis.add(9, 3)
+      hoshis.add(9, 9)
+      hoshis.add(9, 15)
+      hoshis.add(15, 3)
+      hoshis.add(15, 9)
+      hoshis.add(15, 15)
     }
     return {
       width,
@@ -77,6 +105,7 @@ export const Game = () => {
       isCursorInBounds: function(x, y) {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
+      hoshis: hoshis,
     }
   }, [board.length, canvasRef, zoom])
   let onMouseMove = useCallback((e) => {
@@ -202,7 +231,7 @@ function showTerritory({ canvasRef, step, grid }, grid_x, grid_y, style) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.125, 0, 2 * Math.PI)
+  ctx.arc(x, y, step * 0.125, 0, TAU)
   ctx.fill()
 }
 
@@ -211,7 +240,7 @@ function showStone({ canvasRef, step, grid }, grid_x, grid_y, style) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.475, 0, 2 * Math.PI)
+  ctx.arc(x, y, step * 0.475, 0, TAU)
   ctx.fill()
 }
 
@@ -220,11 +249,11 @@ function showShadow({ canvasRef, step, grid }, grid_x, grid_y, style) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.475, 0, 2 * Math.PI)
+  ctx.arc(x, y, step * 0.475, 0, TAU)
   ctx.fill()
 }
 
-function paintGrid({ width, canvasRef, grid }) {
+function paintGrid({ width, canvasRef, grid, step, hoshis }) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = kirsch
   ctx.fillRect(0, 0, width, width)
@@ -233,18 +262,29 @@ function paintGrid({ width, canvasRef, grid }) {
     let [source_x, source_y] = grid[y][0]
     let [target_x, target_y] = grid[y][grid.length - 1]
     ctx.beginPath()
-    ctx.moveTo(source_x + 0.5, source_y + 0.5)
-    ctx.lineTo(target_x + 0.5, target_y + 0.5)
+    ctx.moveTo(source_x, source_y)
+    ctx.lineTo(target_x, target_y)
     ctx.stroke()
   }
   for (let x = 0; x < grid.length; x++) {
     let [source_x, source_y] = grid[0][x]
     let [target_x, target_y] = grid[grid.length - 1][x]
     ctx.beginPath()
-    ctx.moveTo(source_x + 0.5, source_y + 0.5)
-    ctx.lineTo(target_x + 0.5, target_y + 0.5)
+    ctx.moveTo(source_x, source_y)
+    ctx.lineTo(target_x, target_y)
     ctx.stroke()
   }
+  let hoshiRadius = Math.trunc(step * 0.0625)
+  if (hoshiRadius % 2 === 0) {
+    hoshiRadius += 1
+  }
+  hoshis.forEach((grid_x, grid_y) => {
+    let [x, y] = grid[grid_y][grid_x]
+    ctx.fillStyle = asch
+    ctx.beginPath()
+    ctx.arc(x, y, hoshiRadius, 0, TAU)
+    ctx.fill()
+  })
 }
 
 function paintStones(context, board) {
