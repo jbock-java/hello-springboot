@@ -106,6 +106,9 @@ export const Game = () => {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
       hoshis: hoshis,
+      stoneRadius: getRadius(step * 0.475),
+      territoryRadius: getRadius(step * 0.125),
+      hoshiRadius: getRadius(step * 0.0625),
     }
   }, [board.length, canvasRef, zoom])
   let onMouseMove = useCallback((e) => {
@@ -226,34 +229,34 @@ export const Game = () => {
   )
 }
 
-function showTerritory({ canvasRef, step, grid }, grid_x, grid_y, style) {
+function showTerritory({ canvasRef, grid, territoryRadius }, grid_x, grid_y, style) {
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.125, 0, TAU)
+  ctx.arc(x, y, territoryRadius, 0, TAU)
   ctx.fill()
 }
 
-function showStone({ canvasRef, step, grid }, grid_x, grid_y, style) {
+function showStone({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.475, 0, TAU)
+  ctx.arc(x, y, stoneRadius, 0, TAU)
   ctx.fill()
 }
 
-function showShadow({ canvasRef, step, grid }, grid_x, grid_y, style) {
+function showShadow({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
   ctx.beginPath()
-  ctx.arc(x, y, step * 0.475, 0, TAU)
+  ctx.arc(x, y, stoneRadius, 0, TAU)
   ctx.fill()
 }
 
-function paintGrid({ width, canvasRef, grid, step, hoshis }) {
+function paintGrid({ width, canvasRef, grid, hoshis, hoshiRadius }) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = kirsch
   ctx.fillRect(0, 0, width, width)
@@ -274,10 +277,6 @@ function paintGrid({ width, canvasRef, grid, step, hoshis }) {
     ctx.lineTo(target_x, target_y)
     ctx.stroke()
   }
-  let hoshiRadius = Math.trunc(step * 0.0625)
-  if (hoshiRadius % 2 === 0) {
-    hoshiRadius += 1
-  }
   hoshis.forEach((grid_x, grid_y) => {
     let [x, y] = grid[grid_y][grid_x]
     ctx.fillStyle = asch
@@ -285,6 +284,14 @@ function paintGrid({ width, canvasRef, grid, step, hoshis }) {
     ctx.arc(x, y, hoshiRadius, 0, TAU)
     ctx.fill()
   })
+}
+
+function getRadius(radius) {
+  let diameter = Math.trunc(2 * radius)
+  if (diameter % 2 === 0) {
+    diameter += 1
+  }
+  return diameter / 2
 }
 
 function paintStones(context, board) {
