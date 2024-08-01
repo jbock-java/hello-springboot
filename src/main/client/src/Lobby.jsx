@@ -11,9 +11,6 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
-  Form,
-} from "./component/Form.jsx"
-import {
   Button,
 } from "./component/Button.jsx"
 import {
@@ -34,6 +31,12 @@ import {
 import {
   useAuthStore,
 } from "./store.js"
+import {
+  CgClose,
+} from "react-icons/cg"
+import {
+  IconContext,
+} from "react-icons"
 
 const detailData = [
   ["open", "Open Games"],
@@ -42,7 +45,6 @@ const detailData = [
 
 export function Lobby() {
   let [isNewGameOpen, setNewGameOpen] = useState(false)
-  let [isStartEditOpen, setStartEditOpen] = useState(false)
   let [detail, setDetail] = useState("open")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
@@ -75,59 +77,31 @@ export function Lobby() {
     navigate(base + "/game/" + response.id)
   }), [auth, navigate])
   return (
-    <div className="mt-4">
+    <div>
       <div className={twJoin(
-          "inline-flex py-2 pr-6 gap-x-1",
-          isStartEditOpen && "rounded-r-full bg-slate-400",
-        )}>
-        {isStartEditOpen ? (
-          <StartEditDialog onStartEdit={onStartEdit} setStartEditOpen={setStartEditOpen} />
-        ) : (
-          <Button className="ml-2"
-            onClick={() => {
-              setStartEditOpen(true)
-              setNewGameOpen(false)
-            }}>
-            Editor
-          </Button>
-        )}
-      </div>
-      <div className="clear-both" />
-      <div className={twJoin(
-          "mt-2 inline-flex py-2 pr-6 gap-x-1",
-          isNewGameOpen && "rounded-r-full bg-slate-400",
+          "mt-2 inline-flex py-2 pr-4 gap-x-1 border-r-2 border-y-2",
+          isNewGameOpen && "rounded-r-full border-slate-600",
+          !isNewGameOpen && "border-transparent",
         )}>
         {isNewGameOpen ? (
-          <NewGameDialog onNewGame={onNewGame} setNewGameOpen={setNewGameOpen} />
+          <NewGameDialog
+            onNewGame={onNewGame}
+            onStartEdit={onStartEdit}
+            setNewGameOpen={setNewGameOpen} />
         ) : (
-          <Button className="ml-2"
+          <button className={twJoin(
+              "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
+              "hover:border-sky-700",
+            )}
             onClick={() => {
-              setStartEditOpen(false)
               setNewGameOpen(true)
             }}>
             New Game
-          </Button>
+          </button>
         )}
       </div>
       <div className="clear-both" />
-      <div className="mt-2">
-        <div className={twJoin(
-          "float-left py-3 pl-2 pr-3 bg-slate-700 border-r-2 border-y-2 border-slate-600",
-          "rounded-r-lg flex flex-col gap-y-2",
-        )}>
-        {detailData.map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setDetail(id)}
-            disabled={id === detail}
-            className={twJoin(
-              "px-2 py-2 rounded-lg border-2",
-              id === detail && "border-slate-600",
-              id !== detail && "border-transparent hover:bg-slate-800 hover:border-slate-600",
-            )}>{label}</button>
-        ))}
-        </div>
-      </div>
+      <DetailNavigation detail={detail} setDetail={setDetail} />
       {detail === "open" && (
         <OpenGames />
       )}
@@ -139,34 +113,55 @@ export function Lobby() {
   )
 }
 
-function NewGameDialog({onNewGame, setNewGameOpen}) {
+function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen}) {
   let dimRef = useRef(9)
+  let [edit, setEdit] = useState(false)
   return (
-    <Form className="contents" onSubmit={() => onNewGame({dim: dimRef.current})}>
-      <Button onClick={() => setNewGameOpen(false)} className="ml-2 bg-slate-800 hover:border-slate-800">Cancel</Button>
+    <form className="contents" onSubmit={(e) => {
+        e.preventDefault()
+        let game = {dim: dimRef.current}
+        if (edit) {
+          onStartEdit(game)
+        } else {
+          onNewGame(game)
+        }
+      }}>
+      <Button type="submit" className="ml-2">OK</Button>
       <input id="dim-9" type="radio" name="dim" value="9" className="ml-2" defaultChecked={true} onClick={() => dimRef.current = 9} />
-      <label htmlFor="dim-9" className="text-black pt-[0.625rem] pr-1" onClick={() => dimRef.current = 9}>9x9</label>
+      <label htmlFor="dim-9" className="pt-[0.625rem] pr-1" >9x9</label>
       <input id="dim-13" type="radio" name="dim" value="13" onClick={() => dimRef.current = 13} />
-      <label htmlFor="dim-13" className="text-black pt-[0.625rem] pr-1" onClick={() => dimRef.current = 13}>13x13</label>
+      <label htmlFor="dim-13" className="pt-[0.625rem] pr-1">13x13</label>
       <input id="dim-19" type="radio" name="dim" value="19" onClick={() => dimRef.current = 19} />
-      <label htmlFor="dim-19" className="text-black pt-[0.625rem] mr-2" onClick={() => dimRef.current = 19}>19x19</label>
-      <Button type="submit" className="bg-slate-800 hover:border-slate-800">OK</Button>
-    </Form>
+      <label htmlFor="dim-19" className="pt-[0.625rem] pr-1">19x19</label>
+      <input id="cb-edit" type="checkbox" name="edit" checked={edit} onChange={() => setEdit(!edit)} />
+      <label htmlFor="cb-edit" className="pt-[0.625rem] ml-1">Edit</label>
+      <button onClick={() => setNewGameOpen(false)} className="ml-1 text-stone-100 hover:text-stone-300">
+        <IconContext.Provider value={{ size: "1.25em" }}>
+          <CgClose />
+        </IconContext.Provider>
+      </button>
+    </form>
   )
 }
-
-function StartEditDialog({onStartEdit, setStartEditOpen}) {
-  let dimRef = useRef(9)
+function DetailNavigation({detail, setDetail}) {
   return (
-    <Form className="contents" onSubmit={() => onStartEdit({dim: dimRef.current, editMode: true})}>
-      <Button onClick={() => setStartEditOpen(false)} className="ml-2 bg-slate-800 hover:border-slate-800">Cancel</Button>
-      <input id="dim-9" type="radio" name="dim" value="9" className="ml-2" defaultChecked={true} onClick={() => dimRef.current = 9} />
-      <label htmlFor="dim-9" className="text-black pt-[0.625rem] pr-1" onClick={() => dimRef.current = 9}>9x9</label>
-      <input id="dim-13" type="radio" name="dim" value="13" onClick={() => dimRef.current = 13} />
-      <label htmlFor="dim-13" className="text-black pt-[0.625rem] pr-1" onClick={() => dimRef.current = 13}>13x13</label>
-      <input id="dim-19" type="radio" name="dim" value="19" onClick={() => dimRef.current = 19} />
-      <label htmlFor="dim-19" className="text-black pt-[0.625rem] mr-2" onClick={() => dimRef.current = 19}>19x19</label>
-      <Button type="submit" className="bg-slate-800 hover:border-slate-800">OK</Button>
-    </Form>
+    <div className="mt-2">
+      <div className={twJoin(
+        "float-left py-3 pl-2 pr-3 border-r-2 border-y-2 border-slate-600",
+        "rounded-r-xl flex flex-col gap-y-2",
+      )}>
+      {detailData.map(([id, label]) => (
+        <button
+          key={id}
+          onClick={() => setDetail(id)}
+          disabled={id === detail}
+          className={twJoin(
+            "px-2 py-2 rounded-lg border-2 hover:border-sky-700",
+            id === detail && "border-slate-600",
+            id !== detail && "border-transparent hover:bg-stone-800",
+          )}>{label}</button>
+      ))}
+      </div>
+    </div>
   )
 }

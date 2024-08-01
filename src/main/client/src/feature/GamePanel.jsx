@@ -11,6 +11,9 @@ import {
   FaAngleRight,
 } from "react-icons/fa"
 import {
+  IoMdExit,
+} from "react-icons/io"
+import {
   IconContext,
 } from "react-icons"
 import {
@@ -32,7 +35,7 @@ import {
 export const GamePanel = ({zoom, setZoom}) => {
   return (
     <div className="fixed top-0 right-0 h-full bg-slate-800 border-l-2 border-slate-700">
-      <div className="pr-12 pt-8 pl-8">
+      <div className="w-64 pr-3 pt-4 pl-4">
         <Panel zoom={zoom} setZoom={setZoom} />
       </div>
     </div>
@@ -43,9 +46,10 @@ function Panel({zoom, setZoom}) {
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
+  let { black, white} = useGameStore(state => state)
   let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
-  let onLobby = useCallback(() => {
+  let onExit = useCallback(() => {
     navigate(base + "/lobby")
   }, [navigate])
   let onPass = useCallback(() => {
@@ -72,12 +76,6 @@ function Panel({zoom, setZoom}) {
   let result = counting ? getScore(board) : undefined
   return (
     <>
-      <div className="mt-2 py-4">
-        <Button
-          onClick={onLobby}>
-          Lobby
-        </Button>
-      </div>
       <div className="inline-flex gap-x-2">
         <button
           onClick={() => setZoom(zoom - 1)}>
@@ -104,6 +102,20 @@ function Panel({zoom, setZoom}) {
             <FaAngleRight />
           </IconContext.Provider>
         </button>
+      </div>
+      <button title="Leave the game" onClick={onExit}
+        className="float-right">
+        <IconContext.Provider value={{
+          size: "1.5em",
+          className: "pr-[4px]",
+        }}>
+          <IoMdExit />
+        </IconContext.Provider>
+      </button>
+      <div className="flex gap-x-1">
+        <div>{white.name}</div>
+        <div>vs</div>
+        <div>{black.name}</div>
       </div>
       <div className="mt-2">
         <Button

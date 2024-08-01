@@ -1,5 +1,6 @@
 package com.bernd;
 
+import com.bernd.model.ActiveGame;
 import com.bernd.model.ActiveGameList;
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
@@ -67,20 +68,23 @@ public class LobbyController {
   @PostMapping(value = "/api/start_edit", consumes = "application/json")
   public Game startEdit(@RequestBody MatchRequest request) {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    User user = lobbyUsers.remove(Objects.toString(principal));
+    lobbyUsers.remove(Objects.toString(principal));
+    User user = new User(Objects.toString(principal));
     operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
-    return games.put(new Game(
+    Game game = games.put(new Game(
         RandomString.get(),
         user,
         user,
         true,
         false,
-        user.name(),
+        Objects.toString(principal),
         B,
         false,
         createEmptyBoard(request.dim()),
         0,
         new int[]{-1, -1}));
+    activeGames.put(ActiveGame.fromGame(game));
+    return game;
   }
 
   public static int[][] createEmptyBoard(int dimension) {
