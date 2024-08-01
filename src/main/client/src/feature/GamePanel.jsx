@@ -4,6 +4,7 @@ import {
 } from "react"
 import {
   useParams,
+  useNavigate,
 } from "react-router-dom"
 import {
   FaAngleLeft,
@@ -18,6 +19,7 @@ import {
   WHITE,
   TERRITORY_B,
   TERRITORY_W,
+  base,
 } from "../util.js"
 import {
   Button,
@@ -42,6 +44,10 @@ function Panel({zoom, setZoom}) {
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
+  let navigate = useNavigate()
+  let onLobby = useCallback(() => {
+    navigate(base + "/lobby")
+  }, [navigate])
   let onPass = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
@@ -66,6 +72,12 @@ function Panel({zoom, setZoom}) {
   let result = counting ? getScore(board) : undefined
   return (
     <>
+      <div className="mt-2 py-4">
+        <Button
+          onClick={onLobby}>
+          Lobby
+        </Button>
+      </div>
       <div className="inline-flex gap-x-2">
         <button
           onClick={() => setZoom(zoom - 1)}>
