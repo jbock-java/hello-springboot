@@ -29,12 +29,21 @@ import {
   OpenGames,
 } from "./feature/OpenGames.jsx"
 import {
+  ActiveGames,
+} from "./feature/ActiveGames.jsx"
+import {
   useAuthStore,
 } from "./store.js"
+
+const detailData = [
+  ["open", "Open Games"],
+  ["active", "Active Games"],
+]
 
 export function Lobby() {
   let [isNewGameOpen, setNewGameOpen] = useState(false)
   let [isStartEditOpen, setStartEditOpen] = useState(false)
+  let [detail, setDetail] = useState("open")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
@@ -100,7 +109,31 @@ export function Lobby() {
           </Button>
         )}
       </div>
-      <OpenGames />
+      <div className="clear-both" />
+      <div className="mt-2">
+        <div className={twJoin(
+          "float-left py-3 pl-2 pr-3 bg-slate-700 border-r-2 border-y-2 border-slate-600",
+          "rounded-r-lg flex flex-col gap-y-2",
+        )}>
+        {detailData.map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setDetail(id)}
+            disabled={id === detail}
+            className={twJoin(
+              "px-2 py-2 rounded-lg border-2",
+              id === detail && "border-slate-600",
+              id !== detail && "border-transparent hover:bg-slate-800 hover:border-slate-600",
+            )}>{label}</button>
+        ))}
+        </div>
+      </div>
+      {detail === "open" && (
+        <OpenGames />
+      )}
+      {detail === "active" && (
+        <ActiveGames />
+      )}
       <LobbyPanel />
     </div>
   )

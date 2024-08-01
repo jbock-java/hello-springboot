@@ -1,10 +1,11 @@
 package com.bernd;
 
+import com.bernd.model.ActiveGameList;
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
+import com.bernd.model.OpenGameList;
 import com.bernd.model.User;
 import com.bernd.util.RandomString;
-import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.Objects;
 
 import static com.bernd.game.Board.B;
 
@@ -23,17 +26,19 @@ public class LobbyController {
   private final LobbyUsers lobbyUsers;
   private final Games games;
   private final OpenGames openGames;
-  private User lookingForMatch;
+  private final ActiveGames activeGames;
 
   LobbyController(
       MessageSendingOperations<String> operations,
       LobbyUsers lobbyUsers,
       OpenGames openGames,
-      Games games) {
+      Games games,
+      ActiveGames activeGames) {
     this.operations = operations;
     this.lobbyUsers = lobbyUsers;
     this.games = games;
     this.openGames = openGames;
+    this.activeGames = activeGames;
   }
 
   @GetMapping(value = "/api/lobby/hello")
@@ -42,7 +47,20 @@ public class LobbyController {
     lobbyUsers.add(Objects.toString(principal));
     operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
+    operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
     return ResponseEntity.ok().build();
+  }
+
+  @ResponseBody
+  @GetMapping(value = "/api/lobby/active_games")
+  public ActiveGameList getActiveGames() {
+    return activeGames.games();
+  }
+
+  @ResponseBody
+  @GetMapping(value = "/api/lobby/open_games")
+  public OpenGameList getOpenGames() {
+    return openGames.games();
   }
 
   @ResponseBody
@@ -71,17 +89,6 @@ public class LobbyController {
     for (int y = 0; y < dim; y++) {
       board[y] = new int[dim];
     }
-//    board = new int[][]{
-//        new int[]{0, 0, 0, 0, W, B, 0, 0, 0},
-//        new int[]{0, 0, 0, 0, W, B, 0, 0, 0},
-//        new int[]{0, 0, W, W, W, B, 0, 0, 0},
-//        new int[]{0, 0, W, B, B, B, 0, B, B},
-//        new int[]{W, 0, W, B, B, 0, B, W, W},
-//        new int[]{B, W, W, B, 0, B, W, W, 0},
-//        new int[]{B, B, B, B, W, B, W, 0, 0},
-//        new int[]{0, 0, 0, B, B, W, W, 0, 0},
-//        new int[]{0, 0, 0, B, W, W, W, 0, 0},
-//    };
     return board;
   }
 }

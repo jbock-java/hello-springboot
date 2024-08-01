@@ -49,6 +49,14 @@ export function OpenGames() {
       return
     }
     initialized.current = true
+    doTry(async () => {
+      let r = await tfetch("/api/lobby/open_games", {
+        headers: {
+          "Authorization": "Bearer " + auth.token,
+        },
+      })
+      setOpenGames(r.games)
+    })
     let sub1 = stompClient.subscribe("/topic/lobby/open_games", (message) => {
       let r = JSON.parse(message.body)
       setOpenGames(r.games)
@@ -69,8 +77,7 @@ export function OpenGames() {
     navigate(base + "/game/" + d.game.id)
   }), [auth, navigate])
   return (
-    <div className="mt-1 ml-2">
-      <div className="float-left pt-3">Open games:</div>
+    <>
       <div className="float-left ml-4 grid grid-cols-[min-content_min-content]">
         {openGames.map((game) => (
           <OpenGame
@@ -87,7 +94,7 @@ export function OpenGames() {
           onAccept={onAccept}
         />
       )}
-    </div>
+    </>
   )
 }
 
