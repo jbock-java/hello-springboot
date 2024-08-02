@@ -196,20 +196,21 @@ export const Game = () => {
       let game = JSON.parse(message.body)
       setGameState(game)
     })
+    let sub2 = stompClient.subscribe("/topic/move/" + gameId, (message) => {
+      let move = JSON.parse(message.body)
+      console.log(move) // TODO
+    })
     doTry(async () => {
-      await tfetch("/api/game/hello", {
-        method: "POST",
+      let game = await tfetch("/api/game/" + gameId, {
         headers: {
           "Authorization": "Bearer " + auth.token,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: gameId,
-        }),
       })
+      setGameState(game)
     })
     return () => {
       sub1.unsubscribe()
+      sub2.unsubscribe()
     }
   }, [setGameState, initialized, stompClient, gameId, auth])
   if (!board.length) {
@@ -249,7 +250,7 @@ function showStone({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   ctx.fill()
 }
 
-function showTriangle({ isCursorInBounds, canvasRef, grid, stoneRadius, lastStoneXref, lastStoneYref }, board) {
+function paintLastMove({ isCursorInBounds, canvasRef, grid, stoneRadius, lastStoneXref, lastStoneYref }, board) {
   let grid_x = lastStoneXref.current
   let grid_y = lastStoneYref.current
   if (!isCursorInBounds(grid_x, grid_y)) {
@@ -261,11 +262,12 @@ function showTriangle({ isCursorInBounds, canvasRef, grid, stoneRadius, lastSton
     "rgba(0,0,0)"
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
+  let length = stoneRadius * 0.875
   ctx.fillStyle = style
   ctx.beginPath()
   ctx.moveTo(x, y)
-  ctx.lineTo(x + stoneRadius, y)
-  ctx.lineTo(x , y + stoneRadius)
+  ctx.lineTo(x + length, y)
+  ctx.lineTo(x , y + length)
   ctx.fill()
 }
 
@@ -328,7 +330,7 @@ function paintStones(context, board) {
       }
     }
   }
-  showTriangle(context, board)
+  paintLastMove(context, board)
 }
 
 function paintStonesCounting(context, board, countingGroup) {

@@ -2,6 +2,7 @@ package com.bernd.model;
 
 import com.bernd.game.Count;
 import com.bernd.game.Direction;
+import com.bernd.game.MoveList;
 import com.bernd.game.Toggle;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
@@ -24,7 +25,8 @@ public record Game(
     boolean opponentPassed,
     int[][] board,
     int handicap,
-    int[] forbidden
+    int[] forbidden,
+    MoveList moves
 ) {
 
   private static final Logger logger = LogManager.getLogger(Game.class);
@@ -48,6 +50,7 @@ public record Game(
       int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
       return game(Count.count(toggled), NOT_FORBIDDEN);
     }
+    moves.add(currentColor, move);
     if (move.pass()) {
       if (opponentPassed) {
         return startCounting();
@@ -134,7 +137,8 @@ public record Game(
         opponentPassed,
         board,
         Math.max(0, handicap - 1),
-        forbidden);
+        forbidden,
+        moves);
   }
 
   private Game game(int[][] board, int[] forbidden) {
@@ -157,5 +161,9 @@ public record Game(
       return currentColor;
     }
     return currentColor == B ? W : B;
+  }
+
+  public ViewGame toView() {
+    return ViewGame.fromGame(this);
   }
 }

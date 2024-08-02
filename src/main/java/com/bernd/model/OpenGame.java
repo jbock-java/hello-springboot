@@ -1,5 +1,7 @@
 package com.bernd.model;
 
+import com.bernd.game.MoveList;
+
 import static com.bernd.LobbyController.createEmptyBoard;
 import static com.bernd.game.Board.B;
 
@@ -31,6 +33,7 @@ public record OpenGame(
         false,
         createEmptyBoard(dim),
         acceptRequest.handicap(),
-        new int[]{-1, -1});
+        new int[]{-1, -1},
+        MoveList.create(dim));
   }
 }
