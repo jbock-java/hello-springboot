@@ -2,6 +2,7 @@ package com.bernd.game;
 
 import com.bernd.model.GameMove;
 import com.bernd.model.Move;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +25,7 @@ public final class MoveList {
   private MoveList(
       int dim,
       int[] buffer) {
-    this.capacity = dim * dim;
+    this.capacity = 2 * buffer.length;
     this.dim = dim;
     this.buffer = buffer;
   }
@@ -39,7 +40,8 @@ public final class MoveList {
 
   public void add(int color, Move move) {
     if (pos >= capacity) {
-      int newCapacity = 2 * capacity;
+      int boardSize = dim * dim;
+      int newCapacity = capacity < boardSize ? boardSize : capacity + boardSize;
       buffer = Arrays.copyOf(buffer, divUp(newCapacity, 2));
       capacity = newCapacity;
     }
@@ -61,12 +63,12 @@ public final class MoveList {
     int ptId = i % 2 == 0 ? code & LO : (code >> 16);
     int color = (ptId & WHITE) != 0 ? Board.W : Board.B;
     if ((ptId & PASS) != 0) {
-      return new GameMove(i, color, true, -1, -1);
+      return new GameMove(i, color, true, -1, -1, new int[]{-1, -1});
     } else {
       int data = ptId & DATA;
       int x = data % dim;
       int y = data / dim;
-      return new GameMove(i, color, true, x, y);
+      return new GameMove(i, color, true, x, y, new int[]{-1, -1});
     }
   }
 
