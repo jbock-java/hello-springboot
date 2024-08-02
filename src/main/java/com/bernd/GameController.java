@@ -2,13 +2,13 @@ package com.bernd;
 
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
+import com.bernd.model.CountingMove;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
-import java.security.Principal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.security.Principal;
 
 @Controller
 public class GameController {
@@ -61,8 +63,11 @@ public class GameController {
     }
     Game updated = game.update(move);
     games.put(updated);
-    operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber));
-    operations.convertAndSend("/topic/game/" + game.id(), updated.toView());
+    if (updated.counting()) {
+      operations.convertAndSend("/topic/move/" + game.id(), CountingMove.create(color, moveNumber, updated.board()));
+    } else {
+      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber, updated.forbidden()));
+    }
   }
 
   @ResponseBody

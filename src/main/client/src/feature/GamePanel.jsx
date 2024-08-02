@@ -46,7 +46,8 @@ function Panel({zoom, setZoom}) {
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let { black, white} = useGameStore(state => state)
+  let black = useGameStore(state => state.black)
+  let white = useGameStore(state => state.white)
   let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {

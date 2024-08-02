@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MoveListTest {
 
   @Test
-  void get() {
+  void testGet() {
     MoveList list = MoveList.create(9);
     list.add(Board.B, move(0, 1));
     list.add(Board.W, move(2, 3));
@@ -19,6 +19,17 @@ class MoveListTest {
     assertEquals(2, list.get(1).x());
     assertEquals(3, list.get(1).y());
     assertEquals(Board.W, list.get(1).color());
+  }
+
+  @Test
+  void testGrow() {
+    MoveList list = MoveList.create(9);
+    for (int y = 0; y < 9; y++) {
+      for (int x = 0; x < 9; x++) {
+        list.add(Board.B, move(x, y));
+      }
+    }
+    assertEquals(81, list.size());
   }
 
   private Move move(int x, int y) {

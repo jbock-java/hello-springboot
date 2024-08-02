@@ -6,9 +6,11 @@ import {
 } from "immer"
 import {
   BLACK,
+  WHITE,
 } from "./util.js"
 import {
   rehydrate,
+  updateBoard,
 } from "./model/board.js"
 
 export const useAuthStore = create((set) => ({
@@ -31,7 +33,10 @@ export const useAuthStore = create((set) => ({
   },
 }))
 
-export const useGameStore = create((set) => ({
+export const useGameStore = create((set, get) => ({
+  moves: [],
+  baseBoard: [],
+  queueStatus: "behind",
   editMode: false,
   black: {
     name: "",
@@ -52,16 +57,41 @@ export const useGameStore = create((set) => ({
     counting: false,
     forbidden: [-1, -1],
   },
+  addMove: (move) => {
+    set(produce(state => {
+      if (get().moves.length < move.n) {
+        state.queueStatus = "behind"
+        return
+      }
+      state.queueStatus = "up_to_date"
+      state.moves.push(move)
+      if (move.counting) {
+        state.gameState.counting = true
+        state.baseBoard = move.board
+        state.gameState.board = rehydrate(move.board)
+        return
+      }
+      let updated = updateBoard(get().baseBoard, move)
+      state.baseBoard = updated
+      state.gameState.board = rehydrate(updated)
+      state.gameState.currentColor = get().gameState.currentColor ^ (BLACK | WHITE)
+      state.gameState.currentPlayer = get().gameState.currentPlayer === get().black.name ? get().white.name : get().black.name
+      state.gameState.forbidden = move.forbidden
+    }))
+  },
   setGameState: (game) => {
     set(produce(state => {
       state.black = game.black
       state.white = game.white
       state.editMode = game.editMode
+      state.baseBoard = game.board
+      state.moves = game.moves
       state.gameState.board = rehydrate(game.board)
       state.gameState.currentPlayer = game.currentPlayer
       state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting
       state.gameState.forbidden = game.forbidden
+      state.queueStatue = "up_to_date"
     }))
   },
 }))

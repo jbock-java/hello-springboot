@@ -47,10 +47,14 @@ export const Game = () => {
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
+  let queueStatus = useGameStore(state => state.queueStatus)
+  let addMove = useGameStore(state => state.addMove)
   let { board, currentColor, currentPlayer, counting, forbidden } = useGameStore(state => state.gameState)
   let [forbidden_x, forbidden_y] = forbidden
   let initialized = useRef()
   let canvasRef = useRef()
+  let countingGroup = counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+
   let context = useMemo(() => {
     let dim = board.length
     if (!dim) {
@@ -111,6 +115,7 @@ export const Game = () => {
       lastStoneYref: lastStoneYref,
     }
   }, [board.length, canvasRef, zoom])
+
   let onMouseMove = useCallback((e) => {
     if (!board.length) {
       return
@@ -123,7 +128,7 @@ export const Game = () => {
     setCursor_x(cursor_x + 0)
     setCursor_y(cursor_y + 0)
   }, [context, currentPlayer, auth, board.length, counting])
-  let countingGroup = counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+
   let onClick = useCallback((e) => {
     if (!board.length) {
       return
@@ -159,6 +164,7 @@ export const Game = () => {
       }),
     })
   }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y])
+
   useEffect(() => {
     if (!board.length) {
       return
@@ -187,19 +193,11 @@ export const Game = () => {
       "rgba(255,255,255,0.25)"
     showShadow(context, cursor_x, cursor_y, style)
   }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y])
+
   useEffect(() => {
-    if (initialized.current) {
+    if (queueStatus === "up_to_date") {
       return
     }
-    initialized.current = true
-    let sub1 = stompClient.subscribe("/topic/game/" + gameId, (message) => {
-      let game = JSON.parse(message.body)
-      setGameState(game)
-    })
-    let sub2 = stompClient.subscribe("/topic/move/" + gameId, (message) => {
-      let move = JSON.parse(message.body)
-      console.log(move) // TODO
-    })
     doTry(async () => {
       let game = await tfetch("/api/game/" + gameId, {
         headers: {
@@ -208,14 +206,24 @@ export const Game = () => {
       })
       setGameState(game)
     })
-    return () => {
-      sub1.unsubscribe()
-      sub2.unsubscribe()
+  }, [setGameState, queueStatus, auth, gameId])
+
+  useEffect(() => {
+    if (initialized.current) {
+      return
     }
-  }, [setGameState, initialized, stompClient, gameId, auth])
+    initialized.current = true
+    let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
+      let move = JSON.parse(message.body)
+      addMove(move)
+    })
+    return sub.unsubscribe
+  }, [setGameState, addMove, initialized, stompClient, gameId, auth])
+
   if (!board.length) {
     return <div>Loading...</div>
   }
+
   return (
     <div className="grid justify-center mt-8">
       <canvas ref={canvasRef}
