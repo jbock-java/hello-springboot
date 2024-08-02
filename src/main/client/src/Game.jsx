@@ -40,6 +40,8 @@ const TAU = 2 * Math.PI
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let lastStoneXref = useRef(-1)
+  let lastStoneYref = useRef(-1)
   let [zoom, setZoom] = useState(0)
   let { gameId } = useParams()
   let stompClient = useContext(StompContext)
@@ -73,11 +75,7 @@ export const Game = () => {
     }
     let hoshis = new PointList(dim)
     if (dim === 9) {
-      hoshis.add(2, 2)
-      hoshis.add(2, 6)
       hoshis.add(4, 4)
-      hoshis.add(6, 2)
-      hoshis.add(6, 6)
     } else if (dim === 13) {
       hoshis.add(3, 3)
       hoshis.add(3, 9)
@@ -109,6 +107,8 @@ export const Game = () => {
       stoneRadius: getRadius(step * 0.475),
       territoryRadius: getRadius(step * 0.125),
       hoshiRadius: getRadius(step * 0.0625),
+      lastStoneXref: lastStoneXref,
+      lastStoneYref: lastStoneYref,
     }
   }, [board.length, canvasRef, zoom])
   let onMouseMove = useCallback((e) => {
@@ -148,6 +148,8 @@ export const Game = () => {
         return
       }
     }
+    lastStoneXref.current = cursor_x
+    lastStoneYref.current = cursor_y
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
@@ -247,6 +249,26 @@ function showStone({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   ctx.fill()
 }
 
+function showTriangle({ isCursorInBounds, canvasRef, grid, stoneRadius, lastStoneXref, lastStoneYref }, board) {
+  let grid_x = lastStoneXref.current
+  let grid_y = lastStoneYref.current
+  if (!isCursorInBounds(grid_x, grid_y)) {
+    return
+  }
+  let { color } = board[grid_y][grid_x]
+  let style = color === BLACK ?
+    "rgba(255,255,255)" :
+    "rgba(0,0,0)"
+  let [x, y] = grid[grid_y][grid_x]
+  let ctx = canvasRef.current.getContext("2d")
+  ctx.fillStyle = style
+  ctx.beginPath()
+  ctx.moveTo(x, y)
+  ctx.lineTo(x + stoneRadius, y)
+  ctx.lineTo(x , y + stoneRadius)
+  ctx.fill()
+}
+
 function showShadow({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
@@ -306,6 +328,7 @@ function paintStones(context, board) {
       }
     }
   }
+  showTriangle(context, board)
 }
 
 function paintStonesCounting(context, board, countingGroup) {
