@@ -16,14 +16,6 @@ public final class MoveList {
   private static final int PASS = 0x2000;
   private static final int DATA = 0x0fff;
 
-  public static void main(String[] args) {
-    int n = 1024 * 4;
-    System.out.printf("%x\n", n);
-    System.out.println(n);
-    System.out.printf("%x\n", 2 * n);
-    System.out.println(2 * n);
-  }
-
   private int pos;
   private int capacity;
   private final int dim;
