@@ -3,20 +3,21 @@ package com.bernd;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Game;
-import com.bernd.model.JoinGameRequest;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
+import com.bernd.model.ViewGame;
+import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
+import java.security.Principal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.Objects;
 
 @Controller
 public class GameController {
@@ -37,26 +38,38 @@ public class GameController {
     this.activeGames = activeGames;
   }
 
-  @PostMapping(value = "/api/game/hello", consumes = "application/json")
-  public ResponseEntity<?> sayHello(@RequestBody JoinGameRequest request) {
-    Game game = games.get(request.id());
-    operations.convertAndSend("/topic/game/" + request.id(), game);
-    return ResponseEntity.ok().build();
+  @ResponseBody
+  @GetMapping(value = "/api/game/{id}")
+  public ViewGame getGame(@PathVariable String id) {
+    Game game = games.get(id);
+    if (game == null) {
+      return null;
+    }
+    return game.toView();
   }
 
   @MessageMapping("/game/move")
-  public void action(Move move) {
+  public void action(Move move, Principal principal) {
     Game game = games.get(move.id());
+    if (game == null) {
+      return;
+    }
+    int moveNumber = game.moves().size();
+    int color = game.currentColor();
+    if (!principal.getName().equals(game.currentPlayer())) {
+      return; // discard
+    }
     Game updated = game.update(move);
     games.put(updated);
-    operations.convertAndSend("/topic/game/" + game.id(), updated);
+    operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber));
+    operations.convertAndSend("/topic/game/" + game.id(), updated.toView());
   }
 
   @ResponseBody
   @PostMapping(value = "/api/create", consumes = "application/json")
   public OpenGame newGame(@RequestBody OpenGame game) {
-    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    OpenGame result = openGames.put(game.withUser(Objects.toString(principal, ""))
+    String principal = Auth.getPrincipal();
+    OpenGame result = openGames.put(game.withUser(principal)
         .withId(RandomString.get()));
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     return result;
@@ -64,12 +77,12 @@ public class GameController {
 
   @PostMapping(value = "/api/accept", consumes = "application/json")
   public ResponseEntity<?> accept(@RequestBody AcceptRequest acceptRequest) {
-    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    openGames.remove(Objects.toString(principal));
+    String principal = Auth.getPrincipal();
+    openGames.remove(principal);
     OpenGame openGame = openGames.remove(acceptRequest.game().user().name());
-    Game fullGame = games.put(openGame.accept(principal.toString(), acceptRequest));
+    Game fullGame = games.put(openGame.accept(principal, acceptRequest));
     activeGames.put(ActiveGame.fromGame(fullGame));
-    operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame);
+    operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame.toView());
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
     return ResponseEntity.ok().build();

@@ -175,8 +175,7 @@ function AcceptDialog({acceptableGame, onAccept}) {
           <IconContext.Provider value={{
             size: "1.25em",
             className: twJoin(
-              "pl-[4px]",
-              "pr-[4px]",
+              "px-1",
               handi === 0 && "text-slate-400",
             )
           }}>
