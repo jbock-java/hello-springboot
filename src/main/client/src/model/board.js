@@ -9,11 +9,9 @@ import {
 } from "./PointSet.js"
 import {
   hasStone,
-  BLACK,
-  WHITE,
 } from "../util.js"
 
-export function getGroup(board, xx, yy) {
+export function getGroupInfo(board, xx, yy) {
   let color = board[yy][xx]
   let dim = board.length
   if (!hasStone(color)) {
@@ -103,166 +101,54 @@ export function rehydrate(board) {
         result[y][x] = {...result[y][x], x: x, y: y, ptId: y * dim + x }
         continue
       }
-      let group = getGroup(board, x, y)
-      group.points.forEach((_x, _y) => {
-        result[_y][_x] = group
+      let groupInfo = getGroupInfo(board, x, y)
+      groupInfo.points.forEach((_x, _y) => {
+        result[_y][_x] = groupInfo
       })
+    }
+  }
+  for (let y = 0; y < result.length; y++) {
+    for (let x = 0; x < result[y].length; x++) {
+      let groupInfo = result[y][x]
+      groupInfo.isForbidden = (color) => isForbidden(result, groupInfo, color)
     }
   }
   return result
 }
 
-export function isForbidden(board, groupInfo, currentColor) {
-  let { x, y } = groupInfo
-  let dim = board.length
+function isForbidden(board, {x, y}, currentColor) {
   if (board[y][x].hasStone) {
     return true
   }
-  if (y > 0) {
-    let {color, liberties, hasStone} = board[y - 1][x]
-    if (!hasStone) {
-      return false
-    }
-    if (color !== currentColor && liberties === 1) {
-      return false
-    }
-    if (color === currentColor && liberties >= 2) {
-      return false
-    }
+  if (addsLiberty(board, x, y - 1, currentColor)) {
+    return false
   }
-  if (y < dim - 1) {
-    let {color, liberties, hasStone} = board[y + 1][x]
-    if (!hasStone) {
-      return false
-    }
-    if (color !== currentColor && liberties === 1) {
-      return false
-    }
-    if (color === currentColor && liberties >= 2) {
-      return false
-    }
+  if (addsLiberty(board, x, y + 1, currentColor)) {
+    return false
   }
-  if (x > 0) {
-    let {color, liberties, hasStone} = board[y][x - 1]
-    if (!hasStone) {
-      return false
-    }
-    if (color !== currentColor && liberties === 1) {
-      return false
-    }
-    if (color === currentColor && liberties >= 2) {
-      return false
-    }
+  if (addsLiberty(board, x - 1, y, currentColor)) {
+    return false
   }
-  if (x < dim - 1) {
-    let {color, liberties, hasStone} = board[y][x + 1]
-    if (!hasStone) {
-      return false
-    }
-    if (color !== currentColor && liberties === 1) {
-      return false
-    }
-    if (color === currentColor && liberties >= 2) {
-      return false
-    }
+  if (addsLiberty(board, x + 1, y, currentColor)) {
+    return false
   }
   return true
 }
 
-export function updateBoard(board, move) {
-  let {pass, x, y, color} = move
-  if (pass) {
-    return board
-  }
-  board = applyMove(board, move)
-  let oppositeColor = color ^ (WHITE | BLACK)
-  board = removeDeadGroup(board, x, y - 1, oppositeColor)
-  board = removeDeadGroup(board, x, y + 1, oppositeColor)
-  board = removeDeadGroup(board, x - 1, y, oppositeColor)
-  board = removeDeadGroup(board, x + 1, y, oppositeColor)
-  return board
-}
-
-function removeDeadGroup(board, xx, yy, color) {
+function addsLiberty(board, x, y, currentColor) {
   let dim = board.length
-  if (Math.min(xx, yy) < 0 || Math.max(xx, yy) >= dim) {
-    return board
+  if (Math.min(x, y) < 0 || Math.max(x, y) >= dim) {
+    return false
   }
-  if (board[yy][xx] !== color) {
-    return board
+  let {color, liberties, hasStone} = board[y][x]
+  if (!hasStone) {
+    return true
   }
-  if (yy > 0 && board[yy - 1][xx] == 0) {
-    return board
+  if (color !== currentColor && liberties === 1) {
+    return true // can kill
   }
-  if (yy < dim - 1 && board[yy + 1][xx] == 0) {
-    return board
+  if (color === currentColor && liberties >= 2) {
+    return true
   }
-  if (xx > 0 && board[yy][xx - 1] == 0) {
-    return board
-  }
-  if (xx < dim - 1 && board[yy][xx + 1] == 0) {
-    return board
-  }
-  let acc = new PointList(dim)
-  let pointsChecked = new PointSet(dim)
-  pointsChecked.add(xx, yy)
-  let pointsToCheck = new PointQueue(dim)
-  pointsToCheck.offer(xx, yy)
-  while (!pointsToCheck.isEmpty()) {
-    let ptId = pointsToCheck.poll()
-    let y = Math.trunc(ptId / dim)
-    let x = ptId % dim
-    acc.add(x, y)
-    if (y > 0) {
-      let bpt = board[y - 1][x]
-      if (bpt === 0) {
-        return board
-      } else if (bpt === color && !pointsChecked.has(x, y - 1)) {
-        pointsChecked.add(x, y - 1)
-        pointsToCheck.offer(x, y - 1)
-      }
-    }
-    if (y < dim - 1) {
-      let bpt = board[y + 1][x]
-      if (bpt === 0) {
-        return board
-      } else if (bpt === color && !pointsChecked.has(x, y + 1)) {
-        pointsChecked.add(x, y + 1)
-        pointsToCheck.offer(x, y + 1)
-      }
-    }
-    if (x > 0) {
-      let bpt = board[y][x - 1]
-      if (bpt === 0) {
-        return board
-      } else if (bpt === color && !pointsChecked.has(x - 1, y)) {
-        pointsChecked.add(x - 1, y)
-        pointsToCheck.offer(x - 1, y)
-      }
-    }
-    if (x < dim - 1) {
-      let bpt = board[y][x + 1]
-      if (bpt === 0) {
-        return board
-      } else if (bpt === color && !pointsChecked.has(x + 1, y)) {
-        pointsChecked.add(x + 1, y)
-        pointsToCheck.offer(x + 1, y)
-      }
-    }
-  }
-  let result = board.slice()
-  acc.forEach((x, y) => {
-    if (result[y] === board[y]) {
-      result[y] = board[y].slice()
-    }
-    result[y][x] = 0
-  })
-  return result
-}
-
-function applyMove(board, {color, x, y}) {
-  let result = board.slice()
-  result[y] = board[y].slice()
-  result[y][x] = color
-  return result
+  return false
 }

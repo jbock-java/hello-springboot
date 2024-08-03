@@ -10,8 +10,10 @@ import {
 } from "./util.js"
 import {
   rehydrate,
-  updateBoard,
 } from "./model/board.js"
+import {
+  updateBoard,
+} from "./model/base.js"
 
 export const useAuthStore = create((set) => ({
   auth: {

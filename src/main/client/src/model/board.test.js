@@ -3,7 +3,7 @@ import {
   test,
 } from "vitest"
 import {
-  getGroup,
+  getGroupInfo,
   rehydrate,
 } from "./board.js"
 import {
@@ -33,7 +33,7 @@ test("has", () => {
     [w, w, w, 0],
     [0, 0, 0, 0],
   ]
-  let { has } = getGroup(board, 0, 1)
+  let { has } = getGroupInfo(board, 0, 1)
   expect(has(0, 0)).toBe(false)
   expect(has(0, 1)).toBe(true)
   expect(has(1, 0)).toBe(true)

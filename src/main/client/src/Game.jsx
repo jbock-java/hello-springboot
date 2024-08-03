@@ -20,9 +20,6 @@ import {
   doTry,
 } from "./util.js"
 import {
-  isForbidden,
-} from "./model/board.js"
-import {
   PointList,
 } from "./model/PointList.js"
 import {
@@ -143,7 +140,7 @@ export const Game = () => {
         return
       }
     } else {
-      if (isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+      if (board[cursor_y][cursor_x].isForbidden(currentColor)) {
         return
       }
       if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
@@ -182,7 +179,7 @@ export const Game = () => {
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (isForbidden(board, board[cursor_y][cursor_x], currentColor)) {
+    if (board[cursor_y][cursor_x].isForbidden(currentColor)) {
       return
     }
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
