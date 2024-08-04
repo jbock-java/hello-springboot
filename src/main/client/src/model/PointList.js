@@ -7,11 +7,14 @@ export class PointList {
   static LO = 0xffff
   static HI = 0xffff0000
 
+  static EMPTY = {
+    size: () => 0,
+    forEach: () => undefined,
+    isEmpty: () => true,
+  }
+
   static empty() {
-    return {
-      size: 0,
-      forEach: () => {},
-    }
+    return PointList.EMPTY
   }
 
   constructor(dim) {

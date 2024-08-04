@@ -35,11 +35,11 @@ public enum Direction {
     return NONE;
   }
 
-  public int moveX(int xx) {
-    return xx + inc_x;
+  public int moveX(int x) {
+    return x + inc_x;
   }
 
-  public int moveY(int yy) {
-    return yy + inc_y;
+  public int moveY(int y) {
+    return y + inc_y;
   }
 }

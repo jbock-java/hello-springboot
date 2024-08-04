@@ -48,7 +48,8 @@ function Panel({zoom, setZoom}) {
   let auth = useAuthStore(state => state.auth)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
-  let { board, currentPlayer, counting } = useGameStore(state => state.gameState)
+  let currentPlayer = useGameStore(state => state.currentPlayer)
+  let { board, counting } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -121,7 +122,7 @@ function Panel({zoom, setZoom}) {
       <div className="mt-2">
         <Button
           onClick={onPass}
-          disabled={counting || currentPlayer !== auth.name}>
+          disabled={counting || currentPlayer() !== auth.name}>
           Pass
         </Button>
       </div>
@@ -148,7 +149,7 @@ function Panel({zoom, setZoom}) {
       )}
       {!counting && (
         <div className="mt-2">
-          {currentPlayer + " ist dran..."}
+          {currentPlayer() + " ist dran..."}
         </div>
       )}
     </>

@@ -66,7 +66,7 @@ public class GameController {
     if (updated.counting()) {
       operations.convertAndSend("/topic/move/" + game.id(), CountingMove.create(color, moveNumber, updated.board()));
     } else {
-      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber, updated.forbidden()));
+      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber));
     }
   }
 

@@ -46,7 +46,8 @@ export const Game = () => {
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
   let addMove = useGameStore(state => state.addMove)
-  let { board, currentColor, currentPlayer, counting, forbidden } = useGameStore(state => state.gameState)
+  let currentPlayer = useGameStore(state => state.currentPlayer)
+  let { board, currentColor, counting, forbidden } = useGameStore(state => state.gameState)
   let [forbidden_x, forbidden_y] = forbidden
   let initialized = useRef()
   let canvasRef = useRef()
@@ -117,7 +118,7 @@ export const Game = () => {
     if (!board.length) {
       return
     }
-    if (!counting && currentPlayer !== auth.name) {
+    if (!counting && currentPlayer() !== auth.name) {
       return
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
@@ -146,7 +147,7 @@ export const Game = () => {
       if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
         return
       }
-      if (currentPlayer !== auth.name) {
+      if (currentPlayer() !== auth.name) {
         return
       }
     }
@@ -173,7 +174,7 @@ export const Game = () => {
     } else {
       paintStones(context, board)
     }
-    if (currentPlayer !== auth.name) {
+    if (currentPlayer() !== auth.name) {
       return
     }
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {

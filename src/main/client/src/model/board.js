@@ -18,7 +18,6 @@ export function getGroupInfo(board, xx, yy) {
     return {
       x: xx,
       y: yy,
-      ptId: yy * dim + xx,
       color: color,
       hasStone: false,
       liberties: 0,
@@ -80,7 +79,6 @@ export function getGroupInfo(board, xx, yy) {
   return {
     x: xx,
     y: yy,
-    ptId: yy * dim + xx,
     color: color,
     hasStone: true,
     liberties: liberties,
@@ -98,7 +96,7 @@ export function rehydrate(board) {
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
       if (result[y][x]) {
-        result[y][x] = {...result[y][x], x: x, y: y, ptId: y * dim + x }
+        result[y][x] = {...result[y][x], x: x, y: y}
         continue
       }
       let groupInfo = getGroupInfo(board, x, y)

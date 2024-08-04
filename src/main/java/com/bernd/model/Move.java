@@ -7,7 +7,7 @@ public record Move(
     int x,
     int y) {
 
-  public GameMove toView(int color, int moveNumber, int[] forbidden) {
-    return new GameMove(moveNumber, color, pass, x, y, false, false, forbidden);
+  public GameMove toView(int color, int moveNumber) {
+    return new GameMove(moveNumber, color, pass, x, y, false, false);
   }
 }

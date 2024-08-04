@@ -17,6 +17,9 @@ import {
 import {
   updateBoard,
 } from "./model/base.js"
+import {
+  getForbidden,
+} from "./model/ko.js"
 
 export const useAuthStore = create((set) => ({
   auth: {
@@ -55,9 +58,13 @@ export const useGameStore = create((set, get) => ({
       state.isInCountingGroup = has
     }))
   },
+  currentPlayer: () => {
+    return get().gameState.currentColor === WHITE ?
+        get().white.name :
+        get().black.name
+  },
   gameState: {
     board: [],
-    currentPlayer: undefined,
     currentColor: BLACK,
     counting: false,
     forbidden: [-1, -1],
@@ -80,12 +87,12 @@ export const useGameStore = create((set, get) => ({
         return
       }
       let [dead, updated] = updateBoard(get().baseBoard, move)
-      state.moves.push({...move, dead})
+      let storedMove = {...move, dead}
+      state.moves.push(storedMove)
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
       state.gameState.currentColor = get().gameState.currentColor ^ (BLACK | WHITE)
-      state.gameState.currentPlayer = get().gameState.currentPlayer === get().black.name ? get().white.name : get().black.name
-      state.gameState.forbidden = move.forbidden
+      state.gameState.forbidden = getForbidden(get().baseBoard, updated, storedMove)
     }))
   },
   setGameState: (game) => {
@@ -96,7 +103,6 @@ export const useGameStore = create((set, get) => ({
       state.baseBoard = game.board
       state.moves = game.moves
       state.gameState.board = rehydrate(game.board)
-      state.gameState.currentPlayer = game.currentPlayer
       state.gameState.currentColor = game.currentColor
       state.gameState.counting = game.counting
       state.gameState.forbidden = game.forbidden
