@@ -48,6 +48,7 @@ function Panel({zoom, setZoom}) {
   let auth = useAuthStore(state => state.auth)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
+  let queueLength = useGameStore(state => state.queueLength)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let { board, counting } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
@@ -59,19 +60,21 @@ function Panel({zoom, setZoom}) {
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
+        n: queueLength(),
         pass: true,
       }),
     })
-  }, [stompClient, gameId])
+  }, [stompClient, gameId, queueLength])
   let onResetCounting = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
+        n: queueLength(),
         resetCounting: true,
       }),
     })
-  }, [stompClient, gameId])
+  }, [stompClient, gameId, queueLength])
   if (!board.length) {
     return <span>Loading...</span>
   }

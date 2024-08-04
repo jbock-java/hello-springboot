@@ -14,6 +14,10 @@ export const TERRITORY_W = 4
 export const REMOVED_B = 8
 export const REMOVED_W = 16
 
+export const TOGGLE_B = REMOVED_B | BLACK
+export const TOGGLE_W = REMOVED_W | WHITE
+export const TOGGLE_STUFF = TOGGLE_B | TOGGLE_W
+
 export const TERRITORY = TERRITORY_W | TERRITORY_B
 export const ANY_REMOVED = REMOVED_W | REMOVED_B
 

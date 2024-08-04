@@ -77,16 +77,16 @@ public final class MoveList {
     int ptId = i % 2 == 0 ? code & LO : (code >> 16);
     int color = (ptId & WHITE) != 0 ? Board.W : Board.B;
     if ((ptId & GAME_END) != 0) {
-      return new GameMove(i, 0, true, -1, -1, true, true);
+      return new GameMove(i, 0, true, -1, -1, true, false, true);
     }
     boolean counting = (ptId & COUNTING) != 0;
     if ((ptId & PASS) != 0) {
-      return new GameMove(i, color, true, -1, -1, counting, false);
+      return new GameMove(i, color, true, -1, -1, counting, false, false);
     } else {
       int data = ptId & DATA;
       int x = data % dim;
       int y = data / dim;
-      return new GameMove(i, color, false, x, y, counting, false);
+      return new GameMove(i, color, false, x, y, counting, false, false);
     }
   }
 

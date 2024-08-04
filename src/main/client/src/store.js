@@ -20,6 +20,11 @@ import {
 import {
   getForbidden,
 } from "./model/ko.js"
+import {
+  count,
+  toggleStonesAt,
+  resetCounting,
+} from "./model/count.js"
 
 export const useAuthStore = create((set) => ({
   auth: {
@@ -63,6 +68,9 @@ export const useGameStore = create((set, get) => ({
         get().white.name :
         get().black.name
   },
+  queueLength: () => {
+    return get().moves.length
+  },
   gameState: {
     board: [],
     currentColor: BLACK,
@@ -82,8 +90,15 @@ export const useGameStore = create((set, get) => ({
       if (move.counting) {
         state.moves.push({...move, dead: PointList.empty()})
         state.gameState.counting = true
-        state.baseBoard = move.board
-        state.gameState.board = rehydrate(move.board)
+        if (move.resetCounting) {
+          let updated = count(resetCounting(get().baseBoard))
+          state.baseBoard = updated
+          state.gameState.board = rehydrate(updated)
+        } else {
+          let updated = count(toggleStonesAt(get().baseBoard, move.x, move.y))
+          state.baseBoard = updated
+          state.gameState.board = rehydrate(updated)
+        }
         return
       }
       let [dead, updated] = updateBoard(get().baseBoard, move)

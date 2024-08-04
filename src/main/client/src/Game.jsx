@@ -45,6 +45,7 @@ export const Game = () => {
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
+  let queueLength = useGameStore(state => state.queueLength)
   let addMove = useGameStore(state => state.addMove)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let { board, currentColor, counting, forbidden } = useGameStore(state => state.gameState)
@@ -157,11 +158,12 @@ export const Game = () => {
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
+        n: queueLength(),
         x: cursor_x,
         y: cursor_y,
       }),
     })
-  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y])
+  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y, queueLength])
 
   useEffect(() => {
     if (!board.length) {

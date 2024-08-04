@@ -247,7 +247,7 @@ class CountTest {
   }
 
   @Test
-  void testCountAgain() {
+  void testTerritoryChangeOwner() {
     int t = TERRITORY_W;
     int r = TERRITORY_W | REMOVED_B;
     int v = TERRITORY_B;

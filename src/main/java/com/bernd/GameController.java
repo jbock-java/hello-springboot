@@ -1,5 +1,6 @@
 package com.bernd;
 
+import com.bernd.game.Board;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.CountingMove;
@@ -58,16 +59,16 @@ public class GameController {
     }
     int moveNumber = game.moves().size();
     int color = game.currentColor();
-    if (!principal.getName().equals(game.currentPlayer())) {
+    String currentPlayer = game.currentColor() == Board.B ? game.black().name() : game.white().name();
+    if (!principal.getName().equals(currentPlayer)) {
       return; // discard
+    }
+    if (move.n() != moveNumber) {
+      return;
     }
     Game updated = game.update(move);
     games.put(updated);
-    if (updated.counting()) {
-      operations.convertAndSend("/topic/move/" + game.id(), CountingMove.create(color, moveNumber, updated.board()));
-    } else {
-      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, moveNumber));
-    }
+    operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, updated.counting()));
   }
 
   @ResponseBody
