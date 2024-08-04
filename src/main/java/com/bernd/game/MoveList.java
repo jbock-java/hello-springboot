@@ -2,7 +2,6 @@ package com.bernd.game;
 
 import com.bernd.model.GameMove;
 import com.bernd.model.Move;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +14,8 @@ public final class MoveList {
   private static final int HI = 0xffff0000;
   private static final int WHITE = 0x1000;
   private static final int PASS = 0x2000;
+  private static final int COUNTING = 0x4000;
+  private static final int GAME_END = 0x8000;
   private static final int DATA = 0x0fff;
 
   private int pos;
@@ -38,13 +39,14 @@ public final class MoveList {
     return new MoveList(dim, new int[16]);
   }
 
-  public void add(int color, Move move) {
-    if (pos >= capacity) {
-      int boardSize = dim * dim;
-      int newCapacity = capacity < boardSize ? boardSize : capacity + boardSize;
-      buffer = Arrays.copyOf(buffer, divUp(newCapacity, 2));
-      capacity = newCapacity;
-    }
+  public void gameEnd() {
+    ensureCapacity();
+    set(GAME_END);
+    pos++;
+  }
+
+  public void add(int color, Move move, boolean counting) {
+    ensureCapacity();
     int ptId;
     if (move.pass()) {
       ptId = PASS;
@@ -54,21 +56,37 @@ public final class MoveList {
     if (color == Board.W) {
       ptId |= WHITE;
     }
+    if (counting) {
+      ptId |= COUNTING;
+    }
     set(ptId);
     pos++;
+  }
+
+  private void ensureCapacity() {
+    if (pos >= capacity) {
+      int boardSize = dim * dim;
+      int newCapacity = capacity < boardSize ? boardSize : capacity + boardSize;
+      buffer = Arrays.copyOf(buffer, divUp(newCapacity, 2));
+      capacity = newCapacity;
+    }
   }
 
   public GameMove get(int i) {
     int code = buffer[i / 2];
     int ptId = i % 2 == 0 ? code & LO : (code >> 16);
     int color = (ptId & WHITE) != 0 ? Board.W : Board.B;
+    if ((ptId & GAME_END) != 0) {
+      return new GameMove(i, 0, true, -1, -1, true, true, new int[]{-1, -1});
+    }
+    boolean counting = (ptId & COUNTING) != 0;
     if ((ptId & PASS) != 0) {
-      return new GameMove(i, color, true, -1, -1, new int[]{-1, -1});
+      return new GameMove(i, color, true, -1, -1, counting, false, new int[]{-1, -1});
     } else {
       int data = ptId & DATA;
       int x = data % dim;
       int y = data / dim;
-      return new GameMove(i, color, true, x, y, new int[]{-1, -1});
+      return new GameMove(i, color, false, x, y, counting, false, new int[]{-1, -1});
     }
   }
 

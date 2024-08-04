@@ -10,8 +10,8 @@ class MoveListTest {
   @Test
   void testGet() {
     MoveList list = MoveList.create(9);
-    list.add(Board.B, move(0, 1));
-    list.add(Board.W, move(2, 3));
+    list.add(Board.B, move(0, 1), false);
+    list.add(Board.W, move(2, 3), false);
     assertEquals(2, list.size());
     assertEquals(0, list.get(0).x());
     assertEquals(1, list.get(0).y());
@@ -26,7 +26,7 @@ class MoveListTest {
     MoveList list = MoveList.create(9);
     for (int y = 0; y < 9; y++) {
       for (int x = 0; x < 9; x++) {
-        list.add(Board.B, move(x, y));
+        list.add(Board.B, move(x, y), false);
       }
     }
     assertEquals(81, list.size());

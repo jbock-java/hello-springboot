@@ -7,6 +7,13 @@ export class PointList {
   static LO = 0xffff
   static HI = 0xffff0000
 
+  static empty() {
+    return {
+      size: 0,
+      forEach: () => {},
+    }
+  }
+
   constructor(dim) {
     if (!dim) {
       throw new Error("expecting argument: dim")
@@ -27,6 +34,13 @@ export class PointList {
     let ptId = this.dim * y + x
     this.#set(ptId)
     this.pos++
+  }
+
+  addAll(other) {
+    if (!other) {
+      return
+    }
+    other.forEach((x, y) => this.add(x, y))
   }
 
   #get(i) {
@@ -55,6 +69,10 @@ export class PointList {
 
   size() {
     return this.pos
+  }
+
+  isEmpty() {
+    return !this.pos
   }
 
   toSet() {

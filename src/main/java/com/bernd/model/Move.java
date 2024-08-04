@@ -8,6 +8,6 @@ public record Move(
     int y) {
 
   public GameMove toView(int color, int moveNumber, int[] forbidden) {
-    return new GameMove(moveNumber, color, pass, x, y, forbidden);
+    return new GameMove(moveNumber, color, pass, x, y, false, false, forbidden);
   }
 }

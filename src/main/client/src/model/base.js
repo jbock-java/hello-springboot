@@ -15,36 +15,47 @@ import {
 export function updateBoard(board, move) {
   let {pass, x, y, color} = move
   if (pass) {
-    return board
+    return [PointList.empty(), board]
   }
   board = applyMove(board, move)
   let oppositeColor = color ^ (WHITE | BLACK)
-  board = removeDeadGroup(board, x, y - 1, oppositeColor)
-  board = removeDeadGroup(board, x, y + 1, oppositeColor)
-  board = removeDeadGroup(board, x - 1, y, oppositeColor)
-  board = removeDeadGroup(board, x + 1, y, oppositeColor)
-  return board
+  let dead = new PointList(board.length)
+  dead.addAll(findDeadStones(board, x, y - 1, oppositeColor))
+  dead.addAll(findDeadStones(board, x, y + 1, oppositeColor))
+  dead.addAll(findDeadStones(board, x - 1, y, oppositeColor))
+  dead.addAll(findDeadStones(board, x + 1, y, oppositeColor))
+  if (dead.isEmpty()) {
+    return [PointList.empty(), board]
+  }
+  let updated = board.slice()
+  dead.forEach((x, y) => {
+    if (updated[y] === board[y]) {
+      updated[y] = board[y].slice()
+    }
+    updated[y][x] = 0
+  })
+  return [dead, updated]
 }
 
-function removeDeadGroup(board, xx, yy, color) {
+function findDeadStones(board, xx, yy, color) {
   let dim = board.length
   if (Math.min(xx, yy) < 0 || Math.max(xx, yy) >= dim) {
-    return board
+    return undefined
   }
   if (board[yy][xx] !== color) {
-    return board
+    return undefined
   }
   if (yy > 0 && board[yy - 1][xx] == 0) {
-    return board
+    return undefined
   }
   if (yy < dim - 1 && board[yy + 1][xx] == 0) {
-    return board
+    return undefined
   }
   if (xx > 0 && board[yy][xx - 1] == 0) {
-    return board
+    return undefined
   }
   if (xx < dim - 1 && board[yy][xx + 1] == 0) {
-    return board
+    return undefined
   }
   let acc = new PointList(dim)
   let pointsChecked = new PointSet(dim)
@@ -59,7 +70,7 @@ function removeDeadGroup(board, xx, yy, color) {
     if (y > 0) {
       let bpt = board[y - 1][x]
       if (bpt === 0) {
-        return board
+        return undefined
       } else if (bpt === color && !pointsChecked.has(x, y - 1)) {
         pointsChecked.add(x, y - 1)
         pointsToCheck.offer(x, y - 1)
@@ -68,7 +79,7 @@ function removeDeadGroup(board, xx, yy, color) {
     if (y < dim - 1) {
       let bpt = board[y + 1][x]
       if (bpt === 0) {
-        return board
+        return undefined
       } else if (bpt === color && !pointsChecked.has(x, y + 1)) {
         pointsChecked.add(x, y + 1)
         pointsToCheck.offer(x, y + 1)
@@ -77,7 +88,7 @@ function removeDeadGroup(board, xx, yy, color) {
     if (x > 0) {
       let bpt = board[y][x - 1]
       if (bpt === 0) {
-        return board
+        return undefined
       } else if (bpt === color && !pointsChecked.has(x - 1, y)) {
         pointsChecked.add(x - 1, y)
         pointsToCheck.offer(x - 1, y)
@@ -86,21 +97,14 @@ function removeDeadGroup(board, xx, yy, color) {
     if (x < dim - 1) {
       let bpt = board[y][x + 1]
       if (bpt === 0) {
-        return board
+        return undefined
       } else if (bpt === color && !pointsChecked.has(x + 1, y)) {
         pointsChecked.add(x + 1, y)
         pointsToCheck.offer(x + 1, y)
       }
     }
   }
-  let result = board.slice()
-  acc.forEach((x, y) => {
-    if (result[y] === board[y]) {
-      result[y] = board[y].slice()
-    }
-    result[y][x] = 0
-  })
-  return result
+  return acc
 }
 
 function applyMove(board, {color, x, y}) {

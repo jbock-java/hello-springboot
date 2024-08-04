@@ -5,7 +5,7 @@ public record CountingMove(
     int color,
     boolean pass,
     boolean counting,
-    int [][] board) {
+    int[][] board) {
 
   public static CountingMove create(int color, int n, int[][] board) {
     return new CountingMove(n, color, true, true, board);

@@ -42,6 +42,7 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
+    moves.add(currentColor, move, counting);
     if (counting) {
       if (move.resetCounting()) {
         int[][] resetted = Toggle.resetCounting(board);
@@ -50,7 +51,6 @@ public record Game(
       int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
       return game(Count.count(toggled), NOT_FORBIDDEN);
     }
-    moves.add(currentColor, move);
     if (move.pass()) {
       if (opponentPassed) {
         return startCounting();

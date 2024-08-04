@@ -6,5 +6,7 @@ public record GameMove(
     boolean pass,
     int x,
     int y,
+    boolean counting,
+    boolean end,
     int[] forbidden) {
 }

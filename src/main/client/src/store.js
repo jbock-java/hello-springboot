@@ -9,6 +9,9 @@ import {
   WHITE,
 } from "./util.js"
 import {
+  PointList,
+} from "./model/PointList.js"
+import {
   rehydrate,
 } from "./model/board.js"
 import {
@@ -61,19 +64,23 @@ export const useGameStore = create((set, get) => ({
   },
   addMove: (move) => {
     set(produce(state => {
+      if (move.n < get().moves.length) {
+        return
+      }
       if (get().moves.length < move.n) {
         state.queueStatus = "behind"
         return
       }
       state.queueStatus = "up_to_date"
-      state.moves.push(move)
       if (move.counting) {
+        state.moves.push({...move, dead: PointList.empty()})
         state.gameState.counting = true
         state.baseBoard = move.board
         state.gameState.board = rehydrate(move.board)
         return
       }
-      let updated = updateBoard(get().baseBoard, move)
+      let [dead, updated] = updateBoard(get().baseBoard, move)
+      state.moves.push({...move, dead})
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
       state.gameState.currentColor = get().gameState.currentColor ^ (BLACK | WHITE)
