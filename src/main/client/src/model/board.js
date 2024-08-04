@@ -89,9 +89,9 @@ export function getGroupInfo(board, xx, yy) {
 
 export function rehydrate(board) {
   let dim = board.length
-  let result = []
+  let result = Array(dim)
   for (let i = 0; i < board.length; i++) {
-    result.push([])
+    result[i] = Array(dim)
   }
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {

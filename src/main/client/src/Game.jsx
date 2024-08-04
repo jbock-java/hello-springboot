@@ -12,7 +12,7 @@ import {
 import {
   StompContext,
   BLACK,
-  ANY_TERRITORY,
+  TERRITORY,
   TERRITORY_B,
   REMOVED_B,
   ANY_REMOVED,
@@ -362,8 +362,8 @@ function paintStonesCounting(context, board, countingGroup) {
           "rgba(255,255,255,0.25)"
         showShadow(context, grid_x, grid_y, style)
       }
-      if (color & ANY_TERRITORY) {
-        let style = (color & ANY_TERRITORY) === TERRITORY_B ?
+      if (color & TERRITORY) {
+        let style = (color & TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
         showTerritory(context, grid_x, grid_y, style)

@@ -6,17 +6,18 @@ import toast from "react-hot-toast"
 export const StompContext = createContext()
 
 export const base = "/app"
+
 export const BLACK = 32
 export const WHITE = 64
 export const TERRITORY_B = 2
 export const TERRITORY_W = 4
-export const ANY_TERRITORY = TERRITORY_W | TERRITORY_B
 export const REMOVED_B = 8
 export const REMOVED_W = 16
+
+export const TERRITORY = TERRITORY_W | TERRITORY_B
 export const ANY_REMOVED = REMOVED_W | REMOVED_B
 
-const COLORS = BLACK | WHITE;
-const MARKERS = ~COLORS;
+export const COLORS = BLACK | WHITE;
 
 export async function tfetch(url, options) {
   let response
@@ -60,7 +61,7 @@ function dec2hex(dec) {
 }
 
 export function hasStone(color) {
-  return (color & COLORS) != 0 && (color & MARKERS) == 0;
+  return (color & COLORS) !== 0
 }
 
 export function getBaseColor(color) {
@@ -87,6 +88,8 @@ export async function doTry(task, onError) {
   } catch (e) {
     if (onError) {
       onError()
+    } else {
+      console.log(e)
     }
     toast.error(e.message)
   }
