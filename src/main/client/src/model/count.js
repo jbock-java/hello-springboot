@@ -32,7 +32,7 @@ export function count(board) {
   return acc
 }
 
-function updateToggleStonesAt(board, x, y, color, pointsChecked, pointsToCheck) {
+function recurToggleStonesAt(board, x, y, color, pointsChecked, pointsToCheck) {
   let dim = board.length
   if (Math.min(x, y) < 0 || Math.max(x, y) >= dim) {
     return
@@ -67,10 +67,10 @@ export function toggleStonesAt(board, xx, yy) {
       updated[y] = board[y].slice()
     }
     updated[y][x] = toggleRemoved(board[y][x])
-    updateToggleStonesAt(board, x, y - 1, color, pointsChecked, pointsToCheck)
-    updateToggleStonesAt(board, x, y + 1, color, pointsChecked, pointsToCheck)
-    updateToggleStonesAt(board, x - 1, y, color, pointsChecked, pointsToCheck)
-    updateToggleStonesAt(board, x + 1, y, color, pointsChecked, pointsToCheck)
+    recurToggleStonesAt(board, x, y - 1, color, pointsChecked, pointsToCheck)
+    recurToggleStonesAt(board, x, y + 1, color, pointsChecked, pointsToCheck)
+    recurToggleStonesAt(board, x - 1, y, color, pointsChecked, pointsToCheck)
+    recurToggleStonesAt(board, x + 1, y, color, pointsChecked, pointsToCheck)
   }
   return updated
 }
@@ -87,7 +87,7 @@ export function resetCounting(board) {
   return updated
 }
 
-function updateFindColor(dim, x, y, pointsChecked, pointsToCheck) {
+function recurFindColor(dim, x, y, pointsChecked, pointsToCheck) {
   if (Math.min(x, y) < 0 || Math.max(x, y) >= dim) {
     return
   }
@@ -118,16 +118,17 @@ function findColor(board, xx, yy) {
       } else {
         return 0 // disputed area
       }
+    } else {
+      recurFindColor(dim, x, y - 1, pointsChecked, pointsToCheck)
+      recurFindColor(dim, x, y + 1, pointsChecked, pointsToCheck)
+      recurFindColor(dim, x - 1, y, pointsChecked, pointsToCheck)
+      recurFindColor(dim, x + 1, y, pointsChecked, pointsToCheck)
     }
-    updateFindColor(dim, x, y - 1, pointsChecked, pointsToCheck)
-    updateFindColor(dim, x, y + 1, pointsChecked, pointsToCheck)
-    updateFindColor(dim, x - 1, y, pointsChecked, pointsToCheck)
-    updateFindColor(dim, x + 1, y, pointsChecked, pointsToCheck)
   }
   return color
 }
 
-function updateColorEmptyTerritory(board, x, y, found, acc, pointsToCheck) {
+function recurColorEmptyTerritory(board, x, y, found, acc, pointsToCheck) {
   let dim = board.length
   if (Math.min(x, y) < 0 || Math.max(x, y) >= dim) {
     return
@@ -139,7 +140,7 @@ function updateColorEmptyTerritory(board, x, y, found, acc, pointsToCheck) {
   if (!isEmpty(color)) {
     return
   }
-  acc[y][x] = !found ? 0 : getTerritoryMarker(found, color)
+  acc[y][x] = found ? getTerritoryMarker(found, color) : (color & ~TERRITORY)
   pointsToCheck.offer(x, y)
 }
 
@@ -157,16 +158,16 @@ function colorEmptyTerritory(board, acc, xx, yy) {
   }
   let dim = board.length
   let pointsToCheck = new PointQueue(dim)
-  acc[yy][xx] = getTerritoryMarker(found, board[yy][xx])
+  acc[yy][xx] = found ? getTerritoryMarker(found, board[yy][xx]) : (board[yy][xx] & ~TERRITORY)
   pointsToCheck.offer(xx, yy)
   while (!pointsToCheck.isEmpty()) {
     let ptId = pointsToCheck.poll()
     let y = Math.trunc(ptId / dim)
     let x = ptId % dim
-    updateColorEmptyTerritory(board, x, y - 1, found, acc, pointsToCheck)
-    updateColorEmptyTerritory(board, x, y + 1, found, acc, pointsToCheck)
-    updateColorEmptyTerritory(board, x - 1, y, found, acc, pointsToCheck)
-    updateColorEmptyTerritory(board, x + 1, y, found, acc, pointsToCheck)
+    recurColorEmptyTerritory(board, x, y - 1, found, acc, pointsToCheck)
+    recurColorEmptyTerritory(board, x, y + 1, found, acc, pointsToCheck)
+    recurColorEmptyTerritory(board, x - 1, y, found, acc, pointsToCheck)
+    recurColorEmptyTerritory(board, x + 1, y, found, acc, pointsToCheck)
   }
 }
 

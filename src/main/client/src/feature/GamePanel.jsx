@@ -49,8 +49,9 @@ function Panel({zoom, setZoom}) {
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
   let queueLength = useGameStore(state => state.queueLength)
+  let counting = useGameStore(state => state.counting)
   let currentPlayer = useGameStore(state => state.currentPlayer)
-  let { board, counting } = useGameStore(state => state.gameState)
+  let { board } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -78,7 +79,7 @@ function Panel({zoom, setZoom}) {
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = counting ? getScore(board) : undefined
+  let result = counting() ? getScore(board) : undefined
   return (
     <>
       <div className="inline-flex gap-x-2">
@@ -125,11 +126,11 @@ function Panel({zoom, setZoom}) {
       <div className="mt-2">
         <Button
           onClick={onPass}
-          disabled={counting || currentPlayer() !== auth.name}>
+          disabled={counting() || currentPlayer() !== auth.name}>
           Pass
         </Button>
       </div>
-      {counting && (
+      {counting() && (
         <div className="mt-2">
           <Button
             onClick={onResetCounting}>
@@ -150,7 +151,7 @@ function Panel({zoom, setZoom}) {
           </div>
         </div>
       )}
-      {!counting && (
+      {!counting() && (
         <div className="mt-2">
           {currentPlayer() + " ist dran..."}
         </div>

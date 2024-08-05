@@ -9,9 +9,6 @@ import {
   WHITE,
 } from "./util.js"
 import {
-  PointList,
-} from "./model/PointList.js"
-import {
   rehydrate,
 } from "./model/board.js"
 import {
@@ -50,7 +47,6 @@ export const useGameStore = create((set, get) => ({
   moves: [],
   baseBoard: [],
   queueStatus: "behind",
-  editMode: false,
   black: {
     name: "",
   },
@@ -64,64 +60,88 @@ export const useGameStore = create((set, get) => ({
     }))
   },
   currentPlayer: () => {
-    return get().gameState.currentColor === WHITE ?
-        get().white.name :
-        get().black.name
+    let moves = get().moves
+    let white = get().white
+    let black = get().black
+    if (!moves.length) {
+      return black.name
+    }
+    return moves[moves.length - 1].color === BLACK ? white.name : black.name
   },
   queueLength: () => {
     return get().moves.length
   },
+  currentColor: () => {
+    let moves = get().moves
+    if (!moves.length) {
+      return BLACK
+    }
+    return moves[moves.length - 1].color ^ (BLACK | WHITE)
+  },
+  counting: () => {
+    let moves = get().moves
+    if (!moves.length) {
+      return false
+    }
+    return moves[moves.length - 1].counting
+  },
   gameState: {
     board: [],
-    currentColor: BLACK,
-    counting: false,
     forbidden: [-1, -1],
   },
   addMove: (move) => {
     set(produce(state => {
-      if (move.n < get().moves.length) {
+      let moves = get().moves
+      let baseBoard = get().baseBoard
+      if (move.n < moves.length) {
         return
       }
-      if (get().moves.length < move.n) {
+      if (moves.length < move.n) {
         state.queueStatus = "behind"
         return
       }
       state.queueStatus = "up_to_date"
-      if (move.counting) {
-        state.moves.push({...move, dead: PointList.empty()})
-        state.gameState.counting = true
-        if (move.resetCounting) {
-          let updated = count(resetCounting(get().baseBoard))
-          state.baseBoard = updated
-          state.gameState.board = rehydrate(updated)
-        } else {
-          let updated = count(toggleStonesAt(get().baseBoard, move.x, move.y))
-          state.baseBoard = updated
-          state.gameState.board = rehydrate(updated)
-        }
-        return
-      }
-      let [dead, updated] = updateBoard(get().baseBoard, move)
-      let storedMove = {...move, dead}
+      let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move)
       state.moves.push(storedMove)
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
-      state.gameState.currentColor = get().gameState.currentColor ^ (BLACK | WHITE)
-      state.gameState.forbidden = getForbidden(get().baseBoard, updated, storedMove)
+      state.gameState.forbidden = forbidden
     }))
   },
   setGameState: (game) => {
     set(produce(state => {
       state.black = game.black
       state.white = game.white
-      state.editMode = game.editMode
-      state.baseBoard = game.board
-      state.moves = game.moves
-      state.gameState.board = rehydrate(game.board)
-      state.gameState.currentColor = game.currentColor
-      state.gameState.counting = game.counting
-      state.gameState.forbidden = game.forbidden
+      let baseBoard = Array(game.dim)
+      for (let y = 0; y < game.dim; y++) {
+        baseBoard[y] = new Int32Array(game.dim)
+      }
+      let moves = []
+      let forbidden = [-1, -1]
+      for (let move of game.moves) {
+        let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move)
+        moves.push(storedMove)
+        forbidden = newForbidden
+        baseBoard = updated
+      }
+      state.baseBoard = baseBoard
+      state.moves = moves
+      state.gameState.board = rehydrate(baseBoard)
+      state.gameState.forbidden = forbidden
       state.queueStatue = "up_to_date"
     }))
   },
 }))
+
+function createMoveData(baseBoard, moves, move) {
+  if (move.counting) {
+    let updated = move.resetCounting ?
+      resetCounting(baseBoard) :
+      toggleStonesAt(baseBoard, move.x, move.y)
+    return [move, count(updated), [-1, -1]]
+  }
+  let [dead, updated] = updateBoard(baseBoard, move)
+  let storedMove = {...move, dead}
+  let forbidden = getForbidden(baseBoard, updated, storedMove)
+  return [storedMove, updated, forbidden]
+}

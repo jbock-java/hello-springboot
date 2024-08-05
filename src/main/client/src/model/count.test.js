@@ -16,6 +16,52 @@ import {
   REMOVED_B,
 } from "../util.js"
 
+test("basicCount", () => {
+  let B = BLACK
+  let W = WHITE
+  let b = TERRITORY_B
+  let position = [
+      [0, 0, 0, 0, 0],
+      [B, B, B, B, B],
+      [W, W, W, W, W],
+      [0, 0, B, 0, 0],
+      [0, 0, 0, 0, 0],
+  ]
+  let result = count(position)
+  expect(result).toEqual(mapInt([
+      [b, b, b, b, b],
+      [B, B, B, B, B],
+      [W, W, W, W, W],
+      [0, 0, B, 0, 0],
+      [0, 0, 0, 0, 0],
+  ]))
+})
+
+test("countLarge", () => {
+  let B = BLACK
+  let W = WHITE
+  let k = REMOVED_W
+  let b = TERRITORY_B
+  let w = TERRITORY_W
+  let position = [
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, B, B, B, B, B],
+      [B, B, W, W, W, B],
+      [B, k, 0, W, 0, W],
+      [B, k, 0, W, 0, W],
+  ]
+  let result = count(position)
+  expect(result).toEqual(mapInt([
+      [b, b, b, b, b, b],
+      [b, b, b, b, b, b],
+      [b, B, B, B, B, B],
+      [B, B, W, W, W, B],
+      [B, k, 0, W, w, W],
+      [B, k, 0, W, w, W],
+  ]))
+})
+
 test("territoryChangeOwner", () => {
   let B = BLACK
   let t = TERRITORY_W

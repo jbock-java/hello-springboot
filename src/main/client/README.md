@@ -10,3 +10,9 @@ http://localhost:3006/app
 
 
 TODO: https://github.com/spring-guides/gs-messaging-stomp-websocket
+
+### Running a single test
+
+```
+npx vitest --run count -t basicCount
+```

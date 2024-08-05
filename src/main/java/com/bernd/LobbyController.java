@@ -75,12 +75,12 @@ public class LobbyController {
         RandomString.get(),
         user,
         user,
-        true,
         false,
         principal,
         B,
         false,
         createEmptyBoard(request.dim()),
+        request.dim(),
         0,
         new int[]{-1, -1},
         MoveList.create(request.dim())));

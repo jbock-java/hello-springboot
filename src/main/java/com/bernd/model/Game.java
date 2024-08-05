@@ -18,12 +18,12 @@ public record Game(
     String id,
     User black,
     User white,
-    boolean editMode,
     boolean counting,
     String currentPlayer,
     int currentColor,
     boolean opponentPassed,
     int[][] board,
+    int dim,
     int handicap,
     int[] forbidden,
     MoveList moves
@@ -130,12 +130,12 @@ public record Game(
         id,
         black,
         white,
-        editMode,
         counting,
         nextPlayer(),
         nextColor(),
         opponentPassed,
         board,
+        dim,
         Math.max(0, handicap - 1),
         forbidden,
         moves);
@@ -150,9 +150,6 @@ public record Game(
   }
 
   private String nextPlayer() {
-    if (editMode || handicap > 0) {
-      return currentPlayer;
-    }
     return currentPlayer.equals(black.name()) ? white().name() : black().name();
   }
 

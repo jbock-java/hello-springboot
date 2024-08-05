@@ -27,11 +27,11 @@ public record OpenGame(
         userBlack,
         userWhite,
         false,
-        false,
         userBlack.name(),
         B,
         false,
         createEmptyBoard(dim),
+        dim,
         acceptRequest.handicap(),
         new int[]{-1, -1},
         MoveList.create(dim));

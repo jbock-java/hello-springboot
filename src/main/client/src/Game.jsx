@@ -48,11 +48,13 @@ export const Game = () => {
   let queueLength = useGameStore(state => state.queueLength)
   let addMove = useGameStore(state => state.addMove)
   let currentPlayer = useGameStore(state => state.currentPlayer)
-  let { board, currentColor, counting, forbidden } = useGameStore(state => state.gameState)
+  let counting = useGameStore(state => state.counting)
+  let currentColor = useGameStore(state => state.currentColor)
+  let { board, forbidden } = useGameStore(state => state.gameState)
   let [forbidden_x, forbidden_y] = forbidden
   let initialized = useRef()
   let canvasRef = useRef()
-  let countingGroup = counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let countingGroup = counting() ? getCountingGroup(board, cursor_x, cursor_y) : undefined
 
   let context = useMemo(() => {
     let dim = board.length
@@ -119,7 +121,7 @@ export const Game = () => {
     if (!board.length) {
       return
     }
-    if (!counting && currentPlayer() !== auth.name) {
+    if (!counting() && currentPlayer() !== auth.name) {
       return
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
@@ -137,12 +139,12 @@ export const Game = () => {
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (counting) {
+    if (counting()) {
       if (!board[cursor_y][cursor_x].hasStone) {
         return
       }
     } else {
-      if (board[cursor_y][cursor_x].isForbidden(currentColor)) {
+      if (board[cursor_y][cursor_x].isForbidden(currentColor())) {
         return
       }
       if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
@@ -170,7 +172,7 @@ export const Game = () => {
       return
     }
     paintGrid(context)
-    if (counting) {
+    if (counting()) {
       paintStonesCounting(context, board, countingGroup)
       return
     } else {
@@ -182,13 +184,16 @@ export const Game = () => {
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (board[cursor_y][cursor_x].isForbidden(currentColor)) {
+    if (board[cursor_y][cursor_x].hasStone) {
+      return
+    }
+    if (board[cursor_y][cursor_x].isForbidden(currentColor())) {
       return
     }
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
-    let style = currentColor === BLACK ?
+    let style = currentColor() === BLACK ?
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
     showShadow(context, cursor_x, cursor_y, style)
