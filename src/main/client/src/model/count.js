@@ -2,9 +2,6 @@ import {
   PointQueue,
 } from "./PointQueue.js"
 import {
-  PointList,
-} from "./PointList.js"
-import {
   PointSet,
 } from "./PointSet.js"
 import {
@@ -57,28 +54,24 @@ export function toggleStonesAt(board, xx, yy) {
     return board
   }
   let dim = board.length
-  let result = new PointList(dim)
   let pointsToCheck = new PointQueue(dim)
   let pointsChecked = new PointSet(dim)
   pointsChecked.add(xx, yy)
   pointsToCheck.offer(xx, yy)
+  let updated = board.slice()
   while (!pointsToCheck.isEmpty()) {
     let ptId = pointsToCheck.poll()
     let y = Math.trunc(ptId / dim)
     let x = ptId % dim
-    result.add(x, y)
+    if (updated[y] === board[y]) {
+      updated[y] = board[y].slice()
+    }
+    updated[y][x] = toggleRemoved(board[y][x])
     updateToggleStonesAt(board, x, y - 1, color, pointsChecked, pointsToCheck)
     updateToggleStonesAt(board, x, y + 1, color, pointsChecked, pointsToCheck)
     updateToggleStonesAt(board, x - 1, y, color, pointsChecked, pointsToCheck)
     updateToggleStonesAt(board, x + 1, y, color, pointsChecked, pointsToCheck)
   }
-  let updated = board.slice()
-  result.forEach((x, y) => {
-    if (updated[y] === board[y]) {
-      updated[y] = board[y].slice()
-    }
-    updated[y][x] = toggleRemoved(updated[y][x])
-  })
   return updated
 }
 
