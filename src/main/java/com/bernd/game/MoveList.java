@@ -2,6 +2,7 @@ package com.bernd.game;
 
 import com.bernd.model.GameMove;
 import com.bernd.model.Move;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +46,7 @@ public final class MoveList {
     pos++;
   }
 
-  public void add(int color, Move move, boolean counting) {
+  public void add(Move move, boolean counting) {
     ensureCapacity();
     int ptId;
     if (move.pass()) {
@@ -53,7 +54,7 @@ public final class MoveList {
     } else {
       ptId = dim * move.y() + move.x();
     }
-    if (color == Board.W) {
+    if (move.color() == Board.W) {
       ptId |= WHITE;
     }
     if (counting) {

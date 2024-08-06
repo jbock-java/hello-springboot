@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import static com.bernd.game.Board.B;
-
 @Controller
 public class LobbyController {
 
@@ -77,8 +75,6 @@ public class LobbyController {
         user,
         false,
         0,
-        principal,
-        B,
         false,
         createEmptyBoard(request.dim()),
         request.dim(),

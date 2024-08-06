@@ -9,8 +9,6 @@ import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static com.bernd.game.Board.B;
-import static com.bernd.game.Board.W;
 import static com.bernd.game.Board.removeDeadStonesAround;
 import static com.bernd.util.Util.COLORS;
 
@@ -20,8 +18,6 @@ public record Game(
     User white,
     boolean counting,
     int countingAgreed,
-    String currentPlayer,
-    int currentColor,
     boolean opponentPassed,
     int[][] board,
     int dim,
@@ -44,36 +40,57 @@ public record Game(
 
   private Game updateInternal(Move move) {
     if (move.agreeCounting()) {
-      if ((countingAgreed | currentColor()) == COLORS) {
+      if ((countingAgreed | move.color()) == COLORS) {
         moves.addGameEndMarker();
       }
-      return countingAgreed(countingAgreed | currentColor());
+      return toBuilder()
+          .withCountingAgreed(countingAgreed | move.color())
+          .build();
     }
-    moves.add(currentColor, move, counting);
+    moves.add(move, counting);
     if (counting) {
       if (move.resetCounting()) {
         int[][] resetted = Toggle.resetCounting(board);
-        return game(Count.count(resetted), NOT_FORBIDDEN);
+        return toBuilder()
+            .withBoard(Count.count(resetted))
+            .withForbidden(NOT_FORBIDDEN)
+            .build();
       }
       int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
-      return game(Count.count(toggled), NOT_FORBIDDEN);
+      return toBuilder()
+          .withBoard(Count.count(toggled))
+          .withForbidden(NOT_FORBIDDEN)
+          .build();
     }
     if (move.pass()) {
       if (opponentPassed) {
-        return startCounting();
+        return toBuilder()
+            .withBoard(Count.count(board))
+            .withCounting(true)
+            .withForbidden(NOT_FORBIDDEN)
+            .build();
       }
-      return game(board, counting, 0, true, NOT_FORBIDDEN);
+      return toBuilder()
+          .withOpponentPassed(true)
+          .withForbidden(NOT_FORBIDDEN)
+          .build();
     }
     int x = move.x();
     int y = move.y();
-    int color = currentColor();
+    int color = move.color();
     int[][] updated = BoardUpdateImpl.create(board.length, x, y, color).apply(board);
     int[][] result = removeDeadStonesAround(updated, x, y);
     Direction direction = getDirection(x, y, result, updated);
     if (isKo(x, y, color, result, direction)) {
-      return game(result, new int[]{direction.moveX(x), direction.moveY(y)});
+      return toBuilder()
+          .withBoard(result)
+          .withForbidden(direction.moveX(x), direction.moveY(y))
+          .build();
     }
-    return game(result, NOT_FORBIDDEN);
+    return toBuilder()
+        .withBoard(result)
+        .withForbidden(NOT_FORBIDDEN)
+        .build();
   }
 
   private boolean isKo(
@@ -128,56 +145,15 @@ public record Game(
     return Direction.from(xx, yy, col, row);
   }
 
-  private Game game(
-      int[][] board,
-      boolean counting,
-      int countingAgreed,
-      boolean opponentPassed,
-      int[] forbidden) {
-    return new Game(
-        id,
-        black,
-        white,
-        counting,
-        countingAgreed,
-        nextPlayer(),
-        nextColor(),
-        opponentPassed,
-        board,
-        dim,
-        Math.max(0, handicap - 1),
-        forbidden,
-        moves);
-  }
-
-  private Game game(int[][] board, int[] forbidden) {
-    return game(board, counting, 0, false, forbidden);
-  }
-
-  private Game startCounting() {
-    return game(Count.count(board), true, 0, true, NOT_FORBIDDEN);
-  }
-
-  private String nextPlayer() {
-    return currentPlayer.equals(black.name()) ? white().name() : black().name();
-  }
-
-  private int nextColor() {
-    if (handicap > 0) {
-      return currentColor;
-    }
-    return currentColor == B ? W : B;
-  }
-
   public ViewGame toView() {
     return ViewGame.fromGame(this);
   }
 
-  private Game countingAgreed(int countingAgreed) {
-    return game(board, counting, countingAgreed, opponentPassed, forbidden);
-  }
-
   public boolean gameHasEnded() {
     return countingAgreed == COLORS;
+  }
+
+  public GameBuilder toBuilder() {
+    return GameBuilder.builder(this);
   }
 }

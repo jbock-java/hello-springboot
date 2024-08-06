@@ -57,8 +57,7 @@ public class GameController {
       return;
     }
     int moveNumber = game.moves().size();
-    int color = game.currentColor();
-    String currentPlayer = game.currentColor() == Board.B ? game.black().name() : game.white().name();
+    String currentPlayer = move.color() == Board.B ? game.black().name() : game.white().name();
     if (!principal.getName().equals(currentPlayer)) {
       return; // discard
     }
@@ -68,9 +67,9 @@ public class GameController {
     Game updated = game.update(move);
     games.put(updated);
     if (updated.gameHasEnded()) {
-      operations.convertAndSend("/topic/move/" + game.id(), move.gameEnd(color, updated.counting()));
+      operations.convertAndSend("/topic/move/" + game.id(), move.gameEnd(updated.counting()));
     } else if (!move.agreeCounting()) {
-      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, updated.counting()));
+      operations.convertAndSend("/topic/move/" + game.id(), move.toView(updated.counting()));
     }
   }
 

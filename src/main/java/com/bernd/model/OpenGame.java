@@ -3,7 +3,6 @@ package com.bernd.model;
 import com.bernd.game.MoveList;
 
 import static com.bernd.LobbyController.createEmptyBoard;
-import static com.bernd.game.Board.B;
 
 public record OpenGame(
     String id,
@@ -28,8 +27,6 @@ public record OpenGame(
         userWhite,
         false,
         0,
-        userBlack.name(),
-        B,
         false,
         createEmptyBoard(dim),
         dim,
