@@ -50,8 +50,9 @@ function Panel({zoom, setZoom}) {
   let white = useGameStore(state => state.white)
   let queueLength = useGameStore(state => state.queueLength)
   let counting = useGameStore(state => state.counting)
+  let countingComplete = useGameStore(state => state.countingComplete)
   let currentPlayer = useGameStore(state => state.currentPlayer)
-  let { board } = useGameStore(state => state.gameState)
+  let { board, gameHasEnded } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -76,10 +77,20 @@ function Panel({zoom, setZoom}) {
       }),
     })
   }, [stompClient, gameId, queueLength])
+  let onCountingAgree = useCallback(() => {
+    stompClient.publish({
+      destination: "/app/game/move",
+      body: JSON.stringify({
+        id: gameId,
+        n: queueLength(),
+        agreeCounting: true,
+      }),
+    })
+  }, [stompClient, gameId, queueLength])
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = counting() ? getScore(board) : undefined
+  let result = gameHasEnded ? getScore(board) : undefined
   return (
     <>
       <div className="inline-flex gap-x-2">
@@ -123,21 +134,33 @@ function Panel({zoom, setZoom}) {
         <div>vs</div>
         <div>{black.name}</div>
       </div>
+      <div>Move {queueLength()}</div>
       <div className="mt-2">
         <Button
           onClick={onPass}
-          disabled={counting() || currentPlayer() !== auth.name}>
+          className="py-1 px-4"
+          disabled={gameHasEnded || counting() || currentPlayer() !== auth.name}>
           Pass
         </Button>
       </div>
-      {counting() && (
+      {counting() && <>
         <div className="mt-2">
           <Button
+            className="py-1 px-4"
+            disabled={gameHasEnded}
             onClick={onResetCounting}>
             Reset Counting
           </Button>
         </div>
-      )}
+        <div className="mt-2">
+          <Button
+            disabled={gameHasEnded || !countingComplete()}
+            className="py-1 px-4"
+            onClick={onCountingAgree}>
+            OK
+          </Button>
+        </div>
+      </>}
       {result && (
         <div className="mt-4">
           <div>
@@ -149,11 +172,6 @@ function Panel({zoom, setZoom}) {
           <div className="mt-2">
             Result: {(result.w > result.b ? "w+" : "b+") + Math.abs(result.b - result.w)}
           </div>
-        </div>
-      )}
-      {!counting() && (
-        <div className="mt-2">
-          {currentPlayer() + " ist dran..."}
         </div>
       )}
     </>

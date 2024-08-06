@@ -39,7 +39,7 @@ public final class MoveList {
     return new MoveList(dim, new int[16]);
   }
 
-  public void gameEnd() {
+  public void addGameEndMarker() {
     ensureCapacity();
     set(GAME_END);
     pos++;

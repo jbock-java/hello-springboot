@@ -7,12 +7,7 @@ public record ViewGame(
     User black,
     User white,
     int dim,
-    boolean counting,
-    String currentPlayer,
-    int currentColor,
-    boolean opponentPassed,
     int handicap,
-    int[] forbidden,
     List<GameMove> moves
 ) {
 
@@ -22,12 +17,7 @@ public record ViewGame(
         game.black(),
         game.white(),
         game.dim(),
-        game.counting(),
-        game.currentPlayer(),
-        game.currentColor(),
-        game.opponentPassed(),
         game.handicap(),
-        game.forbidden(),
         game.moves().asList());
   }
 }

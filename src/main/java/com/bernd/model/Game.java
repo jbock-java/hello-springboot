@@ -19,6 +19,7 @@ public record Game(
     User black,
     User white,
     boolean counting,
+    int countingAgreed,
     String currentPlayer,
     int currentColor,
     boolean opponentPassed,
@@ -42,6 +43,12 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
+    if (move.agreeCounting()) {
+      if ((countingAgreed | currentColor()) == COLORS) {
+        moves.addGameEndMarker();
+      }
+      return countingAgreed(countingAgreed | currentColor());
+    }
     moves.add(currentColor, move, counting);
     if (counting) {
       if (move.resetCounting()) {
@@ -55,7 +62,7 @@ public record Game(
       if (opponentPassed) {
         return startCounting();
       }
-      return game(board, counting, true, NOT_FORBIDDEN);
+      return game(board, counting, 0, true, NOT_FORBIDDEN);
     }
     int x = move.x();
     int y = move.y();
@@ -124,6 +131,7 @@ public record Game(
   private Game game(
       int[][] board,
       boolean counting,
+      int countingAgreed,
       boolean opponentPassed,
       int[] forbidden) {
     return new Game(
@@ -131,6 +139,7 @@ public record Game(
         black,
         white,
         counting,
+        countingAgreed,
         nextPlayer(),
         nextColor(),
         opponentPassed,
@@ -142,11 +151,11 @@ public record Game(
   }
 
   private Game game(int[][] board, int[] forbidden) {
-    return game(board, counting, false, forbidden);
+    return game(board, counting, 0, false, forbidden);
   }
 
   private Game startCounting() {
-    return game(Count.count(board), true, true, NOT_FORBIDDEN);
+    return game(Count.count(board), true, 0, true, NOT_FORBIDDEN);
   }
 
   private String nextPlayer() {
@@ -162,5 +171,13 @@ public record Game(
 
   public ViewGame toView() {
     return ViewGame.fromGame(this);
+  }
+
+  private Game countingAgreed(int countingAgreed) {
+    return game(board, counting, countingAgreed, opponentPassed, forbidden);
+  }
+
+  public boolean gameHasEnded() {
+    return countingAgreed == COLORS;
   }
 }
