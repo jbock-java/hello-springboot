@@ -5,6 +5,9 @@ import {
   produce,
 } from "immer"
 import {
+  persist,
+} from "zustand/middleware"
+import {
   BLACK,
   WHITE,
 } from "./util.js"
@@ -23,29 +26,35 @@ import {
   resetCounting,
 } from "./model/count.js"
 
-export const useAuthStore = create((set) => ({
-  auth: {
-    name: "",
-    state: "anonymous",
-    token: "",
-  },
-  setAuth: (payload) => {
-    set(produce(state => {
-      state.auth.name = payload.name
-      state.auth.state = "authenticated"
-      state.auth.token = payload.token
-    }))
-  },
-  setPending: (b) => {
-    set(produce(state => {
-      state.auth.state = b ? "pending" : "anonymous"
-    }), true)
-  },
-}))
+export const useAuthStore = create(
+  persist(
+    (set) => ({
+      auth: {
+        name: "",
+        state: "anonymous",
+        token: "",
+      },
+      setAuth: (payload) => {
+        set(produce(state => {
+          state.auth.name = payload.name
+          state.auth.state = "authenticated"
+          state.auth.token = payload.token
+        }))
+      },
+      setPending: (b) => {
+        set(produce(state => {
+          state.auth.state = b ? "pending" : "anonymous"
+        }), true)
+      },
+    }),
+    { name: "auth-storage" },
+  ),
+)
 
 export const useGameStore = create((set, get) => ({
   moves: [],
   baseBoard: [],
+  dim: 0,
   queueStatus: "behind",
   black: {
     name: "",
@@ -53,11 +62,20 @@ export const useGameStore = create((set, get) => ({
   white: {
     name: "",
   },
-  isInCountingGroup: undefined,
-  setIsInCountingGroup: (has) => {
-    set(produce(state => {
-      state.isInCountingGroup = has
-    }))
+  countingComplete: () => {
+    if (!get().counting()) {
+      return false
+    }
+    let baseBoard = get().baseBoard
+    let dim = get().dim
+    for (let y = 0; y < dim; y++) {
+      for (let x = 0; x < dim; x++) {
+        if (!baseBoard[y][x]) {
+          return false
+        }
+      }
+    }
+    return true
   },
   currentPlayer: () => {
     let moves = get().moves
@@ -88,9 +106,15 @@ export const useGameStore = create((set, get) => ({
   gameState: {
     board: [],
     forbidden: [-1, -1],
+    gameHasEnded: false,
   },
   addMove: (move) => {
     set(produce(state => {
+      if (move.end) {
+        state.moves.push(move)
+        state.gameState.gameHasEnded = true
+        return
+      }
       let moves = get().moves
       let baseBoard = get().baseBoard
       if (move.n < moves.length) {
@@ -119,11 +143,17 @@ export const useGameStore = create((set, get) => ({
       let moves = []
       let forbidden = [-1, -1]
       for (let move of game.moves) {
+        if (move.end) {
+          moves.push(move)
+          state.gameState.gameHasEnded = true
+          break
+        }
         let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move)
         moves.push(storedMove)
         forbidden = newForbidden
         baseBoard = updated
       }
+      state.dim = game.dim
       state.baseBoard = baseBoard
       state.moves = moves
       state.gameState.board = rehydrate(baseBoard)

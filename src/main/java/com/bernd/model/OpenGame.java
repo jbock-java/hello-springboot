@@ -27,6 +27,7 @@ public record OpenGame(
         userBlack,
         userWhite,
         false,
+        0,
         userBlack.name(),
         B,
         false,

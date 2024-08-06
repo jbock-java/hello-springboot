@@ -3,7 +3,6 @@ package com.bernd;
 import com.bernd.game.Board;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
-import com.bernd.model.CountingMove;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
@@ -68,7 +67,11 @@ public class GameController {
     }
     Game updated = game.update(move);
     games.put(updated);
-    operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, updated.counting()));
+    if (updated.gameHasEnded()) {
+      operations.convertAndSend("/topic/move/" + game.id(), move.gameEnd(color, updated.counting()));
+    } else if (!move.agreeCounting()) {
+      operations.convertAndSend("/topic/move/" + game.id(), move.toView(color, updated.counting()));
+    }
   }
 
   @ResponseBody

@@ -33,6 +33,6 @@ class MoveListTest {
   }
 
   private Move move(int x, int y) {
-    return new Move("", 0, false, false, x, y);
+    return new Move("", 0, false, false, false, x, y);
   }
 }

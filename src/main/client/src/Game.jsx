@@ -40,7 +40,7 @@ export const Game = () => {
   let lastStoneXref = useRef(-1)
   let lastStoneYref = useRef(-1)
   let [zoom, setZoom] = useState(0)
-  let { gameId } = useParams()
+  let {gameId} = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let setGameState = useGameStore(state => state.setGameState)
@@ -50,11 +50,11 @@ export const Game = () => {
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let counting = useGameStore(state => state.counting)
   let currentColor = useGameStore(state => state.currentColor)
-  let { board, forbidden } = useGameStore(state => state.gameState)
+  let {board, forbidden, gameHasEnded} = useGameStore(state => state.gameState)
   let [forbidden_x, forbidden_y] = forbidden
   let initialized = useRef()
   let canvasRef = useRef()
-  let countingGroup = counting() ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let countingGroup = !gameHasEnded && counting() ? getCountingGroup(board, cursor_x, cursor_y) : undefined
 
   let context = useMemo(() => {
     let dim = board.length
@@ -118,6 +118,9 @@ export const Game = () => {
   }, [board.length, canvasRef, zoom])
 
   let onMouseMove = useCallback((e) => {
+    if (gameHasEnded) {
+      return
+    }
     if (!board.length) {
       return
     }
@@ -128,9 +131,12 @@ export const Game = () => {
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
     setCursor_x(cursor_x + 0)
     setCursor_y(cursor_y + 0)
-  }, [context, currentPlayer, auth, board.length, counting])
+  }, [context, currentPlayer, auth, board.length, counting, gameHasEnded])
 
   let onClick = useCallback((e) => {
+    if (gameHasEnded) {
+      return
+    }
     if (!board.length) {
       return
     }
@@ -165,7 +171,7 @@ export const Game = () => {
         y: cursor_y,
       }),
     })
-  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y, queueLength])
+  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y, queueLength, gameHasEnded])
 
   useEffect(() => {
     if (!board.length) {
