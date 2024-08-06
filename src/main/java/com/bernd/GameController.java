@@ -11,6 +11,8 @@ import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
+import java.security.Principal;
+import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -20,8 +22,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.security.Principal;
 
 @Controller
 public class GameController {
@@ -55,40 +55,44 @@ public class GameController {
   @MessageMapping("/game/move")
   public void action(Move move, Principal p) {
     Game game = games.get(move.id());
-    if (game == null) {
+    if (p == null || game == null) {
       return;
     }
-    String principal = p.getName();
-    MoveList moves = game.moves();
-    int moveNumber = moves.size();
+    String principal = Objects.toString(p.getName(), "");
     int color = principal.equals(game.black().name()) ? Board.B :
         principal.equals(game.white().name()) ? Board.W : 0;
-    if (color == 0) {
+    if (!canMove(game, color)) {
       return;
     }
-    if (!game.counting()) {
-      if (moves.isEmpty()) {
-        if (color == Board.W) {
-          return;
-        }
-      } else {
-        GameMove lastMove = moves.get(moves.size() - 1);
-        if (lastMove.color() == color) {
-          return;
-        }
-      }
-      if (move.n() != moveNumber) {
-        return;
-      }
-    }
-    Move updatedMove = move.withColor(color);
+    Move updatedMove = move.withColor(color).withMoveNumber(game.moves().size());
     Game updated = game.update(updatedMove);
     games.put(updated);
     if (updated.gameHasEnded()) {
       operations.convertAndSend("/topic/move/" + game.id(), updatedMove.gameEnd(updated.counting()));
     } else if (!move.agreeCounting()) {
-      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.toView(updated.counting()));
+      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.toGameMove(updated.counting()));
     }
+  }
+
+  private boolean canMove(Game game, int color) {
+    if (game.gameHasEnded()) {
+      return false;
+    }
+    if (color == 0) {
+      return false;
+    }
+    MoveList moves = game.moves();
+    if (game.counting()) {
+      return true;
+    }
+    if (game.handicap() != 0) {
+      return color == Board.B;
+    }
+    if (moves.isEmpty()) {
+      return color == Board.B;
+    }
+    GameMove lastMove = moves.get(moves.size() - 1);
+    return color != lastMove.color();
   }
 
   @ResponseBody

@@ -10,7 +10,7 @@ public record Move(
     int x,
     int y) {
 
-  public GameMove toView(boolean counting) {
+  public GameMove toGameMove(boolean counting) {
     return new GameMove(n, color, pass, x, y, counting, resetCounting, false);
   }
 
@@ -19,6 +19,10 @@ public record Move(
   }
 
   public Move withColor(int color) {
+    return new Move(id, color, n, pass, resetCounting, agreeCounting, x, y);
+  }
+
+  public Move withMoveNumber(int n) {
     return new Move(id, color, n, pass, resetCounting, agreeCounting, x, y);
   }
 }

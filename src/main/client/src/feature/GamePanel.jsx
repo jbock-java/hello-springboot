@@ -62,31 +62,28 @@ function Panel({zoom, setZoom}) {
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        n: queueLength(),
         pass: true,
       }),
     })
-  }, [stompClient, gameId, queueLength])
+  }, [stompClient, gameId])
   let onResetCounting = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        n: queueLength(),
         resetCounting: true,
       }),
     })
-  }, [stompClient, gameId, queueLength])
+  }, [stompClient, gameId])
   let onCountingAgree = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        n: queueLength(),
         agreeCounting: true,
       }),
     })
-  }, [stompClient, gameId, queueLength])
+  }, [stompClient, gameId])
   if (!board.length) {
     return <span>Loading...</span>
   }

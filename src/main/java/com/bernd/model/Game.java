@@ -49,24 +49,19 @@ public record Game(
     }
     moves.add(move, counting);
     if (counting) {
-      if (move.resetCounting()) {
-        int[][] resetted = Toggle.resetCounting(board);
-        return toBuilder()
-            .withBoard(Count.count(resetted))
-            .withForbidden(NOT_FORBIDDEN)
-            .build();
-      }
-      int[][] toggled = Toggle.toggleStonesAt(board, move.x(), move.y());
+      int[][] updated = move.resetCounting() ?
+          Toggle.resetCounting(board) :
+          Toggle.toggleStonesAt(board, move.x(), move.y());
       return toBuilder()
-          .withBoard(Count.count(toggled))
+          .withBoard(Count.count(updated))
           .withForbidden(NOT_FORBIDDEN)
           .build();
     }
     if (move.pass()) {
       if (opponentPassed) {
         return toBuilder()
-            .withBoard(Count.count(board))
             .withCounting(true)
+            .withBoard(Count.count(board))
             .withForbidden(NOT_FORBIDDEN)
             .build();
       }
@@ -85,11 +80,13 @@ public record Game(
       return toBuilder()
           .withBoard(result)
           .withForbidden(direction.moveX(x), direction.moveY(y))
+          .withOpponentPassed(false)
           .build();
     }
     return toBuilder()
         .withBoard(result)
         .withForbidden(NOT_FORBIDDEN)
+        .withOpponentPassed(false)
         .build();
   }
 
