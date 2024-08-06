@@ -12,7 +12,6 @@ import {
 import {
   StompContext,
   BLACK,
-  WHITE,
   TERRITORY,
   TERRITORY_B,
   REMOVED_B,
@@ -44,7 +43,6 @@ export const Game = () => {
   let {gameId} = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let black = useGameStore(state => state.black)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
   let queueLength = useGameStore(state => state.queueLength)
@@ -169,7 +167,6 @@ export const Game = () => {
       body: JSON.stringify({
         id: gameId,
         n: queueLength(),
-        color: black.name === auth.name ? BLACK : WHITE,
         x: cursor_x,
         y: cursor_y,
       }),

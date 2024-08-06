@@ -91,6 +91,10 @@ public final class MoveList {
     }
   }
 
+  public boolean isEmpty() {
+    return pos == 0;
+  }
+
   private void set(int ptId) {
     int i = pos / 2;
     if (pos % 2 == 0) {

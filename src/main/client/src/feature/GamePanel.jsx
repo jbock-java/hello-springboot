@@ -51,11 +51,9 @@ function Panel({zoom, setZoom}) {
   let queueLength = useGameStore(state => state.queueLength)
   let counting = useGameStore(state => state.counting)
   let countingComplete = useGameStore(state => state.countingComplete)
-  let currentColor = useGameStore(state => state.currentColor)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let { board, gameHasEnded } = useGameStore(state => state.gameState)
   let navigate = useNavigate()
-  let myColor = black.name === auth.name ? BLACK : WHITE
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
   }, [navigate])
@@ -64,7 +62,6 @@ function Panel({zoom, setZoom}) {
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        color: myColor,
         n: queueLength(),
         pass: true,
       }),
@@ -75,23 +72,21 @@ function Panel({zoom, setZoom}) {
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        color: myColor,
         n: queueLength(),
         resetCounting: true,
       }),
     })
-  }, [stompClient, gameId, queueLength, currentColor])
+  }, [stompClient, gameId, queueLength])
   let onCountingAgree = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
         id: gameId,
-        color: myColor,
         n: queueLength(),
         agreeCounting: true,
       }),
     })
-  }, [stompClient, gameId, queueLength, currentColor])
+  }, [stompClient, gameId, queueLength])
   if (!board.length) {
     return <span>Loading...</span>
   }

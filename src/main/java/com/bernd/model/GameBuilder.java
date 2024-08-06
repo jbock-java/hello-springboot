@@ -7,8 +7,6 @@ public final class GameBuilder {
   private int countingAgreed;
   private boolean opponentPassed;
   private int[][] board;
-  private int dim;
-  private int handicap;
   private int[] forbidden;
 
   private GameBuilder(Game game) {
@@ -35,16 +33,6 @@ public final class GameBuilder {
     return this;
   }
 
-  public GameBuilder withDim(int dim) {
-    this.dim = dim;
-    return this;
-  }
-
-  public GameBuilder withHandicap(int handicap) {
-    this.handicap = handicap;
-    return this;
-  }
-
   public GameBuilder withForbidden(int[] forbidden) {
     this.forbidden = forbidden;
     return this;
@@ -60,8 +48,6 @@ public final class GameBuilder {
     builder.countingAgreed = game.countingAgreed();
     builder.opponentPassed = game.opponentPassed();
     builder.board = game.board();
-    builder.dim = game.dim();
-    builder.handicap = game.handicap();
     builder.forbidden = game.forbidden();
     return builder;
   }
@@ -75,8 +61,8 @@ public final class GameBuilder {
         countingAgreed,
         opponentPassed,
         board,
-        dim,
-        handicap,
+        game.dim(),
+        game.handicap(),
         forbidden,
         game.moves()
     );

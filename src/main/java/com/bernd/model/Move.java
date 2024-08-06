@@ -17,4 +17,8 @@ public record Move(
   public GameMove gameEnd(boolean counting) {
     return new GameMove(n, color, pass, x, y, counting, resetCounting, true);
   }
+
+  public Move withColor(int color) {
+    return new Move(id, color, n, pass, resetCounting, agreeCounting, x, y);
+  }
 }

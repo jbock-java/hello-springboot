@@ -1,9 +1,11 @@
 package com.bernd;
 
 import com.bernd.game.Board;
+import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Game;
+import com.bernd.model.GameMove;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
@@ -51,25 +53,41 @@ public class GameController {
   }
 
   @MessageMapping("/game/move")
-  public void action(Move move, Principal principal) {
+  public void action(Move move, Principal p) {
     Game game = games.get(move.id());
     if (game == null) {
       return;
     }
-    int moveNumber = game.moves().size();
-    String currentPlayer = move.color() == Board.B ? game.black().name() : game.white().name();
-    if (!principal.getName().equals(currentPlayer)) {
-      return; // discard
-    }
-    if (move.n() != moveNumber) {
+    String principal = p.getName();
+    MoveList moves = game.moves();
+    int moveNumber = moves.size();
+    int color = principal.equals(game.black().name()) ? Board.B :
+        principal.equals(game.white().name()) ? Board.W : 0;
+    if (color == 0) {
       return;
     }
-    Game updated = game.update(move);
+    if (!game.counting()) {
+      if (moves.isEmpty()) {
+        if (color == Board.W) {
+          return;
+        }
+      } else {
+        GameMove lastMove = moves.get(moves.size() - 1);
+        if (lastMove.color() == color) {
+          return;
+        }
+      }
+      if (move.n() != moveNumber) {
+        return;
+      }
+    }
+    Move updatedMove = move.withColor(color);
+    Game updated = game.update(updatedMove);
     games.put(updated);
     if (updated.gameHasEnded()) {
-      operations.convertAndSend("/topic/move/" + game.id(), move.gameEnd(updated.counting()));
+      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.gameEnd(updated.counting()));
     } else if (!move.agreeCounting()) {
-      operations.convertAndSend("/topic/move/" + game.id(), move.toView(updated.counting()));
+      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.toView(updated.counting()));
     }
   }
 
