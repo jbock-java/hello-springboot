@@ -27,7 +27,6 @@ public record OpenGame(
         userWhite,
         false,
         0,
-        false,
         createEmptyBoard(dim),
         dim,
         acceptRequest.handicap(),

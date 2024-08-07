@@ -5,7 +5,6 @@ public final class GameBuilder {
 
   private boolean counting;
   private int countingAgreed;
-  private boolean opponentPassed;
   private int[][] board;
   private int[] forbidden;
 
@@ -20,11 +19,6 @@ public final class GameBuilder {
 
   public GameBuilder withCountingAgreed(int countingAgreed) {
     this.countingAgreed = countingAgreed;
-    return this;
-  }
-
-  public GameBuilder withOpponentPassed(boolean opponentPassed) {
-    this.opponentPassed = opponentPassed;
     return this;
   }
 
@@ -46,7 +40,6 @@ public final class GameBuilder {
     GameBuilder builder = new GameBuilder(game);
     builder.counting = game.counting();
     builder.countingAgreed = game.countingAgreed();
-    builder.opponentPassed = game.opponentPassed();
     builder.board = game.board();
     builder.forbidden = game.forbidden();
     return builder;
@@ -59,7 +52,6 @@ public final class GameBuilder {
         game.white(),
         counting,
         countingAgreed,
-        opponentPassed,
         board,
         game.dim(),
         game.handicap(),

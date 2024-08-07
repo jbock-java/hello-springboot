@@ -5,6 +5,7 @@ import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Game;
+import com.bernd.model.GameMove;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
@@ -69,11 +70,8 @@ public class GameController {
     Move updatedMove = move.withColor(color).withMoveNumber(game.moves().size());
     Game updated = game.update(updatedMove);
     games.put(updated);
-    if (updated.gameHasEnded()) {
-      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.gameEnd(updated.counting()));
-    } else if (!move.agreeCounting()) {
-      operations.convertAndSend("/topic/move/" + game.id(), updatedMove.toGameMove(updated.counting()));
-    }
+    GameMove lastMove = game.getLastMove();
+    operations.convertAndSend("/topic/move/" + game.id(), lastMove);
   }
 
   private int getCurrentColor(Game game, String principal) {

@@ -17,7 +17,6 @@ class GameBuilderTest {
         new User("heike"),
         true,
         B,
-        true,
         createEmptyBoard(9),
         9,
         2,

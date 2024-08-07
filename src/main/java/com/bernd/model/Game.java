@@ -18,7 +18,6 @@ public record Game(
     User white,
     boolean counting,
     int countingAgreed,
-    boolean opponentPassed,
     int[][] board,
     int dim,
     int handicap,
@@ -39,11 +38,12 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
-    moves.add(move, counting);
+    if (move.agreeCounting() && (countingAgreed | move.color()) == COLORS) {
+      moves.addGameEndMarker();
+    } else {
+      moves.add(move, counting || move.pass() && opponentPassed());
+    }
     if (move.agreeCounting()) {
-      if ((countingAgreed | move.color()) == COLORS) {
-        moves.addGameEndMarker();
-      }
       return toBuilder()
           .withCountingAgreed(countingAgreed | move.color())
           .build();
@@ -58,7 +58,7 @@ public record Game(
           .build();
     }
     if (move.pass()) {
-      if (opponentPassed) {
+      if (opponentPassed()) {
         return toBuilder()
             .withCounting(true)
             .withBoard(Count.count(board))
@@ -66,7 +66,6 @@ public record Game(
             .build();
       }
       return toBuilder()
-          .withOpponentPassed(true)
           .withForbidden(NOT_FORBIDDEN)
           .build();
     }
@@ -80,13 +79,11 @@ public record Game(
       return toBuilder()
           .withBoard(result)
           .withForbidden(direction.moveX(x), direction.moveY(y))
-          .withOpponentPassed(false)
           .build();
     }
     return toBuilder()
         .withBoard(result)
         .withForbidden(NOT_FORBIDDEN)
-        .withOpponentPassed(false)
         .build();
   }
 
@@ -164,5 +161,16 @@ public record Game(
 
   public boolean isBlack(String name) {
     return black.name().equals(name);
+  }
+
+  public GameMove getLastMove() {
+    return moves.get(moves.size() - 1);
+  }
+
+  boolean opponentPassed() {
+    if (moves.isEmpty()) {
+      return false;
+    }
+    return getLastMove().pass();
   }
 }
