@@ -49,8 +49,7 @@ export const Game = () => {
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let counting = useGameStore(state => state.counting)
   let currentColor = useGameStore(state => state.currentColor)
-  let {board, forbidden, gameHasEnded} = useGameStore(state => state.gameState)
-  let [forbidden_x, forbidden_y] = forbidden
+  let {board, forbidden: [forbidden_x, forbidden_y], gameHasEnded} = useGameStore(state => state.gameState)
   let initialized = useRef()
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded && counting() ? getCountingGroup(board, cursor_x, cursor_y) : undefined

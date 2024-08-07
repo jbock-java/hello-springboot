@@ -21,6 +21,7 @@ public record Game(
     int[][] board,
     int dim,
     int handicap,
+    int remainingHandicap,
     int[] forbidden,
     MoveList moves
 ) {
@@ -82,6 +83,7 @@ public record Game(
           .build();
     }
     return toBuilder()
+        .withRemainingHandicap(Math.max(0, remainingHandicap - 1))
         .withBoard(result)
         .withForbidden(NOT_FORBIDDEN)
         .build();

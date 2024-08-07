@@ -55,6 +55,7 @@ export const useGameStore = create((set, get) => ({
   moves: [],
   baseBoard: [],
   dim: 0,
+  handicap: 0,
   queueStatus: "behind",
   black: {
     name: "",
@@ -81,6 +82,10 @@ export const useGameStore = create((set, get) => ({
     let moves = get().moves
     let white = get().white
     let black = get().black
+    let handicap = get().handicap
+    if (handicap > moves.length) {
+      return black.name
+    }
     if (!moves.length) {
       return black.name
     }
@@ -91,6 +96,10 @@ export const useGameStore = create((set, get) => ({
   },
   currentColor: () => {
     let moves = get().moves
+    let handicap = get().handicap
+    if (handicap > moves.length) {
+      return BLACK
+    }
     if (!moves.length) {
       return BLACK
     }
@@ -158,7 +167,8 @@ export const useGameStore = create((set, get) => ({
       state.moves = moves
       state.gameState.board = rehydrate(baseBoard)
       state.gameState.forbidden = forbidden
-      state.queueStatue = "up_to_date"
+      state.handicap = game.handicap
+      state.queueStatus = "up_to_date"
     }))
   },
 }))

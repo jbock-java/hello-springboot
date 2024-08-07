@@ -78,7 +78,7 @@ public class GameController {
     if (game.gameHasEnded()) {
       return 0;
     }
-    if (game.handicap() != 0) {
+    if (game.remainingHandicap() != 0) {
       return Board.B;
     }
     int color = getColor(game, principal);
@@ -96,8 +96,14 @@ public class GameController {
     if (!(game.isBlack(principal) || game.isWhite(principal))) {
       return 0;
     }
+    if (game.remainingHandicap() > 0) {
+      if (!game.isBlack(principal)) {
+        return 0;
+      }
+      return Board.B;
+    }
     if (game.isSelfPlay()) {
-      return game.moves().size() + game.handicap() % 2 == 0 ?
+      return game.moves().size() + game.remainingHandicap() % 2 == 0 ?
           Board.B : Board.W;
     }
     return game.isBlack(principal) ? Board.B : Board.W;

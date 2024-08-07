@@ -30,6 +30,7 @@ public record OpenGame(
         createEmptyBoard(dim),
         dim,
         acceptRequest.handicap(),
+        acceptRequest.handicap(),
         new int[]{-1, -1},
         MoveList.create(dim));
   }

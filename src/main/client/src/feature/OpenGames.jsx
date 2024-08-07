@@ -141,14 +141,14 @@ function OpenGame({game, acceptableGame, setAcceptableGame}) {
 function AcceptDialog({acceptableGame, onAccept}) {
   let { top, right } = acceptableGame.rect
   let [isFlip, setFlip] = useState(false)
-  let [handi, setHandi] = useState(0)
+  let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
   return (
     <Form
       onSubmit={() => onAccept({
         game: acceptableGame.game,
         flip: isFlip,
-        handicap: handi,
+        handicap: handi === 1 ? 0 : handi,
       })}
       style={{
         position: "absolute",
@@ -171,18 +171,18 @@ function AcceptDialog({acceptableGame, onAccept}) {
       <div className="mt-2 text-black py-1">
         <div className="inline-flex">
         <span>Handicap:</span>
-        <button type="button" disabled={handi === 0} onClick={() => setHandi(Math.max(0, handi - 1))}>
+        <button type="button" disabled={handi === 1} onClick={() => setHandi(Math.max(1, handi - 1))}>
           <IconContext.Provider value={{
             size: "1.25em",
             className: twJoin(
               "px-1",
-              handi === 0 && "text-slate-400",
+              handi === 1 && "text-slate-400",
             )
           }}>
             <FaAngleLeft />
           </IconContext.Provider>
         </button>
-        <span className="font-bold">{handi === 0 ? 0 : handi + 1}</span>
+        <span className="font-bold">{handi === 1 ? "0" : handi}</span>
         <button type="button" className="" onClick={() => setHandi(handi + 1)}>
           <IconContext.Provider value={{ size: "1.25em", className: "pl-1" }}>
             <FaAngleRight />

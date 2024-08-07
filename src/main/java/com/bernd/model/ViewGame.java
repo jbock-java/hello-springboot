@@ -8,6 +8,7 @@ public record ViewGame(
     User white,
     int dim,
     int handicap,
+    int remainingHandicap,
     List<GameMove> moves
 ) {
 
@@ -18,6 +19,7 @@ public record ViewGame(
         game.white(),
         game.dim(),
         game.handicap(),
+        game.remainingHandicap(),
         game.moves().asList());
   }
 }

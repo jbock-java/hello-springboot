@@ -2,11 +2,12 @@ package com.bernd;
 
 import com.bernd.model.User;
 import com.bernd.model.UserList;
+import org.springframework.stereotype.Component;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
 @Component
 public class LobbyUsers {

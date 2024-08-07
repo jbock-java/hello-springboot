@@ -77,7 +77,8 @@ public class LobbyController {
         0,
         createEmptyBoard(request.dim()),
         request.dim(),
-        0,
+        request.handicap(),
+        request.handicap(),
         new int[]{-1, -1},
         MoveList.create(request.dim())));
     activeGames.put(ActiveGame.fromGame(game));
