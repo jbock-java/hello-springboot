@@ -39,6 +39,7 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
+    moves.add(move, counting);
     if (move.agreeCounting()) {
       if ((countingAgreed | move.color()) == COLORS) {
         moves.addGameEndMarker();
@@ -47,7 +48,6 @@ public record Game(
           .withCountingAgreed(countingAgreed | move.color())
           .build();
     }
-    moves.add(move, counting);
     if (counting) {
       int[][] updated = move.resetCounting() ?
           Toggle.resetCounting(board) :
@@ -152,5 +152,17 @@ public record Game(
 
   public GameBuilder toBuilder() {
     return GameBuilder.builder(this);
+  }
+
+  public boolean isSelfPlay() {
+    return black.name().equals(white.name());
+  }
+
+  public boolean isWhite(String name) {
+    return white.name().equals(name);
+  }
+
+  public boolean isBlack(String name) {
+    return black.name().equals(name);
   }
 }

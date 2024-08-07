@@ -8,5 +8,6 @@ public record GameMove(
     int y,
     boolean counting,
     boolean resetCounting,
+    boolean agreeCounting,
     boolean end) {
 }

@@ -5,14 +5,12 @@ import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Game;
-import com.bernd.model.GameMove;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
-import java.security.Principal;
-import java.util.Objects;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,6 +20,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.security.Principal;
+import java.util.Objects;
+
+import static com.bernd.util.Util.COLORS;
 
 @Controller
 public class GameController {
@@ -47,7 +51,7 @@ public class GameController {
   public ViewGame getGame(@PathVariable String id) {
     Game game = games.get(id);
     if (game == null) {
-      return null;
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no such game");
     }
     return game.toView();
   }
@@ -58,10 +62,8 @@ public class GameController {
     if (p == null || game == null) {
       return;
     }
-    String principal = Objects.toString(p.getName(), "");
-    int color = principal.equals(game.black().name()) ? Board.B :
-        principal.equals(game.white().name()) ? Board.W : 0;
-    if (!canMove(game, color)) {
+    int color = getCurrentColor(game, Objects.toString(p.getName(), ""));
+    if (color == 0) {
       return;
     }
     Move updatedMove = move.withColor(color).withMoveNumber(game.moves().size());
@@ -74,25 +76,33 @@ public class GameController {
     }
   }
 
-  private boolean canMove(Game game, int color) {
+  private int getCurrentColor(Game game, String principal) {
     if (game.gameHasEnded()) {
-      return false;
-    }
-    if (color == 0) {
-      return false;
-    }
-    MoveList moves = game.moves();
-    if (game.counting()) {
-      return true;
+      return 0;
     }
     if (game.handicap() != 0) {
-      return color == Board.B;
+      return Board.B;
     }
+    int color = getColor(game, principal);
+    if (color == 0) {
+      return 0;
+    }
+    MoveList moves = game.moves();
     if (moves.isEmpty()) {
-      return color == Board.B;
+      return Board.B;
     }
-    GameMove lastMove = moves.get(moves.size() - 1);
-    return color != lastMove.color();
+    return moves.get(moves.size() - 1).color() ^ COLORS;
+  }
+
+  private static int getColor(Game game, String principal) {
+    if (!(game.isBlack(principal) || game.isWhite(principal))) {
+      return 0;
+    }
+    if (game.isSelfPlay()) {
+      return game.moves().size() + game.handicap() % 2 == 0 ?
+          Board.B : Board.W;
+    }
+    return game.isBlack(principal) ? Board.B : Board.W;
   }
 
   @ResponseBody

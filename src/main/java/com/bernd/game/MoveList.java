@@ -2,6 +2,7 @@ package com.bernd.game;
 
 import com.bernd.model.GameMove;
 import com.bernd.model.Move;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public final class MoveList {
   }
 
   public void addGameEndMarker() {
-    moves.add(new GameMove(moves.size(), 0, true, -1, -1, true, false, true));
+    moves.add(new GameMove(moves.size(), 0, true, -1, -1, true, false, false, true));
   }
 
   public void add(Move move, boolean counting) {
