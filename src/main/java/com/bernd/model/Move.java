@@ -10,12 +10,12 @@ public record Move(
     int x,
     int y) {
 
-  public GameMove toGameMove(boolean counting) {
-    return new GameMove(n, color, pass, x, y, counting, resetCounting, agreeCounting, false);
+  public GameMove toGameMove() {
+    return new GameMove(n, color, pass, x, y, resetCounting, agreeCounting, false);
   }
 
-  public GameMove gameEnd(boolean counting) {
-    return new GameMove(n, color, pass, x, y, counting, resetCounting, agreeCounting, true);
+  public GameMove gameEnd() {
+    return new GameMove(n, color, pass, x, y, resetCounting, agreeCounting, true);
   }
 
   public Move withColor(int color) {

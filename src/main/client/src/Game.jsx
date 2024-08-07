@@ -52,7 +52,7 @@ export const Game = () => {
   let {board, forbidden: [forbidden_x, forbidden_y], gameHasEnded} = useGameStore(state => state.gameState)
   let initialized = useRef()
   let canvasRef = useRef()
-  let countingGroup = !gameHasEnded && counting() ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let countingGroup = !gameHasEnded && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
 
   let context = useMemo(() => {
     let dim = board.length
@@ -122,7 +122,7 @@ export const Game = () => {
     if (!board.length) {
       return
     }
-    if (!counting() && currentPlayer() !== auth.name) {
+    if (!counting && currentPlayer() !== auth.name) {
       return
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
@@ -143,7 +143,7 @@ export const Game = () => {
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
       return
     }
-    if (counting()) {
+    if (counting) {
       if (!board[cursor_y][cursor_x].hasStone) {
         return
       }
@@ -175,7 +175,7 @@ export const Game = () => {
       return
     }
     paintGrid(context)
-    if (counting()) {
+    if (counting) {
       paintStonesCounting(context, board, countingGroup)
       return
     } else {

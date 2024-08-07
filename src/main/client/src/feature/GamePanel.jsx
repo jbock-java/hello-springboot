@@ -136,11 +136,11 @@ function Panel({zoom, setZoom}) {
         <Button
           onClick={onPass}
           className="py-1 px-4"
-          disabled={gameHasEnded || counting() || currentPlayer() !== auth.name}>
+          disabled={gameHasEnded || counting || currentPlayer() !== auth.name}>
           Pass
         </Button>
       </div>
-      {counting() && <>
+      {counting && <>
         <div className="mt-2">
           <Button
             className="py-1 px-4"

@@ -19,11 +19,11 @@ public final class MoveList {
   }
 
   public void addGameEndMarker() {
-    moves.add(new GameMove(moves.size(), 0, true, -1, -1, true, false, false, true));
+    moves.add(new GameMove(moves.size(), 0, true, -1, -1, false, false, true));
   }
 
-  public void add(Move move, boolean counting) {
-    moves.add(move.toGameMove(counting));
+  public void add(Move move) {
+    moves.add(move.toGameMove());
   }
 
   public GameMove get(int i) {

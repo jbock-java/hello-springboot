@@ -12,8 +12,8 @@ class MoveListTest {
   @Test
   void testGet() {
     MoveList list = MoveList.create(9);
-    list.add(move(B, 0, 1), false);
-    list.add(move(W, 2, 3), false);
+    list.add(move(B, 0, 1));
+    list.add(move(W, 2, 3));
     assertEquals(2, list.size());
     assertEquals(0, list.get(0).x());
     assertEquals(1, list.get(0).y());
@@ -28,7 +28,7 @@ class MoveListTest {
     MoveList list = MoveList.create(9);
     for (int y = 0; y < 9; y++) {
       for (int x = 0; x < 9; x++) {
-        list.add(move(B, x, y), false);
+        list.add(move(B, x, y));
       }
     }
     assertEquals(81, list.size());

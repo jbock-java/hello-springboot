@@ -42,7 +42,7 @@ public record Game(
     if (move.agreeCounting() && (countingAgreed | move.color()) == COLORS) {
       moves.addGameEndMarker();
     } else {
-      moves.add(move, counting || move.pass() && opponentPassed());
+      moves.add(move);
     }
     if (move.agreeCounting()) {
       return toBuilder()
