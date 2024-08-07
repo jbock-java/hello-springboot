@@ -174,6 +174,9 @@ export const useGameStore = create((set, get) => ({
 }))
 
 function createMoveData(baseBoard, moves, move) {
+  if (move.pass && moves.length && moves[moves.length - 1].pass) {
+    return [move, count(baseBoard), [-1, -1]]
+  }
   if (move.counting) {
     let updated = move.resetCounting ?
       resetCounting(baseBoard) :
