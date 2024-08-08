@@ -1,6 +1,5 @@
 package com.bernd;
 
-import com.bernd.model.User;
 import com.bernd.model.UserList;
 import org.springframework.stereotype.Component;
 
@@ -11,22 +10,22 @@ import java.util.Map;
 
 @Component
 public class LobbyUsers {
-  private final Map<String, User> map = new LinkedHashMap<>();
+  private final Map<String, String> map = new LinkedHashMap<>();
 
   void add(String name) {
-    map.put(name, new User(name));
+    map.put(name, name);
   }
 
-  User get(String name) {
+  String get(String name) {
     return map.get(name);
   }
 
-  User remove(String principal) {
+  String remove(String principal) {
     return map.remove(principal);
   }
 
   UserList users() {
-    Collection<User> values = map.values();
+    Collection<String> values = map.values();
     return new UserList(List.copyOf(values));
   }
 }

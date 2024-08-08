@@ -9,7 +9,6 @@ import com.bernd.model.GameMove;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
-import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,24 +23,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
-import java.util.Objects;
 
+import static com.bernd.util.Auth.getPrincipal;
 import static com.bernd.util.Util.COLORS;
 
 @Controller
 public class GameController {
 
   private final MessageSendingOperations<String> operations;
+  private final Users users;
   private final Games games;
   private final OpenGames openGames;
   private final ActiveGames activeGames;
 
   GameController(
       MessageSendingOperations<String> operations,
+      Users users,
       Games games,
       OpenGames openGames,
       ActiveGames activeGames) {
     this.operations = operations;
+    this.users = users;
     this.games = games;
     this.openGames = openGames;
     this.activeGames = activeGames;
@@ -49,7 +51,8 @@ public class GameController {
 
   @ResponseBody
   @GetMapping(value = "/api/game/{id}")
-  public ViewGame getGame(@PathVariable String id) {
+  public ViewGame getGame(@PathVariable String id, Principal p) {
+    users.get(p).setCurrentGame(id);
     Game game = games.get(id);
     if (game == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no such game");
@@ -59,11 +62,11 @@ public class GameController {
 
   @MessageMapping("/game/move")
   public void action(Move move, Principal p) {
-    Game game = games.get(move.id());
+    Game game = games.get(users.get(p).currentGame());
     if (p == null || game == null) {
       return;
     }
-    int color = getCurrentColor(game, Objects.toString(p.getName(), ""));
+    int color = getCurrentColor(game, getPrincipal(p));
     if (color == 0) {
       return;
     }
@@ -112,7 +115,7 @@ public class GameController {
   @ResponseBody
   @PostMapping(value = "/api/create", consumes = "application/json")
   public OpenGame newGame(@RequestBody OpenGame game) {
-    String principal = Auth.getPrincipal();
+    String principal = getPrincipal();
     OpenGame result = openGames.put(game.withUser(principal)
         .withId(RandomString.get()));
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
@@ -121,9 +124,9 @@ public class GameController {
 
   @PostMapping(value = "/api/accept", consumes = "application/json")
   public ResponseEntity<?> accept(@RequestBody AcceptRequest acceptRequest) {
-    String principal = Auth.getPrincipal();
+    String principal = getPrincipal();
     openGames.remove(principal);
-    OpenGame openGame = openGames.remove(acceptRequest.game().user().name());
+    OpenGame openGame = openGames.remove(acceptRequest.game().user());
     Game fullGame = games.put(openGame.accept(principal, acceptRequest));
     activeGames.put(ActiveGame.fromGame(fullGame));
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame.toView());

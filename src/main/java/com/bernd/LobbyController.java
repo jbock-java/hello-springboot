@@ -6,7 +6,6 @@ import com.bernd.model.ActiveGameList;
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
 import com.bernd.model.OpenGameList;
-import com.bernd.model.User;
 import com.bernd.model.ViewGame;
 import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
@@ -67,12 +66,11 @@ public class LobbyController {
   public ViewGame startEdit(@RequestBody MatchRequest request) {
     String principal = Auth.getPrincipal();
     lobbyUsers.remove(principal);
-    User user = new User(principal);
     operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
     Game game = games.put(new Game(
         RandomString.get(),
-        user,
-        user,
+        principal,
+        principal,
         false,
         0,
         createEmptyBoard(request.dim()),

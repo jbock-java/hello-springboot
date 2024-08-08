@@ -4,8 +4,8 @@ import java.util.List;
 
 public record ViewGame(
     String id,
-    User black,
-    User white,
+    String black,
+    String white,
     int dim,
     int handicap,
     int remainingHandicap,

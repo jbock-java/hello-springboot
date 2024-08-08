@@ -1,7 +1,6 @@
 package com.bernd.model;
 
 public record Move(
-    String id,
     int color,
     int n,
     boolean pass,
@@ -19,10 +18,10 @@ public record Move(
   }
 
   public Move withColor(int color) {
-    return new Move(id, color, n, pass, resetCounting, agreeCounting, x, y);
+    return new Move(color, n, pass, resetCounting, agreeCounting, x, y);
   }
 
   public Move withMoveNumber(int n) {
-    return new Move(id, color, n, pass, resetCounting, agreeCounting, x, y);
+    return new Move(color, n, pass, resetCounting, agreeCounting, x, y);
   }
 }

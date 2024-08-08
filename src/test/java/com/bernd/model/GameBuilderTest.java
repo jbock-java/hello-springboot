@@ -13,8 +13,8 @@ class GameBuilderTest {
   void unchanged() {
     Game game = new Game(
         "123",
-        new User("bernd"),
-        new User("heike"),
+        "bernd",
+        "heike",
         true,
         B,
         createEmptyBoard(9),

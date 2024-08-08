@@ -127,11 +127,11 @@ function Panel({zoom, setZoom}) {
         </IconContext.Provider>
       </button>
       <div className="flex gap-x-1">
-        <div>{white.name}</div>
+        <div>{white}</div>
         <div>vs</div>
-        <div>{black.name}</div>
+        <div>{black}</div>
       </div>
-      <div>Move {queueLength()}</div>
+      <div>Move {queueLength}</div>
       <div className="mt-2">
         <Button
           onClick={onPass}

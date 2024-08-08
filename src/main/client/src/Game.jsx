@@ -37,12 +37,11 @@ const TAU = 2 * Math.PI
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let lastStoneXref = useRef(-1)
-  let lastStoneYref = useRef(-1)
   let [zoom, setZoom] = useState(0)
   let {gameId} = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
+  let lastMove = useGameStore(state => state.lastMove)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
   let addMove = useGameStore(state => state.addMove)
@@ -110,8 +109,6 @@ export const Game = () => {
       stoneRadius: getRadius(step * 0.475),
       territoryRadius: getRadius(step * 0.125),
       hoshiRadius: getRadius(step * 0.0625),
-      lastStoneXref: lastStoneXref,
-      lastStoneYref: lastStoneYref,
     }
   }, [board.length, canvasRef, zoom])
 
@@ -158,8 +155,6 @@ export const Game = () => {
         return
       }
     }
-    lastStoneXref.current = cursor_x
-    lastStoneYref.current = cursor_y
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
@@ -179,7 +174,7 @@ export const Game = () => {
       paintStonesCounting(context, board, countingGroup)
       return
     } else {
-      paintStones(context, board)
+      paintStones(context, board, lastMove)
     }
     if (currentPlayer() !== auth.name) {
       return
@@ -200,7 +195,7 @@ export const Game = () => {
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
     showShadow(context, cursor_x, cursor_y, style)
-  }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y])
+  }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {
     if (queueStatus === "up_to_date") {
@@ -266,13 +261,14 @@ function showStone({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   ctx.fill()
 }
 
-function paintLastMove({ isCursorInBounds, canvasRef, grid, stoneRadius, lastStoneXref, lastStoneYref }, board) {
-  let grid_x = lastStoneXref.current
-  let grid_y = lastStoneYref.current
+function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {
+  if (!lastMove) {
+    return
+  }
+  let {x: grid_x, y: grid_y, color} = lastMove
   if (!isCursorInBounds(grid_x, grid_y)) {
     return
   }
-  let { color } = board[grid_y][grid_x]
   let style = color === BLACK ?
     "rgba(255,255,255)" :
     "rgba(0,0,0)"
@@ -334,7 +330,7 @@ function getRadius(radius) {
   return diameter / 2
 }
 
-function paintStones(context, board) {
+function paintStones(context, board, lastMove) {
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
       let { hasStone, color } = board[grid_y][grid_x]
@@ -346,7 +342,7 @@ function paintStones(context, board) {
       }
     }
   }
-  paintLastMove(context, board)
+  paintLastMove(context, lastMove)
 }
 
 function paintStonesCounting(context, board, countingGroup) {

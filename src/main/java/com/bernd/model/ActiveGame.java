@@ -2,8 +2,8 @@ package com.bernd.model;
 
 public record ActiveGame(
     String id,
-    User black,
-    User white,
+    String black,
+    String white,
     int dim
 ) {
 

@@ -14,8 +14,8 @@ import static com.bernd.util.Util.COLORS;
 
 public record Game(
     String id,
-    User black,
-    User white,
+    String black,
+    String white,
     boolean counting,
     int countingAgreed,
     int[][] board,
@@ -154,15 +154,15 @@ public record Game(
   }
 
   public boolean isSelfPlay() {
-    return black.name().equals(white.name());
+    return black.equals(white);
   }
 
   public boolean isWhite(String name) {
-    return white.name().equals(name);
+    return white.equals(name);
   }
 
   public boolean isBlack(String name) {
-    return black.name().equals(name);
+    return black.equals(name);
   }
 
   public GameMove getLastMove() {

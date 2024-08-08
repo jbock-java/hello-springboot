@@ -57,12 +57,9 @@ export const useGameStore = create((set, get) => ({
   dim: 0,
   handicap: 0,
   queueStatus: "behind",
-  black: {
-    name: "",
-  },
-  white: {
-    name: "",
-  },
+  black: "",
+  white: "",
+  lastMove: undefined,
   countingComplete: () => {
     if (!get().counting) {
       return false
@@ -84,16 +81,14 @@ export const useGameStore = create((set, get) => ({
     let black = get().black
     let handicap = get().handicap
     if (handicap > moves.length) {
-      return black.name
+      return black
     }
     if (!moves.length) {
-      return black.name
+      return black
     }
-    return moves[moves.length - 1].color === BLACK ? white.name : black.name
+    return moves[moves.length - 1].color === BLACK ? white : black
   },
-  queueLength: () => {
-    return get().moves.length
-  },
+  queueLength: 0,
   currentColor: () => {
     let moves = get().moves
     let handicap = get().handicap
@@ -129,8 +124,12 @@ export const useGameStore = create((set, get) => ({
       }
       state.queueStatus = "up_to_date"
       let counting = get().counting
+      if (!counting) {
+        state.queueLength = get().queueLength + 1
+      }
       let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting)
       state.moves.push(storedMove)
+      state.lastMove = move.pass ? undefined : move
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
       state.gameState.forbidden = forbidden
@@ -151,6 +150,7 @@ export const useGameStore = create((set, get) => ({
       let forbidden = [-1, -1]
       let passes = 0
       let counting = false
+      let queueLength = 0
       for (let move of game.moves) {
         if (move.end) {
           moves.push(move)
@@ -160,6 +160,7 @@ export const useGameStore = create((set, get) => ({
         if (move.pass) {
           if (passes) {
             counting = true
+            queueLength = move.n
           } else {
             passes = 1
           }
@@ -171,6 +172,10 @@ export const useGameStore = create((set, get) => ({
         forbidden = newForbidden
         baseBoard = updated
       }
+      if (game.moves.length) {
+        let move = game.moves[game.moves.length - 1]
+        state.lastMove = move.pass ? undefined : move
+      }
       state.counting = counting
       state.dim = game.dim
       state.baseBoard = baseBoard
@@ -178,6 +183,7 @@ export const useGameStore = create((set, get) => ({
       state.gameState.board = rehydrate(baseBoard)
       state.gameState.forbidden = forbidden
       state.handicap = game.handicap
+      state.queueLength = queueLength
       state.queueStatus = "up_to_date"
     }))
   },

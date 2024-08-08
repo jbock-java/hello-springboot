@@ -6,7 +6,7 @@ import static com.bernd.LobbyController.createEmptyBoard;
 
 public record OpenGame(
     String id,
-    User user,
+    String user,
     int dim,
     int handicap) {
 
@@ -15,12 +15,12 @@ public record OpenGame(
   }
 
   public OpenGame withUser(String name) {
-    return new OpenGame(id, new User(name), dim, handicap);
+    return new OpenGame(id, name, dim, handicap);
   }
 
   public Game accept(String opponent, AcceptRequest acceptRequest) {
-    User userBlack = acceptRequest.flip() ? new User(opponent) : user;
-    User userWhite = acceptRequest.flip() ? user : new User(opponent);
+    String userBlack = acceptRequest.flip() ? opponent : user;
+    String userWhite = acceptRequest.flip() ? user : opponent;
     return new Game(
         id,
         userBlack,

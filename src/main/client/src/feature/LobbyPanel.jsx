@@ -52,8 +52,8 @@ function Panel() {
       </div>
       <div className="pl-2 mt-2">
         {users.map(user => (
-          <div key={user.name}>
-            {user.name}
+          <div key={user}>
+            {user}
           </div>
         ))}
       </div>

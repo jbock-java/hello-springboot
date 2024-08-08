@@ -81,8 +81,8 @@ function ActiveGame({game}) {
       }}
       className={classes}
       key={game.id}>
-      <div className="pl-3 pr-1 rounded-l-lg">{game.white.name}</div>
-      <div className="">{game.black.name}</div>
+      <div className="pl-3 pr-1 rounded-l-lg">{game.white}</div>
+      <div className="">{game.black}</div>
       <div className={dimClasses}>
         {game.dim}x{game.dim}
       </div>

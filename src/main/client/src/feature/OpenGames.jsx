@@ -101,7 +101,7 @@ export function OpenGames() {
 function OpenGame({game, acceptableGame, setAcceptableGame}) {
   let dimRef = useRef()
   let auth = useAuthStore(state => state.auth)
-  let disabled = auth.name === game.user.name
+  let disabled = auth.name === game.user
   let classes = twJoin(
     "contents",
     "*:py-3",
@@ -130,7 +130,7 @@ function OpenGame({game, acceptableGame, setAcceptableGame}) {
       }}
       className={classes}
       key={game.id}>
-      <div className="pl-3 pr-1 rounded-l-lg">{game.user.name}</div>
+      <div className="pl-3 pr-1 rounded-l-lg">{game.user}</div>
       <div ref={dimRef} className={dimClasses}>
         {game.dim}x{game.dim}
       </div>
@@ -159,7 +159,7 @@ function AcceptDialog({acceptableGame, onAccept}) {
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
           <BabyStone color={isFlip ? "white": "black"} />
-          {acceptableGame.game.user.name}
+          {acceptableGame.game.user}
         </button>
       </div>
       <div className="text-black">
