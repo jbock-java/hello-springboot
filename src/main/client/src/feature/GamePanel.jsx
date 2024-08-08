@@ -31,6 +31,9 @@ import {
   useAuthStore,
   useGameStore,
 } from "../store.js"
+import {
+  GameChat,
+} from "./GameChat.jsx"
 
 export const GamePanel = ({zoom, setZoom}) => {
   return (
@@ -171,6 +174,9 @@ function Panel({zoom, setZoom}) {
           </div>
         </div>
       )}
+      <div className="absolute bottom-10 pr-2">
+        <GameChat />
+      </div>
     </>
   )
 }
