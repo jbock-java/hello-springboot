@@ -66,27 +66,28 @@ public class GameController {
     if (p == null || game == null) {
       return;
     }
-    int color = getCurrentColor(game, getPrincipal(p));
-    if (color == 0) {
+    int principalColor = getColorFromPrincipal(game, getPrincipal(p));
+    int color = getColorFromGameState(game);
+    if (color == 0
+        || principalColor == 0
+        || color != principalColor && !game.counting() && !game.isSelfPlay()) {
       return;
     }
-    Move updatedMove = move.withColor(color).withMoveNumber(game.moves().size());
+    Move updatedMove = move
+        .withColor(game.isSelfPlay() ? color : principalColor)
+        .withMoveNumber(game.moves().size());
     Game updated = game.update(updatedMove);
     games.put(updated);
     GameMove lastMove = game.getLastMove();
     operations.convertAndSend("/topic/move/" + game.id(), lastMove);
   }
 
-  private int getCurrentColor(Game game, String principal) {
+  private int getColorFromGameState(Game game) {
     if (game.gameHasEnded()) {
       return 0;
     }
-    if (game.remainingHandicap() != 0) {
+    if (game.remainingHandicap() > 0) {
       return Board.B;
-    }
-    int color = getColor(game, principal);
-    if (color == 0) {
-      return 0;
     }
     MoveList moves = game.moves();
     if (moves.isEmpty()) {
@@ -95,21 +96,14 @@ public class GameController {
     return moves.get(moves.size() - 1).color() ^ COLORS;
   }
 
-  private static int getColor(Game game, String principal) {
-    if (!(game.isBlack(principal) || game.isWhite(principal))) {
-      return 0;
-    }
-    if (game.remainingHandicap() > 0) {
-      if (!game.isBlack(principal)) {
-        return 0;
-      }
+  private static int getColorFromPrincipal(Game game, String principal) {
+    if (game.isBlack(principal)) {
       return Board.B;
     }
-    if (game.isSelfPlay()) {
-      return game.moves().size() + game.remainingHandicap() % 2 == 0 ?
-          Board.B : Board.W;
+    if (game.isWhite(principal)) {
+      return Board.W;
     }
-    return game.isBlack(principal) ? Board.B : Board.W;
+    return 0;
   }
 
   @ResponseBody

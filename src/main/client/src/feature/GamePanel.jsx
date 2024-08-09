@@ -174,9 +174,11 @@ function Panel({zoom, setZoom}) {
           </div>
         </div>
       )}
+      {/*
       <div className="absolute bottom-10 pr-2">
         <GameChat />
       </div>
+      */}
     </>
   )
 }

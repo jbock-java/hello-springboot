@@ -8,8 +8,10 @@ import {
 } from "react"
 import {
   useParams,
+  useNavigate,
 } from "react-router-dom"
 import {
+  base,
   StompContext,
   BLACK,
   TERRITORY,
@@ -39,6 +41,7 @@ export const Game = () => {
   let [cursor_y, setCursor_y] = useState(-1)
   let [zoom, setZoom] = useState(0)
   let {gameId} = useParams()
+  let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let lastMove = useGameStore(state => state.lastMove)
@@ -208,7 +211,7 @@ export const Game = () => {
         },
       })
       setGameState(game)
-    })
+    }, () => navigate(base + "/lobby"))
   }, [setGameState, queueStatus, auth, gameId])
 
   useEffect(() => {
