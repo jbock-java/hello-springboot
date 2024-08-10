@@ -5,17 +5,11 @@ public final class GameBuilder {
 
   private boolean counting;
   private int countingAgreed;
-  private int remainingHandicap;
   private int[][] board;
   private int[] forbidden;
 
   private GameBuilder(Game game) {
     this.game = game;
-  }
-
-  public GameBuilder withRemainingHandicap(int remainingHandicap) {
-    this.remainingHandicap = remainingHandicap;
-    return this;
   }
 
   public GameBuilder withCounting(boolean counting) {
@@ -44,7 +38,6 @@ public final class GameBuilder {
 
   static GameBuilder builder(Game game) {
     GameBuilder builder = new GameBuilder(game);
-    builder.remainingHandicap = game.remainingHandicap();
     builder.counting = game.counting();
     builder.countingAgreed = game.countingAgreed();
     builder.board = game.board();
@@ -62,7 +55,6 @@ public final class GameBuilder {
         board,
         game.dim(),
         game.handicap(),
-        remainingHandicap,
         forbidden,
         game.moves()
     );

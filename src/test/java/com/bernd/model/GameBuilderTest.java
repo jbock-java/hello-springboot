@@ -20,7 +20,6 @@ class GameBuilderTest {
         createEmptyBoard(9),
         9,
         2,
-        2,
         new int[]{-1, -1},
         MoveList.create(2));
     Game game2 = GameBuilder.builder(game).build();

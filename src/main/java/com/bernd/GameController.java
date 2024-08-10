@@ -66,6 +66,9 @@ public class GameController {
     if (p == null || game == null) {
       return;
     }
+    if (game.isForbidden(move)) {
+      return;
+    }
     int principalColor = getColorFromPrincipal(game, getPrincipal(p));
     int color = getColorFromGameState(game);
     if (color == 0
