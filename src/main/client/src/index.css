@@ -3,16 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  body, input {
+  body {
     @apply bg-stone-800;
     @apply font-sans;
     @apply text-stone-100;
-  }
-
-  input {
-    @apply border;
-    @apply border-white;
-    @apply rounded-lg;
-    @apply p-2;
   }
 }

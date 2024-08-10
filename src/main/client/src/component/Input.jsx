@@ -11,8 +11,9 @@ export const Input = ({
   type,
   ...rest
 }) => {
-  let { register } = useFormContext()
+  let {register} = useFormContext()
   let classes = twJoin(
+    "border border-white rounded-lg p-2 bg-stone-800 text-stone-100",
     className,
   )
   return (

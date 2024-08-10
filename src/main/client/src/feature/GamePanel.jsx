@@ -37,8 +37,8 @@ import {
 
 export const GamePanel = ({zoom, setZoom}) => {
   return (
-    <div className="fixed top-0 right-0 h-full bg-slate-800 border-l-2 border-slate-700">
-      <div className="w-64 pr-3 pt-4 pl-4">
+    <div className="fixed top-0 right-0 z-1 h-full bg-slate-800 border-l-2 border-slate-700">
+      <div className="w-80 pr-3 pt-4 pl-2 h-full flex flex-col gap-y-1">
         <Panel zoom={zoom} setZoom={setZoom} />
       </div>
     </div>
@@ -93,7 +93,7 @@ function Panel({zoom, setZoom}) {
   let result = gameHasEnded ? getScore(board) : undefined
   return (
     <>
-      <div className="inline-flex gap-x-2">
+      <div className="flex-none grid w-full grid-cols-[min-content_min-content_min-content_auto] gap-x-2">
         <button
           onClick={() => setZoom(zoom - 1)}>
           <IconContext.Provider value={{
@@ -109,7 +109,9 @@ function Panel({zoom, setZoom}) {
           } else {
             setZoom(0)
           }
-        }}>Zoom: {zoom + 0}</button>
+        }}>
+          <span>Zoom:&nbsp;{zoom + 0}</span>
+        </button>
         <button
           onClick={() => setZoom(zoom + 1)}>
           <IconContext.Provider value={{
@@ -119,23 +121,25 @@ function Panel({zoom, setZoom}) {
             <FaAngleRight />
           </IconContext.Provider>
         </button>
+        <button title="Leave the game" onClick={onExit}
+          className="justify-self-end">
+          <IconContext.Provider value={{
+            size: "1.5em",
+            className: "pr-[4px]",
+          }}>
+            <IoMdExit />
+          </IconContext.Provider>
+        </button>
       </div>
-      <button title="Leave the game" onClick={onExit}
-        className="float-right">
-        <IconContext.Provider value={{
-          size: "1.5em",
-          className: "pr-[4px]",
-        }}>
-          <IoMdExit />
-        </IconContext.Provider>
-      </button>
-      <div className="flex gap-x-1">
+      <div className="flex-none flex gap-x-1">
         <div>{white}</div>
         <div>vs</div>
         <div>{black}</div>
       </div>
-      <div>Move {queueLength}</div>
-      <div className="mt-2">
+      <div className="flex-none">
+        Move {queueLength}
+      </div>
+      <div className="flex-none">
         <Button
           onClick={onPass}
           className="py-1 px-4"
@@ -144,7 +148,7 @@ function Panel({zoom, setZoom}) {
         </Button>
       </div>
       {counting && <>
-        <div className="mt-2">
+        <div className="flex-none">
           <Button
             className="py-1 px-4"
             disabled={gameHasEnded}
@@ -152,7 +156,7 @@ function Panel({zoom, setZoom}) {
             Reset Counting
           </Button>
         </div>
-        <div className="mt-2">
+        <div className="flex-none">
           <Button
             disabled={gameHasEnded || !countingComplete()}
             className="py-1 px-4"
@@ -162,7 +166,7 @@ function Panel({zoom, setZoom}) {
         </div>
       </>}
       {result && (
-        <div className="mt-4">
+        <div className="flex-none">
           <div>
             {"w:" + result.w}
           </div>
@@ -174,11 +178,7 @@ function Panel({zoom, setZoom}) {
           </div>
         </div>
       )}
-      {/*
-      <div className="absolute bottom-10 pr-2">
-        <GameChat />
-      </div>
-      */}
+      <GameChat />
     </>
   )
 }

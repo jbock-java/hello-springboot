@@ -2,7 +2,6 @@ package com.bernd;
 
 import com.bernd.model.Chat;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ public class Chats {
     return chat;
   }
 
-  List<Chat> chats() {
-    return List.copyOf(map.values());
+  Map<String, Chat> map() {
+    return map;
   }
 }

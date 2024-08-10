@@ -212,7 +212,7 @@ export const Game = () => {
       })
       setGameState(game)
     }, () => navigate(base + "/lobby"))
-  }, [setGameState, queueStatus, auth, gameId])
+  }, [setGameState, queueStatus, auth, gameId, navigate])
 
   useEffect(() => {
     if (initialized.current) {

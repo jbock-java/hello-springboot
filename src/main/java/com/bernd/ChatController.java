@@ -6,7 +6,7 @@ import com.bernd.model.ChatRequest;
 import com.bernd.util.Auth;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -31,25 +31,17 @@ public class ChatController {
   @ResponseBody
   @GetMapping("/api/chat/{id}")
   public Chat getChat(@PathVariable String id) {
-    System.out.println("GETCHAT " + id);
     return chats.get(id);
   }
 
   @MessageMapping("/chat/send/")
   public ResponseEntity<?> sendChat(ChatRequest chatRequest, Principal principal) {
     String user = Auth.getPrincipal(principal);
-    ChatMessage message = new ChatMessage(chats.chats().size(), chatRequest.message(), user);
-    Chat chat = chats.get(chatRequest.id());
-    if (chat != null) {
-      chat.messages().add(message);
-    } else {
-      List<ChatMessage> messages = new ArrayList<>();
-      messages.add(message);
-      chat = new Chat(chatRequest.id(), messages);
-    }
-    chats.put(chat);
+    Chat chat = chats.map().computeIfAbsent(chatRequest.id(),
+        id -> new Chat(id, new AtomicInteger(0), new ArrayList<>()));
+    ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), chatRequest.message(), user);
+    chat.messages().add(message);
     operations.convertAndSend("/topic/chat/" + chat.id(), message);
     return ResponseEntity.ok().build();
   }
-
 }

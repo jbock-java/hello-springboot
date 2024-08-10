@@ -18,17 +18,22 @@ import {
 } from "./../util.js"
 
 export const GameChat = () => {
-  let [messages, setMessages] = useState([]);
-  let divRef = useRef(null)
+  let [messages, setMessages] = useState([])
+  let divRef = useRef()
 
   let stompClient = useContext(StompContext)
-  let { gameId } = useParams()
+  let {gameId} = useParams()
   let auth = useAuthStore(state => state.auth)
 
   useEffect(() => {
-    stompClient.subscribe("/topic/chat/" + gameId, (message) => {
-      let newMessage = JSON.parse(message.body)
-      setMessages(previous => [...previous, newMessage])
+    stompClient.subscribe("/topic/chat/" + gameId, (m) => {
+      let message = JSON.parse(m.body)
+      setMessages(previous => {
+        if (previous.length && previous[previous.length - 1].n === message.n) {
+          return previous
+        }
+        return [...previous, message]
+      })
     })
 
     doTry(async () => {
@@ -44,13 +49,13 @@ export const GameChat = () => {
   }, [stompClient, auth, gameId])
 
   useEffect(() => {
-    divRef.current?.scrollIntoView({behavior: 'smooth'});
-  }, [messages]);
+    divRef.current?.scrollIntoView({behavior: "smooth"})
+  }, [messages])
 
   let onSendMessage = useCallback((event) => doTry(async () => {
     event.preventDefault()
     let data = new FormData(event.target)
-    document.getElementById("sending").reset();
+    event.target.reset()
     stompClient.publish({
       destination: "/app/chat/send/",
       body: JSON.stringify({
@@ -58,25 +63,22 @@ export const GameChat = () => {
         id: gameId,
       }),
     })
-  }), [ stompClient, gameId ])
+  }), [stompClient, gameId])
 
-  return (
-
-    <div className="border border-gray-500 bg-gray-900 rounded-lg shadow relative my-1 mr-1">
-      <div>
-        <div className="max-h-80 h-80 px-2 py-1 overflow-auto">
-          {messages.map(message => (
-              <p>{message.user + ": " + message.message}</p>
-          ))}
-          <div ref={divRef} />
-        </div>
-      </div>
-      <form className="px-2 py-1" id="sending" onSubmit={onSendMessage}>
-        <input
-          type="text"
-          name="message"
-        />
-      </form>
+  return <>
+    <div
+      className="grow border border-gray-500 bg-gray-900 rounded-lg p-1 overflow-y-scroll">
+      {messages.map(message => (
+          <p key={message.n}>{message.user + ": " + message.message}</p>
+      ))}
+      <div ref={divRef} />
     </div>
-  );
+    <form className="flex-0 mb-2" onSubmit={onSendMessage}>
+      <input
+        className="w-full rounded-lg p-2 border border-gray-500 bg-stone-800 text-stone-100"
+        type="text"
+        name="message"
+      />
+    </form>
+  </>
 }
