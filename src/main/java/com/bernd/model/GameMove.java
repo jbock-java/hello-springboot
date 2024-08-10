@@ -9,4 +9,9 @@ public record GameMove(
     boolean resetCounting,
     boolean agreeCounting,
     boolean end) {
+
+  public ColorlessMove removeColor() {
+    return new ColorlessMove(
+        n, pass, x, y, resetCounting, agreeCounting, end);
+  }
 }

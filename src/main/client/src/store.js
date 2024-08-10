@@ -9,7 +9,7 @@ import {
 } from "zustand/middleware"
 import {
   BLACK,
-  WHITE,
+  COLORS,
 } from "./util.js"
 import {
   rehydrate,
@@ -98,7 +98,7 @@ export const useGameStore = create((set, get) => ({
     if (!moves.length) {
       return BLACK
     }
-    return moves[moves.length - 1].color ^ (BLACK | WHITE)
+    return moves[moves.length - 1].color ^ COLORS
   },
   counting: false,
   gameState: {
@@ -127,7 +127,7 @@ export const useGameStore = create((set, get) => ({
       if (!counting) {
         state.queueLength = get().queueLength + 1
       }
-      let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting)
+      let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting, get().handicap)
       state.moves.push(storedMove)
       state.lastMove = move.pass ? undefined : move
       state.baseBoard = updated
@@ -167,7 +167,7 @@ export const useGameStore = create((set, get) => ({
         } else {
           passes = 0
         }
-        let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move, counting)
+        let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move, counting, game.handicap)
         moves.push(storedMove)
         forbidden = newForbidden
         baseBoard = updated
@@ -189,7 +189,8 @@ export const useGameStore = create((set, get) => ({
   },
 }))
 
-function createMoveData(baseBoard, moves, move, counting) {
+function createMoveData(baseBoard, moves, colorlessMove, counting, handicap) {
+  let move = {...colorlessMove, color: nextMoveColor(moves, handicap)}
   if (move.pass && moves.length && moves[moves.length - 1].pass) {
     return [move, count(baseBoard), [-1, -1]]
   }
@@ -204,3 +205,14 @@ function createMoveData(baseBoard, moves, move, counting) {
   let forbidden = getForbidden(baseBoard, updated, storedMove)
   return [storedMove, updated, forbidden]
 }
+
+function nextMoveColor(moves, handicap) {
+    let remainingHandicap = Math.max(0, handicap - moves.length)
+    if (remainingHandicap) {
+      return BLACK
+    }
+    if (!moves.length) {
+      return BLACK
+    }
+    return moves[moves.length - 1].color ^ COLORS
+  }

@@ -13,10 +13,6 @@ public record Move(
     return new GameMove(n, color, pass, x, y, resetCounting, agreeCounting, false);
   }
 
-  public GameMove gameEnd() {
-    return new GameMove(n, color, pass, x, y, resetCounting, agreeCounting, true);
-  }
-
   public Move withColor(int color) {
     return new Move(color, n, pass, resetCounting, agreeCounting, x, y);
   }

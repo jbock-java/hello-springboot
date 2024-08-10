@@ -2,9 +2,9 @@ package com.bernd.game;
 
 import com.bernd.model.GameMove;
 import com.bernd.model.Move;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class MoveList {
 
@@ -40,6 +40,10 @@ public final class MoveList {
 
   public List<GameMove> asList() {
     return List.copyOf(moves);
+  }
+
+  public Stream<GameMove> asStream() {
+    return moves.stream();
   }
 
   @Override

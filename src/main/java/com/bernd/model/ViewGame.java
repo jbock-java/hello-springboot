@@ -9,7 +9,7 @@ public record ViewGame(
     int dim,
     int handicap,
     int remainingHandicap,
-    List<GameMove> moves
+    List<ColorlessMove> moves
 ) {
 
   static ViewGame fromGame(Game game) {
@@ -20,6 +20,6 @@ public record ViewGame(
         game.dim(),
         game.handicap(),
         game.remainingHandicap(),
-        game.moves().asList());
+        game.moves().asStream().map(GameMove::removeColor).toList());
   }
 }

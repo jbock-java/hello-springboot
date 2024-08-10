@@ -21,7 +21,7 @@ export const TOGGLE_STUFF = TOGGLE_B | TOGGLE_W
 export const TERRITORY = TERRITORY_W | TERRITORY_B
 export const ANY_REMOVED = REMOVED_W | REMOVED_B
 
-export const COLORS = BLACK | WHITE;
+export const COLORS = BLACK | WHITE
 
 export async function tfetch(url, options) {
   let response

@@ -10,6 +10,7 @@ import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.RandomString;
+import java.security.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -21,8 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.security.Principal;
 
 import static com.bernd.util.Auth.getPrincipal;
 import static com.bernd.util.Util.COLORS;
@@ -82,7 +81,7 @@ public class GameController {
     Game updated = game.update(updatedMove);
     games.put(updated);
     GameMove lastMove = game.getLastMove();
-    operations.convertAndSend("/topic/move/" + game.id(), lastMove);
+    operations.convertAndSend("/topic/move/" + game.id(), lastMove.removeColor());
   }
 
   private int getColorFromGameState(Game game) {
