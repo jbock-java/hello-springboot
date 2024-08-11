@@ -20,6 +20,6 @@ public record ViewGame(
         game.dim(),
         game.handicap(),
         game.remainingHandicap(),
-        game.moves().asStream().map(GameMove::removeColor).toList());
+        game.moves().asStream().map(Move::removeColor).toList());
   }
 }

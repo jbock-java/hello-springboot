@@ -3,21 +3,35 @@ package com.bernd.model;
 public record Move(
     int color,
     int n,
-    boolean pass,
-    boolean resetCounting,
-    boolean agreeCounting,
+    String action,
     int x,
     int y) {
 
-  public GameMove toGameMove() {
-    return new GameMove(n, color, pass, x, y, resetCounting, agreeCounting, false);
+  public Move toGameMove() {
+    return this;
   }
 
   public Move withColor(int color) {
-    return new Move(color, n, pass, resetCounting, agreeCounting, x, y);
+    return new Move(color, n, action, x, y);
   }
 
-  public Move withMoveNumber(int n) {
-    return new Move(color, n, pass, resetCounting, agreeCounting, x, y);
+  public ColorlessMove removeColor() {
+    return new ColorlessMove(n, action, x, y);
+  }
+
+  public boolean agreeCounting() {
+    return "agreeCounting".equals(action);
+  }
+
+  public boolean resetCounting() {
+    return "resetCounting".equals(action);
+  }
+
+  public boolean pass() {
+    return "pass".equals(action);
+  }
+
+  public boolean end() {
+    return "end".equals(action);
   }
 }

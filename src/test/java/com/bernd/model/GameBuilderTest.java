@@ -4,7 +4,6 @@ import com.bernd.game.MoveList;
 import org.junit.jupiter.api.Test;
 
 import static com.bernd.LobbyController.createEmptyBoard;
-import static com.bernd.game.Board.B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GameBuilderTest {
@@ -16,7 +15,6 @@ class GameBuilderTest {
         "bernd",
         "heike",
         true,
-        B,
         createEmptyBoard(9),
         9,
         2,

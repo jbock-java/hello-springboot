@@ -47,12 +47,12 @@ export const Game = () => {
   let lastMove = useGameStore(state => state.lastMove)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
+  let movesLength = useGameStore(state => state.moves.length)
   let addMove = useGameStore(state => state.addMove)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let counting = useGameStore(state => state.counting)
   let currentColor = useGameStore(state => state.currentColor)
   let {board, forbidden: [forbidden_x, forbidden_y], gameHasEnded} = useGameStore(state => state.gameState)
-  let initialized = useRef()
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
 
@@ -161,7 +161,7 @@ export const Game = () => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
-        id: gameId,
+        n: movesLength,
         x: cursor_x,
         y: cursor_y,
       }),
@@ -215,16 +215,12 @@ export const Game = () => {
   }, [setGameState, queueStatus, auth, gameId, navigate])
 
   useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
       addMove(move)
     })
     return sub.unsubscribe
-  }, [setGameState, addMove, initialized, stompClient, gameId, auth])
+  }, [setGameState, addMove, stompClient, gameId, auth])
 
   if (!board.length) {
     return <div>Loading...</div>

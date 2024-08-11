@@ -35,6 +35,6 @@ class MoveListTest {
   }
 
   private Move move(int color, int x, int y) {
-    return new Move(color, 0, false, false, false, x, y);
+    return new Move(color, 0, null, x, y);
   }
 }
