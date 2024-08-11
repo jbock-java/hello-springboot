@@ -166,7 +166,7 @@ export const Game = () => {
         y: cursor_y,
       }),
     })
-  }, [context, currentPlayer, currentColor, auth, board, gameId, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded])
+  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength])
 
   useEffect(() => {
     if (!board.length) {

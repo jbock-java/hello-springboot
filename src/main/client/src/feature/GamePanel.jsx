@@ -3,7 +3,6 @@ import {
   useContext,
 } from "react"
 import {
-  useParams,
   useNavigate,
 } from "react-router-dom"
 import {
@@ -46,11 +45,11 @@ export const GamePanel = ({zoom, setZoom}) => {
 }
 
 function Panel({zoom, setZoom}) {
-  let { gameId } = useParams()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
+  let isSelfPlay = black === white
   let queueLength = useGameStore(state => state.queueLength)
   let movesLength = useGameStore(state => state.moves.length)
   let counting = useGameStore(state => state.counting)
@@ -71,7 +70,7 @@ function Panel({zoom, setZoom}) {
         action: "pass",
       }),
     })
-  }, [stompClient, gameId, movesLength])
+  }, [stompClient, movesLength])
   let onResetCounting = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
@@ -80,7 +79,7 @@ function Panel({zoom, setZoom}) {
         action: "resetCounting",
       }),
     })
-  }, [stompClient, gameId, movesLength])
+  }, [stompClient, movesLength])
   let onCountingAgree = useCallback(() => {
     setAgreeCounting(true)
     stompClient.publish({
@@ -90,7 +89,7 @@ function Panel({zoom, setZoom}) {
         action: "agreeCounting",
       }),
     })
-  }, [stompClient, gameId, movesLength])
+  }, [stompClient, movesLength, setAgreeCounting])
   if (!board.length) {
     return <span>Loading...</span>
   }
@@ -162,7 +161,7 @@ function Panel({zoom, setZoom}) {
         </div>
         <div className="flex-none">
           <Button
-            disabled={agreeCounting || gameHasEnded || !countingComplete()}
+            disabled={(!isSelfPlay && agreeCounting) || gameHasEnded || !countingComplete()}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK
