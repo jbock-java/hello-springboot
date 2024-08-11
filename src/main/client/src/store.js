@@ -138,7 +138,7 @@ export const useGameStore = create((set, get) => ({
       if (move.action !== "agreeCounting") {
         state.agreeCounting = false
       }
-      state.lastMove = move.action === "pass" ? undefined : move
+      state.lastMove = move.action === "pass" ? undefined : storedMove
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
       state.gameState.forbidden = forbidden

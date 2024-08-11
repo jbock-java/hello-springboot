@@ -35,11 +35,13 @@ import {
 const kirsch = "#dfbd6d"
 const asch = "#8c7130"
 const TAU = 2 * Math.PI
+const decoX = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]
 
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
   let [zoom, setZoom] = useState(0)
+  let [boardDecorations, setBoardDecorations] = useState(true)
   let {gameId} = useParams()
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
@@ -62,7 +64,7 @@ export const Game = () => {
       return
     }
     let width = 0.9375 * Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-    let margin = 1.125 * width / dim
+    let margin = 1.125 * width / (dim - 1)
     let step = (width - margin - margin) / (dim - 1)
     let zoomFactor = 1 + (zoom * 0.0625)
     width = Math.trunc(width * zoomFactor)
@@ -105,6 +107,7 @@ export const Game = () => {
       step,
       grid,
       canvasRef,
+      boardDecorations,
       isCursorInBounds: function(x, y) {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
@@ -113,7 +116,7 @@ export const Game = () => {
       territoryRadius: getRadius(step * 0.125),
       hoshiRadius: getRadius(step * 0.0625),
     }
-  }, [board.length, canvasRef, zoom])
+  }, [board.length, canvasRef, zoom, boardDecorations])
 
   let onMouseMove = useCallback((e) => {
     if (gameHasEnded) {
@@ -127,8 +130,13 @@ export const Game = () => {
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
-    setCursor_x(cursor_x + 0)
-    setCursor_y(cursor_y + 0)
+    if (context.isCursorInBounds(cursor_x, cursor_y)) {
+      setCursor_x(cursor_x + 0)
+      setCursor_y(cursor_y + 0)
+    } else {
+      setCursor_x(-1)
+      setCursor_y(-1)
+    }
   }, [context, currentPlayer, auth, board.length, counting, gameHasEnded])
 
   let onClick = useCallback((e) => {
@@ -167,6 +175,16 @@ export const Game = () => {
       }),
     })
   }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength])
+
+  useEffect(() => {
+    if (!board.length) {
+      return
+    }
+    if (!context.boardDecorations) {
+      return
+    }
+    paintBoardDecorations(context)
+  }, [context, board.length])
 
   useEffect(() => {
     if (!board.length) {
@@ -227,6 +245,7 @@ export const Game = () => {
   }
 
   return (
+  <div className="w-[calc(100vw-20rem)]">
     <div className="grid justify-center mt-8">
       <canvas ref={canvasRef}
         onMouseLeave={() => {
@@ -237,8 +256,9 @@ export const Game = () => {
         onClick={onClick}
         width={context.width} height={context.width}>
       </canvas>
-      <GamePanel zoom={zoom} setZoom={setZoom} />
     </div>
+    <GamePanel zoom={zoom} setZoom={setZoom} />
+  </div>
   )
 }
 
@@ -291,10 +311,14 @@ function showShadow({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
   ctx.fill()
 }
 
-function paintGrid({ width, canvasRef, grid, hoshis, hoshiRadius }) {
+function paintGrid({width, margin, canvasRef, grid, hoshis, hoshiRadius, boardDecorations}) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = kirsch
-  ctx.fillRect(0, 0, width, width)
+  if (boardDecorations) {
+    ctx.fillRect(0.625 * margin, 0.625 *  margin, width - 1.25 * margin, width - 1.25 * margin)
+  } else {
+    ctx.fillRect(0, 0, width, width)
+  }
   ctx.strokeStyle = asch
   for (let y = 0; y < grid.length; y++) {
     let [source_x, source_y] = grid[y][0]
@@ -319,6 +343,23 @@ function paintGrid({ width, canvasRef, grid, hoshis, hoshiRadius }) {
     ctx.arc(x, y, hoshiRadius, 0, TAU)
     ctx.fill()
   })
+}
+
+function paintBoardDecorations({width, margin, canvasRef, grid}) {
+  let ctx = canvasRef.current.getContext("2d")
+  ctx.fillStyle = kirsch
+  ctx.fillRect(0, 0, width, width)
+  ctx.fillStyle = asch
+  for (let grid_x = 0; grid_x < grid.length; grid_x++) {
+    let [x] = grid[0][grid_x]
+    ctx.fillText(decoX[grid_x], x, 0.25 * margin)
+    ctx.fillText(decoX[grid_x], x, width - 0.25 * margin)
+  }
+  for (let grid_y = 0; grid_y < grid.length; grid_y++) {
+    let [, y] = grid[grid.length - grid_y - 1][0]
+    ctx.fillText(grid_y + 1, 0.25 * margin, y)
+    ctx.fillText(grid_y + 1, width -  0.25 * margin, y)
+  }
 }
 
 function getRadius(radius) {
