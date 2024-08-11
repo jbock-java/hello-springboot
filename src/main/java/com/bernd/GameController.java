@@ -5,7 +5,6 @@ import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Game;
-import com.bernd.model.GameMove;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
@@ -76,11 +75,10 @@ public class GameController {
       return;
     }
     Move updatedMove = move
-        .withColor(game.isSelfPlay() ? color : principalColor)
-        .withMoveNumber(game.moves().size());
+        .withColor(game.isSelfPlay() ? color : principalColor);
     Game updated = game.update(updatedMove);
     games.put(updated);
-    GameMove lastMove = game.getLastMove();
+    Move lastMove = game.getLastMove();
     operations.convertAndSend("/topic/move/" + game.id(), lastMove.removeColor());
   }
 

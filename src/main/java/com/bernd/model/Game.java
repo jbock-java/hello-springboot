@@ -17,7 +17,6 @@ public record Game(
     String black,
     String white,
     boolean counting,
-    int countingAgreed,
     int[][] board,
     int dim,
     int handicap,
@@ -38,14 +37,13 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
-    if (move.agreeCounting() && (countingAgreed | move.color()) == COLORS) {
+    if (move.agreeCounting() && (countingAgreed() | move.color()) == COLORS) {
       moves.addGameEndMarker();
     } else {
       moves.add(move);
     }
     if (move.agreeCounting()) {
       return toBuilder()
-          .withCountingAgreed(countingAgreed | move.color())
           .build();
     }
     if (counting) {
@@ -144,7 +142,10 @@ public record Game(
   }
 
   public boolean gameHasEnded() {
-    return countingAgreed == COLORS;
+    if (moves.isEmpty()) {
+      return false;
+    }
+    return getLastMove().end();
   }
 
   public GameBuilder toBuilder() {
@@ -163,7 +164,7 @@ public record Game(
     return black.equals(name);
   }
 
-  public GameMove getLastMove() {
+  public Move getLastMove() {
     return moves.get(moves.size() - 1);
   }
 
@@ -172,6 +173,14 @@ public record Game(
       return false;
     }
     return getLastMove().pass();
+  }
+
+  public int countingAgreed() {
+    if (moves.isEmpty()) {
+      return 0;
+    }
+    Move lastMove = getLastMove();
+    return lastMove.agreeCounting() ? lastMove.color() : 0;
   }
 
   public int remainingHandicap() {

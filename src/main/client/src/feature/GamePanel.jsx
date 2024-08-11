@@ -52,7 +52,10 @@ function Panel({zoom, setZoom}) {
   let black = useGameStore(state => state.black)
   let white = useGameStore(state => state.white)
   let queueLength = useGameStore(state => state.queueLength)
+  let movesLength = useGameStore(state => state.moves.length)
   let counting = useGameStore(state => state.counting)
+  let agreeCounting = useGameStore(state => state.agreeCounting)
+  let setAgreeCounting = useGameStore(state => state.setAgreeCounting)
   let countingComplete = useGameStore(state => state.countingComplete)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let { board, gameHasEnded } = useGameStore(state => state.gameState)
@@ -64,29 +67,30 @@ function Panel({zoom, setZoom}) {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
-        id: gameId,
-        pass: true,
+        n: movesLength,
+        action: "pass",
       }),
     })
-  }, [stompClient, gameId])
+  }, [stompClient, gameId, movesLength])
   let onResetCounting = useCallback(() => {
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
-        id: gameId,
-        resetCounting: true,
+        n: movesLength,
+        action: "resetCounting",
       }),
     })
-  }, [stompClient, gameId])
+  }, [stompClient, gameId, movesLength])
   let onCountingAgree = useCallback(() => {
+    setAgreeCounting(true)
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
-        id: gameId,
-        agreeCounting: true,
+        n: movesLength,
+        action: "agreeCounting",
       }),
     })
-  }, [stompClient, gameId])
+  }, [stompClient, gameId, movesLength])
   if (!board.length) {
     return <span>Loading...</span>
   }
@@ -158,7 +162,7 @@ function Panel({zoom, setZoom}) {
         </div>
         <div className="flex-none">
           <Button
-            disabled={gameHasEnded || !countingComplete()}
+            disabled={agreeCounting || gameHasEnded || !countingComplete()}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK

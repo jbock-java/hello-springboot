@@ -101,6 +101,12 @@ export const useGameStore = create((set, get) => ({
     return moves[moves.length - 1].color ^ COLORS
   },
   counting: false,
+  agreeCounting: false,
+  setAgreeCounting: (agree) => {
+    set(produce(state => {
+      state.agreeCounting = agree
+    }))
+  },
   gameState: {
     board: [],
     forbidden: [-1, -1],
@@ -108,11 +114,15 @@ export const useGameStore = create((set, get) => ({
   },
   addMove: (move) => {
     set(produce(state => {
-      if (move.end) {
+      if (move.action === "end") {
         state.moves.push(move)
         state.gameState.gameHasEnded = true
         return
       }
+      if (move.action === "agreeCounting") {
+        return
+      }
+      state.agreeCounting = false
       let moves = get().moves
       let baseBoard = get().baseBoard
       if (move.n < moves.length) {
@@ -129,11 +139,11 @@ export const useGameStore = create((set, get) => ({
       }
       let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting, get().handicap)
       state.moves.push(storedMove)
-      state.lastMove = move.pass ? undefined : move
+      state.lastMove = move.action === "pass" ? undefined : move
       state.baseBoard = updated
       state.gameState.board = rehydrate(updated)
       state.gameState.forbidden = forbidden
-      if (move.pass && moves.length && moves[moves.length - 1].pass) {
+      if (move.action === "pass" && moves.length && moves[moves.length - 1].action === "pass") {
         state.counting = true
       }
     }))
@@ -152,7 +162,7 @@ export const useGameStore = create((set, get) => ({
       let counting = false
       let queueLength = 0
       for (let move of game.moves) {
-        if (move.end) {
+        if (move.action === "end") {
           moves.push(move)
           state.gameState.gameHasEnded = true
           break
@@ -174,7 +184,7 @@ export const useGameStore = create((set, get) => ({
       }
       if (game.moves.length) {
         let move = game.moves[game.moves.length - 1]
-        state.lastMove = move.pass ? undefined : move
+        state.lastMove = move.action === "pass" ? undefined : move
       }
       state.counting = counting
       state.dim = game.dim
@@ -191,11 +201,11 @@ export const useGameStore = create((set, get) => ({
 
 function createMoveData(baseBoard, moves, colorlessMove, counting, handicap) {
   let move = {...colorlessMove, color: nextMoveColor(moves, handicap)}
-  if (move.pass && moves.length && moves[moves.length - 1].pass) {
+  if (move.action === "pass" && moves.length && moves[moves.length - 1].action === "pass") {
     return [move, count(baseBoard), [-1, -1]]
   }
   if (counting) {
-    let updated = move.resetCounting ?
+    let updated = move.action === "resetCounting" ?
       resetCounting(baseBoard) :
       toggleStonesAt(baseBoard, move.x, move.y)
     return [move, count(updated), [-1, -1]]

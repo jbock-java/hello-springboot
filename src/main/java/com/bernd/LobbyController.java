@@ -72,7 +72,6 @@ public class LobbyController {
         principal,
         principal,
         false,
-        0,
         createEmptyBoard(request.dim()),
         request.dim(),
         request.handicap(),

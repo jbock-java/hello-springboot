@@ -13,10 +13,10 @@ import {
 } from "../util.js"
 
 export function updateBoard(board, move) {
-  let {pass, x, y, color} = move
-  if (pass) {
+  if (move.action === "pass") {
     return [PointList.empty(), board]
   }
+  let {x, y, color} = move
   board = applyMove(board, move)
   let oppositeColor = color ^ (WHITE | BLACK)
   let dead = new PointList(board.length)

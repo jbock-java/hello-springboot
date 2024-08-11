@@ -2,10 +2,7 @@ package com.bernd.model;
 
 public record ColorlessMove(
     int n,
-    boolean pass,
+    String action,
     int x,
-    int y,
-    boolean resetCounting,
-    boolean agreeCounting,
-    boolean end) {
+    int y) {
 }
