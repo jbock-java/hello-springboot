@@ -52,6 +52,7 @@ export const useAuthStore = create(
 )
 
 export const useGameStore = create((set, get) => ({
+  id: "",
   moves: [],
   baseBoard: [],
   dim: 0,
@@ -149,6 +150,7 @@ export const useGameStore = create((set, get) => ({
   },
   setGameState: (game) => {
     set(produce(state => {
+      state.id = game.id
       state.black = game.black
       state.white = game.white
       let baseBoard = Array(game.dim)
@@ -181,9 +183,11 @@ export const useGameStore = create((set, get) => ({
         forbidden = newForbidden
         baseBoard = updated
       }
-      if (game.moves.length) {
-        let move = game.moves[game.moves.length - 1]
+      if (moves.length) {
+        let move = moves[moves.length - 1]
         state.lastMove = move.action === "pass" ? undefined : move
+      } else {
+        state.lastMove = undefined
       }
       state.counting = counting
       state.dim = game.dim

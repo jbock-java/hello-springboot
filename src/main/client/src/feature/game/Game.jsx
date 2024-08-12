@@ -43,6 +43,7 @@ export const Game = () => {
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
+  let id = useGameStore(state => state.id)
   let lastMove = useGameStore(state => state.lastMove)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
@@ -212,7 +213,7 @@ export const Game = () => {
   }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {
-    if (queueStatus === "up_to_date") {
+    if (id === gameId && queueStatus === "up_to_date") {
       return
     }
     doTry(async () => {
@@ -223,7 +224,7 @@ export const Game = () => {
       })
       setGameState(game)
     }, () => navigate(base + "/lobby"))
-  }, [setGameState, queueStatus, auth, gameId, navigate])
+  }, [setGameState, queueStatus, auth, id, gameId, navigate])
 
   useEffect(() => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
