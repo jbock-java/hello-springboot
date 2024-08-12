@@ -25,7 +25,7 @@ import {
 } from "./Lobby.jsx"
 import {
   Game,
-} from "./Game.jsx"
+} from "./feature/game/Game.jsx"
 import {
   base,
   StompContext,

@@ -10,12 +10,12 @@ import {
 } from "react-router-dom"
 import {
   useAuthStore,
-} from "./../store.js"
+} from "../../store.js"
 import {
   StompContext,
   tfetch,
   doTry,
-} from "./../util.js"
+} from "../../util.js"
 
 export const GameChat = () => {
   let [messages, setMessages] = useState([])

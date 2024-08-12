@@ -22,14 +22,14 @@ import {
   TERRITORY_B,
   TERRITORY_W,
   base,
-} from "../util.js"
+} from "../../util.js"
 import {
   Button,
-} from "../component/Button.jsx"
+} from "../../component/Button.jsx"
 import {
   useAuthStore,
   useGameStore,
-} from "../store.js"
+} from "../../store.js"
 import {
   GameChat,
 } from "./GameChat.jsx"

@@ -14,28 +14,26 @@ import {
   base,
   StompContext,
   BLACK,
-  TERRITORY,
-  TERRITORY_B,
-  REMOVED_B,
-  ANY_REMOVED,
   tfetch,
   doTry,
-} from "./util.js"
+} from "../../util.js"
 import {
   PointList,
-} from "./model/PointList.js"
-import {
-  GamePanel,
-} from "./feature/GamePanel.jsx"
+} from "../../model/PointList.js"
 import {
   useAuthStore,
   useGameStore,
-} from "./store.js"
-
-const kirsch = "#dfbd6d"
-const asch = "#8c7130"
-const TAU = 2 * Math.PI
-const decoX = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]
+} from "../../store.js"
+import {
+  paintShadow,
+  paintGrid,
+  paintBoardDecorations,
+  paintStones,
+  paintStonesCounting,
+} from "./paint.js"
+import {
+  GamePanel,
+} from "./GamePanel.jsx"
 
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
@@ -215,7 +213,7 @@ export const Game = () => {
     let style = currentColor() === BLACK ?
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
-    showShadow(context, cursor_x, cursor_y, style)
+    paintShadow(context, cursor_x, cursor_y, style)
   }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {
@@ -262,160 +260,12 @@ export const Game = () => {
   )
 }
 
-function showTerritory({ canvasRef, grid, territoryRadius }, grid_x, grid_y, style) {
-  let [x, y] = grid[grid_y][grid_x]
-  let ctx = canvasRef.current.getContext("2d")
-  ctx.fillStyle = style
-  ctx.beginPath()
-  ctx.arc(x, y, territoryRadius, 0, TAU)
-  ctx.fill()
-}
-
-function showStone({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
-  let [x, y] = grid[grid_y][grid_x]
-  let ctx = canvasRef.current.getContext("2d")
-  ctx.fillStyle = style
-  ctx.beginPath()
-  ctx.arc(x, y, stoneRadius, 0, TAU)
-  ctx.fill()
-}
-
-function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {
-  if (!lastMove) {
-    return
-  }
-  let {x: grid_x, y: grid_y, color} = lastMove
-  if (!isCursorInBounds(grid_x, grid_y)) {
-    return
-  }
-  let style = color === BLACK ?
-    "rgba(255,255,255)" :
-    "rgba(0,0,0)"
-  let [x, y] = grid[grid_y][grid_x]
-  let ctx = canvasRef.current.getContext("2d")
-  let length = stoneRadius * 0.875
-  ctx.fillStyle = style
-  ctx.beginPath()
-  ctx.moveTo(x, y)
-  ctx.lineTo(x + length, y)
-  ctx.lineTo(x , y + length)
-  ctx.fill()
-}
-
-function showShadow({ canvasRef, grid, stoneRadius }, grid_x, grid_y, style) {
-  let [x, y] = grid[grid_y][grid_x]
-  let ctx = canvasRef.current.getContext("2d")
-  ctx.fillStyle = style
-  ctx.beginPath()
-  ctx.arc(x, y, stoneRadius, 0, TAU)
-  ctx.fill()
-}
-
-function paintGrid({width, margin, canvasRef, grid, hoshis, hoshiRadius, boardDecorations}) {
-  let ctx = canvasRef.current.getContext("2d")
-  ctx.fillStyle = kirsch
-  if (boardDecorations) {
-    ctx.fillRect(0.625 * margin, 0.625 *  margin, width - 1.25 * margin, width - 1.25 * margin)
-  } else {
-    ctx.fillRect(0, 0, width, width)
-  }
-  ctx.strokeStyle = asch
-  for (let y = 0; y < grid.length; y++) {
-    let [source_x, source_y] = grid[y][0]
-    let [target_x, target_y] = grid[y][grid.length - 1]
-    ctx.beginPath()
-    ctx.moveTo(source_x, source_y)
-    ctx.lineTo(target_x, target_y)
-    ctx.stroke()
-  }
-  for (let x = 0; x < grid.length; x++) {
-    let [source_x, source_y] = grid[0][x]
-    let [target_x, target_y] = grid[grid.length - 1][x]
-    ctx.beginPath()
-    ctx.moveTo(source_x, source_y)
-    ctx.lineTo(target_x, target_y)
-    ctx.stroke()
-  }
-  hoshis.forEach((grid_x, grid_y) => {
-    let [x, y] = grid[grid_y][grid_x]
-    ctx.fillStyle = asch
-    ctx.beginPath()
-    ctx.arc(x, y, hoshiRadius, 0, TAU)
-    ctx.fill()
-  })
-}
-
-function paintBoardDecorations({width, margin, canvasRef, grid}) {
-  let ctx = canvasRef.current.getContext("2d")
-  ctx.fillStyle = kirsch
-  ctx.fillRect(0, 0, width, width)
-  ctx.fillStyle = asch
-  for (let grid_x = 0; grid_x < grid.length; grid_x++) {
-    let [x] = grid[0][grid_x]
-    ctx.fillText(decoX[grid_x], x, 0.25 * margin)
-    ctx.fillText(decoX[grid_x], x, width - 0.25 * margin)
-  }
-  for (let grid_y = 0; grid_y < grid.length; grid_y++) {
-    let [, y] = grid[grid.length - grid_y - 1][0]
-    ctx.fillText(grid_y + 1, 0.25 * margin, y)
-    ctx.fillText(grid_y + 1, width -  0.25 * margin, y)
-  }
-}
-
 function getRadius(radius) {
   let diameter = Math.trunc(2 * radius)
   if (diameter % 2 === 0) {
     diameter += 1
   }
   return diameter / 2
-}
-
-function paintStones(context, board, lastMove) {
-  for (let grid_y = 0; grid_y < board.length; grid_y++) {
-    for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let { hasStone, color } = board[grid_y][grid_x]
-      if (hasStone) {
-        let style = color === BLACK ?
-          "rgba(0,0,0)" :
-          "rgba(255,255,255)"
-        showStone(context, grid_x, grid_y, style)
-      }
-    }
-  }
-  paintLastMove(context, lastMove)
-}
-
-function paintStonesCounting(context, board, countingGroup) {
-  for (let grid_y = 0; grid_y < board.length; grid_y++) {
-    for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let { hasStone, color } = board[grid_y][grid_x]
-      if (hasStone) {
-        if (countingGroup && countingGroup(grid_x, grid_y)) {
-          let style = color & BLACK ?
-            "rgba(0,0,0,0.25)" :
-            "rgba(255,255,255,0.25)"
-          showShadow(context, grid_x, grid_y, style)
-        } else {
-          let style = color & BLACK ?
-            "rgba(0,0,0)" :
-            "rgba(255,255,255)"
-          showStone(context, grid_x, grid_y, style)
-        }
-      }
-      if (color & ANY_REMOVED) {
-        let style = (color & ANY_REMOVED) === REMOVED_B ?
-          "rgba(0,0,0,0.25)" :
-          "rgba(255,255,255,0.25)"
-        showShadow(context, grid_x, grid_y, style)
-      }
-      if (color & TERRITORY) {
-        let style = (color & TERRITORY) === TERRITORY_B ?
-          "rgba(0,0,0)" :
-          "rgba(255,255,255)"
-        showTerritory(context, grid_x, grid_y, style)
-      }
-    }
-  }
 }
 
 function getCountingGroup(board, cursor_x, cursor_y) {
@@ -425,7 +275,7 @@ function getCountingGroup(board, cursor_x, cursor_y) {
       cursor_y >= board.length ) {
     return undefined
   }
-  let { has, hasStone } = board[cursor_y][cursor_x]
+  let {has, hasStone} = board[cursor_y][cursor_x]
   if (!hasStone) {
     return undefined
   }
