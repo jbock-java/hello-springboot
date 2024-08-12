@@ -20,7 +20,8 @@ import {
 export const GameChat = () => {
   let [messages, setMessages] = useState([])
   let divRef = useRef()
-
+  let messageRef = useRef()
+  let needsScroll = useRef(false)
   let stompClient = useContext(StompContext)
   let {gameId} = useParams()
   let auth = useAuthStore(state => state.auth)
@@ -28,6 +29,8 @@ export const GameChat = () => {
   useEffect(() => {
     stompClient.subscribe("/topic/chat/" + gameId, (m) => {
       let message = JSON.parse(m.body)
+      let msg = messageRef.current
+      needsScroll.current = msg.scrollHeight <= msg.scrollTop + msg.offsetHeight
       setMessages(previous => {
         if (previous.length && previous[previous.length - 1].n === message.n) {
           return previous
@@ -49,7 +52,10 @@ export const GameChat = () => {
   }, [stompClient, auth, gameId])
 
   useEffect(() => {
-    divRef.current?.scrollIntoView({behavior: "smooth"})
+    if (!needsScroll.current) {
+      return
+    }
+    window.setTimeout(() => divRef.current?.scrollIntoView({behavior: "smooth"}), 0)
   }, [messages])
 
   let onSendMessage = useCallback((event) => doTry(async () => {
@@ -66,7 +72,7 @@ export const GameChat = () => {
   }), [stompClient, gameId])
 
   return <>
-    <div
+    <div ref={messageRef}
       className="grow border border-gray-500 bg-gray-900 rounded-lg p-1 overflow-y-scroll">
       {messages.map(message => (
           <p key={message.n}>{message.user + ": " + message.message}</p>
