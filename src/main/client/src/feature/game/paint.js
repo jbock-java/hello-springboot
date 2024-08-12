@@ -11,14 +11,10 @@ const asch = "#8c7130"
 const TAU = 2 * Math.PI
 const decoX = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]
 
-export function paintGrid({width, margin, canvasRef, grid, hoshis, hoshiRadius, boardDecorations}) {
+export function paintGrid({width, margin, canvasRef, grid, hoshis, hoshiRadius}) {
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = kirsch
-  if (boardDecorations) {
-    ctx.fillRect(0.625 * margin, 0.625 *  margin, width - 1.25 * margin, width - 1.25 * margin)
-  } else {
-    ctx.fillRect(0, 0, width, width)
-  }
+  ctx.fillRect(0.625 * margin, 0.625 * margin, width - 1.25 * margin, width - 1.25 * margin)
   ctx.strokeStyle = asch
   for (let y = 0; y < grid.length; y++) {
     let [source_x, source_y] = grid[y][0]
@@ -50,15 +46,23 @@ export function paintBoardDecorations({width, margin, canvasRef, grid}) {
   ctx.fillStyle = kirsch
   ctx.fillRect(0, 0, width, width)
   ctx.fillStyle = asch
+  let size = Math.trunc(margin / 4)
+  ctx.font = size + "px sans-serif"
+  ctx.textAlign = "center"
   for (let grid_x = 0; grid_x < grid.length; grid_x++) {
     let [x] = grid[0][grid_x]
+    ctx.textBaseline = "top"
     ctx.fillText(decoX[grid_x], x, 0.25 * margin)
+    ctx.textBaseline = "alphabetic"
     ctx.fillText(decoX[grid_x], x, width - 0.25 * margin)
   }
+  ctx.textBaseline = "middle"
   for (let grid_y = 0; grid_y < grid.length; grid_y++) {
     let [, y] = grid[grid.length - grid_y - 1][0]
-    ctx.fillText(grid_y + 1, 0.25 * margin, y)
-    ctx.fillText(grid_y + 1, width -  0.25 * margin, y)
+    ctx.textAlign = "start"
+    ctx.fillText(grid_y + 1, 0.125 * margin, y)
+    ctx.textAlign = "end"
+    ctx.fillText(grid_y + 1, width -  0.125 * margin, y)
   }
 }
 

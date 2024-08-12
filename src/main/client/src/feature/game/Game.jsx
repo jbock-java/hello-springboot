@@ -39,7 +39,6 @@ export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
   let [zoom, setZoom] = useState(0)
-  let [boardDecorations, setBoardDecorations] = useState(true)
   let {gameId} = useParams()
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
@@ -67,7 +66,7 @@ export const Game = () => {
     let zoomFactor = 1 + (zoom * 0.0625)
     width = Math.trunc(width * zoomFactor)
     margin = Math.trunc(margin * zoomFactor)
-    step = Math.trunc(step * zoomFactor)
+    step = step * zoomFactor
     let grid = []
     for (let y = 0; y < dim; y++) {
       grid[y] = []
@@ -105,7 +104,6 @@ export const Game = () => {
       step,
       grid,
       canvasRef,
-      boardDecorations,
       isCursorInBounds: function(x, y) {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
@@ -114,7 +112,7 @@ export const Game = () => {
       territoryRadius: getRadius(step * 0.125),
       hoshiRadius: getRadius(step * 0.0625),
     }
-  }, [board.length, canvasRef, zoom, boardDecorations])
+  }, [board.length, canvasRef, zoom])
 
   let onMouseMove = useCallback((e) => {
     if (gameHasEnded) {
@@ -176,9 +174,6 @@ export const Game = () => {
 
   useEffect(() => {
     if (!board.length) {
-      return
-    }
-    if (!context.boardDecorations) {
       return
     }
     paintBoardDecorations(context)
