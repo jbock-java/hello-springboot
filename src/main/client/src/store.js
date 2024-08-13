@@ -65,6 +65,8 @@ export const useGameStore = create((set, get) => ({
   counting: false,
   queueLength: 0,
   lastMove: undefined,
+  board: [],
+  forbidden: [-1, -1],
   countingComplete: () => {
     if (!get().counting) {
       return false
@@ -121,20 +123,10 @@ export const useGameStore = create((set, get) => ({
     let move = moves[moves.length - 1]
     return move.action === "end"
   },
-  setAgreeCounting: (agree) => {
-    set(produce(state => {
-      state.agreeCounting = agree
-    }))
-  },
-  gameState: {
-    board: [],
-    forbidden: [-1, -1],
-  },
   addMove: (move) => {
     set(produce(state => {
       if (move.action === "end") {
         state.moves.push(move)
-        state.gameState.gameHasEnded = true
         return
       }
       let moves = get().moves
@@ -153,13 +145,10 @@ export const useGameStore = create((set, get) => ({
       }
       let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting, get().handicap)
       state.moves.push(storedMove)
-      if (move.action !== "agreeCounting") {
-        state.agreeCounting = false
-      }
       state.lastMove = move.action === "pass" ? undefined : storedMove
       state.baseBoard = updated
-      state.gameState.board = rehydrate(updated)
-      state.gameState.forbidden = forbidden
+      state.board = rehydrate(updated)
+      state.forbidden = forbidden
       if (move.action === "pass" && moves.length && moves[moves.length - 1].action === "pass") {
         state.counting = true
       }
@@ -190,7 +179,6 @@ export const useGameStore = create((set, get) => ({
       for (let move of game.moves) {
         if (move.action === "end") {
           moves.push(move)
-          state.gameState.gameHasEnded = true
           break
         }
         if (move.action === "pass") {
@@ -218,8 +206,8 @@ export const useGameStore = create((set, get) => ({
       state.dim = game.dim
       state.baseBoard = baseBoard
       state.moves = moves
-      state.gameState.board = rehydrate(baseBoard)
-      state.gameState.forbidden = forbidden
+      state.board = rehydrate(baseBoard)
+      state.forbidden = forbidden
       state.handicap = game.handicap
       state.queueLength = queueLength
       state.queueStatus = "up_to_date"

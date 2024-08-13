@@ -57,7 +57,7 @@ function Panel({zoom, setZoom}) {
   let gameHasEnded = useGameStore(state => state.gameHasEnded)
   let countingComplete = useGameStore(state => state.countingComplete)
   let currentPlayer = useGameStore(state => state.currentPlayer)
-  let {board} = useGameStore(state => state.gameState)
+  let board = useGameStore(state => state.board)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -169,15 +169,7 @@ function Panel({zoom, setZoom}) {
       </>}
       {result && (
         <div className="flex-none">
-          <div>
-            {"w:" + result.w}
-          </div>
-          <div className="mt-2">
-            {"b:" + result.b}
-          </div>
-          <div className="mt-2">
-            Result: {(result.w > result.b ? "w+" : "b+") + Math.abs(result.b - result.w)}
-          </div>
+          {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}
         </div>
       )}
       <GameChat />
