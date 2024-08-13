@@ -9,6 +9,7 @@ import {
 } from "zustand/middleware"
 import {
   BLACK,
+  WHITE,
   COLORS,
 } from "./util.js"
 import {
@@ -60,6 +61,9 @@ export const useGameStore = create((set, get) => ({
   queueStatus: "behind",
   black: "",
   white: "",
+  myColor: 0,
+  counting: false,
+  queueLength: 0,
   lastMove: undefined,
   countingComplete: () => {
     if (!get().counting) {
@@ -89,7 +93,6 @@ export const useGameStore = create((set, get) => ({
     }
     return moves[moves.length - 1].color === BLACK ? white : black
   },
-  queueLength: 0,
   currentColor: () => {
     let moves = get().moves
     let handicap = get().handicap
@@ -101,8 +104,23 @@ export const useGameStore = create((set, get) => ({
     }
     return moves[moves.length - 1].color ^ COLORS
   },
-  counting: false,
-  agreeCounting: false,
+  countingAgreed: () => {
+    let moves = get().moves
+    let myColor = get().myColor
+    if (!moves.length) {
+      return false
+    }
+    let move = moves[moves.length - 1]
+    return move.color === myColor && move.action === "agreeCounting"
+  },
+  gameHasEnded: () => {
+    let moves = get().moves
+    if (!moves.length) {
+      return false
+    }
+    let move = moves[moves.length - 1]
+    return move.action === "end"
+  },
   setAgreeCounting: (agree) => {
     set(produce(state => {
       state.agreeCounting = agree
@@ -111,7 +129,6 @@ export const useGameStore = create((set, get) => ({
   gameState: {
     board: [],
     forbidden: [-1, -1],
-    gameHasEnded: false,
   },
   addMove: (move) => {
     set(produce(state => {
@@ -148,11 +165,19 @@ export const useGameStore = create((set, get) => ({
       }
     }))
   },
-  setGameState: (game) => {
+  setGameState: (game, auth) => {
     set(produce(state => {
       state.id = game.id
       state.black = game.black
       state.white = game.white
+      state.counting = false
+      if (auth.name === game.black) {
+        state.myColor = BLACK
+      } else if (auth.name === game.white) {
+        state.myColor = WHITE
+      } else {
+        state.myColor = 0
+      }
       let baseBoard = Array(game.dim)
       for (let y = 0; y < game.dim; y++) {
         baseBoard[y] = new Int32Array(game.dim)
@@ -178,7 +203,7 @@ export const useGameStore = create((set, get) => ({
         } else {
           passes = 0
         }
-        let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move, counting, game.handicap)
+        let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move, counting)
         moves.push(storedMove)
         forbidden = newForbidden
         baseBoard = updated
@@ -202,8 +227,7 @@ export const useGameStore = create((set, get) => ({
   },
 }))
 
-function createMoveData(baseBoard, moves, colorlessMove, counting, handicap) {
-  let move = {...colorlessMove, color: nextMoveColor(moves, handicap)}
+function createMoveData(baseBoard, moves, move, counting) {
   if (move.action === "agreeCounting") {
     return [move, baseBoard, [-1, -1]]
   }
@@ -221,14 +245,3 @@ function createMoveData(baseBoard, moves, colorlessMove, counting, handicap) {
   let forbidden = getForbidden(baseBoard, updated, storedMove)
   return [storedMove, updated, forbidden]
 }
-
-function nextMoveColor(moves, handicap) {
-    let remainingHandicap = Math.max(0, handicap - moves.length)
-    if (remainingHandicap) {
-      return BLACK
-    }
-    if (!moves.length) {
-      return BLACK
-    }
-    return moves[moves.length - 1].color ^ COLORS
-  }

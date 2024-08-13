@@ -3,7 +3,6 @@ package com.bernd.game;
 import com.bernd.model.Move;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public final class MoveList {
 
@@ -37,8 +36,8 @@ public final class MoveList {
     return moves.size();
   }
 
-  public Stream<Move> asStream() {
-    return moves.stream();
+  public List<Move> moves() {
+    return moves;
   }
 
   @Override

@@ -53,11 +53,11 @@ function Panel({zoom, setZoom}) {
   let queueLength = useGameStore(state => state.queueLength)
   let movesLength = useGameStore(state => state.moves.length)
   let counting = useGameStore(state => state.counting)
-  let agreeCounting = useGameStore(state => state.agreeCounting)
-  let setAgreeCounting = useGameStore(state => state.setAgreeCounting)
+  let countingAgreed = useGameStore(state => state.countingAgreed)
+  let gameHasEnded = useGameStore(state => state.gameHasEnded)
   let countingComplete = useGameStore(state => state.countingComplete)
   let currentPlayer = useGameStore(state => state.currentPlayer)
-  let { board, gameHasEnded } = useGameStore(state => state.gameState)
+  let {board} = useGameStore(state => state.gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -81,7 +81,6 @@ function Panel({zoom, setZoom}) {
     })
   }, [stompClient, movesLength])
   let onCountingAgree = useCallback(() => {
-    setAgreeCounting(true)
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify({
@@ -89,11 +88,11 @@ function Panel({zoom, setZoom}) {
         action: "agreeCounting",
       }),
     })
-  }, [stompClient, movesLength, setAgreeCounting])
+  }, [stompClient, movesLength])
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = gameHasEnded ? getScore(board) : undefined
+  let result = gameHasEnded() ? getScore(board) : undefined
   return (
     <>
       <div className="flex-none grid w-full grid-cols-[min-content_min-content_min-content_auto] gap-x-2">
@@ -146,7 +145,7 @@ function Panel({zoom, setZoom}) {
         <Button
           onClick={onPass}
           className="py-1 px-4"
-          disabled={gameHasEnded || counting || currentPlayer() !== auth.name}>
+          disabled={gameHasEnded() || counting || currentPlayer() !== auth.name}>
           Pass
         </Button>
       </div>
@@ -154,14 +153,14 @@ function Panel({zoom, setZoom}) {
         <div className="flex-none">
           <Button
             className="py-1 px-4"
-            disabled={gameHasEnded}
+            disabled={gameHasEnded()}
             onClick={onResetCounting}>
             Reset Counting
           </Button>
         </div>
         <div className="flex-none">
           <Button
-            disabled={(!isSelfPlay && agreeCounting) || gameHasEnded || !countingComplete()}
+            disabled={(!isSelfPlay && countingAgreed()) || gameHasEnded() || !countingComplete()}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK

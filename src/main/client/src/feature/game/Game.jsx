@@ -44,6 +44,7 @@ export const Game = () => {
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let id = useGameStore(state => state.id)
+  let gameHasEnded = useGameStore(state => state.gameHasEnded)
   let lastMove = useGameStore(state => state.lastMove)
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
@@ -52,9 +53,9 @@ export const Game = () => {
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let counting = useGameStore(state => state.counting)
   let currentColor = useGameStore(state => state.currentColor)
-  let {board, forbidden: [forbidden_x, forbidden_y], gameHasEnded} = useGameStore(state => state.gameState)
+  let {board, forbidden: [forbidden_x, forbidden_y]} = useGameStore(state => state.gameState)
   let canvasRef = useRef()
-  let countingGroup = !gameHasEnded && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
 
   let context = useMemo(() => {
     let dim = board.length
@@ -116,7 +117,7 @@ export const Game = () => {
   }, [board.length, canvasRef, zoom])
 
   let onMouseMove = useCallback((e) => {
-    if (gameHasEnded) {
+    if (gameHasEnded()) {
       return
     }
     if (!board.length) {
@@ -137,7 +138,7 @@ export const Game = () => {
   }, [context, currentPlayer, auth, board.length, counting, gameHasEnded])
 
   let onClick = useCallback((e) => {
-    if (gameHasEnded) {
+    if (gameHasEnded()) {
       return
     }
     if (!board.length) {
@@ -222,7 +223,7 @@ export const Game = () => {
           "Authorization": "Bearer " + auth.token,
         },
       })
-      setGameState(game)
+      setGameState(game, auth)
     }, () => navigate(base + "/lobby"))
   }, [setGameState, queueStatus, auth, id, gameId, navigate])
 
@@ -232,7 +233,7 @@ export const Game = () => {
       addMove(move)
     })
     return sub.unsubscribe
-  }, [setGameState, addMove, stompClient, gameId, auth])
+  }, [addMove, stompClient, gameId])
 
   if (!board.length) {
     return <div>Loading...</div>
