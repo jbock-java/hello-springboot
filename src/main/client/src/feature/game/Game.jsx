@@ -49,6 +49,8 @@ export const Game = () => {
   let setGameState = useGameStore(state => state.setGameState)
   let queueStatus = useGameStore(state => state.queueStatus)
   let movesLength = useGameStore(state => state.moves.length)
+  let myColor = useGameStore(state => state.myColor)
+  let isSelfPlay = useGameStore(state => state.isSelfPlay)
   let addMove = useGameStore(state => state.addMove)
   let currentPlayer = useGameStore(state => state.currentPlayer)
   let counting = useGameStore(state => state.counting)
@@ -165,15 +167,19 @@ export const Game = () => {
         return
       }
     }
+    let move = {
+      n: movesLength,
+      x: cursor_x,
+      y: cursor_y,
+    }
+    if (!isSelfPlay()) { // myColor is 0 in self play
+      addMove({...move, color: myColor})
+    }
     stompClient.publish({
       destination: "/app/game/move",
-      body: JSON.stringify({
-        n: movesLength,
-        x: cursor_x,
-        y: cursor_y,
-      }),
+      body: JSON.stringify(move),
     })
-  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength])
+  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor])
 
   useEffect(() => {
     if (!board.length) {

@@ -95,6 +95,9 @@ export const useGameStore = create((set, get) => ({
     }
     return moves[moves.length - 1].color === BLACK ? white : black
   },
+  isSelfPlay: () => {
+    return get().black === get().white
+  },
   currentColor: () => {
     let moves = get().moves
     let handicap = get().handicap
@@ -143,7 +146,7 @@ export const useGameStore = create((set, get) => ({
       if (!counting) {
         state.queueLength = get().queueLength + 1
       }
-      let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting, get().handicap)
+      let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting)
       state.moves.push(storedMove)
       state.lastMove = move.action === "pass" ? undefined : storedMove
       state.baseBoard = updated
