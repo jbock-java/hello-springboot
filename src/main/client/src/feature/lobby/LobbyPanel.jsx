@@ -7,10 +7,10 @@ import {
   tfetch,
   StompContext,
   doTry,
-} from "../util.js"
+} from "../../util.js"
 import {
   useAuthStore,
-} from "../store.js"
+} from "../../store.js"
 
 export const LobbyPanel = () => {
   return (

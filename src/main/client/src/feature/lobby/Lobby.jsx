@@ -12,25 +12,25 @@ import {
 } from "react-router-dom"
 import {
   Button,
-} from "./component/Button.jsx"
+} from "../../component/Button.jsx"
 import {
   base,
   StompContext,
   tfetch,
   doTry,
-} from "./util.js"
+} from "../../util.js"
 import {
   LobbyPanel,
-} from "./feature/LobbyPanel.jsx"
+} from "./LobbyPanel.jsx"
 import {
   OpenGames,
-} from "./feature/OpenGames.jsx"
+} from "./OpenGames.jsx"
 import {
   ActiveGames,
-} from "./feature/ActiveGames.jsx"
+} from "./ActiveGames.jsx"
 import {
   useAuthStore,
-} from "./store.js"
+} from "../../store.js"
 import {
   CgClose,
 } from "react-icons/cg"

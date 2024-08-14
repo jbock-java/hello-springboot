@@ -22,7 +22,7 @@ import {
 } from "./Login.jsx"
 import {
   Lobby,
-} from "./Lobby.jsx"
+} from "./feature/lobby/Lobby.jsx"
 import {
   Game,
 } from "./feature/game/Game.jsx"
