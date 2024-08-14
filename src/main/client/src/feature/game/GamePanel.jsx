@@ -37,7 +37,7 @@ import {
 export const GamePanel = ({zoom, setZoom}) => {
   return (
     <div className="fixed top-0 right-0 z-1 h-full bg-slate-800 border-l-2 border-slate-700">
-      <div className="w-80 pr-3 pt-4 pl-2 h-full flex flex-col gap-y-1">
+      <div className="w-[24rem] pr-3 pt-4 pl-2 h-full flex flex-col gap-y-1">
         <Panel zoom={zoom} setZoom={setZoom} />
       </div>
     </div>

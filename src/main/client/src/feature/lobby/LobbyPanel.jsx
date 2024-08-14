@@ -14,7 +14,7 @@ import {
 
 export const LobbyPanel = () => {
   return (
-    <div className="fixed top-0 right-0 w-64 h-full bg-slate-800 border-l-2 border-slate-700">
+    <div className="fixed top-0 right-0 w-[24rem] h-full bg-slate-800 border-l-2 border-slate-700">
       <div className="pt-2">
         <Panel />
       </div>

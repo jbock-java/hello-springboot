@@ -247,7 +247,7 @@ export const Game = () => {
   }
 
   return (
-  <div className="w-[calc(100vw-20rem)]">
+  <div className="w-[calc(100vw-24rem)]">
     <div className="grid justify-center mt-8">
       <canvas ref={canvasRef}
         onMouseLeave={() => {
