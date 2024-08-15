@@ -41,7 +41,7 @@ import {
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let [zoom, setZoom] = useState(0)
+  let zoom = useLayoutStore(state => state.zoom)
   let {gameId} = useParams()
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
@@ -270,7 +270,7 @@ export const Game = () => {
         width={context.width} height={context.width}>
       </canvas>
     </div>
-    <GamePanel zoom={zoom} setZoom={setZoom} />
+    <GamePanel />
   </div>
   )
 }

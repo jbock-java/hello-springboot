@@ -13,6 +13,7 @@ export const SideBar = ({children}) => {
   let setDragging = useLayoutStore(state => state.setDragging)
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth)
   let setSidebarWidth = useLayoutStore(state => state.setSidebarWidth)
+  let sanitizeSidebarWidth = useLayoutStore(state => state.sanitizeSidebarWidth)
   let [ghostWidth, setGhostWidth] = useState(sidebarWidth)
   let draggingRef = useRef()
   let ghostWidthRef = useRef()
@@ -29,7 +30,9 @@ export const SideBar = ({children}) => {
       if (!draggingRef.current) {
         return
       }
-      setSidebarWidth(ghostWidthRef.current)
+      let width = sanitizeSidebarWidth(ghostWidthRef.current)
+      setSidebarWidth(width)
+      setGhostWidth(width)
       setDragging(false)
     }
     window.document.addEventListener("mousemove", mousemove)
@@ -38,7 +41,7 @@ export const SideBar = ({children}) => {
       window.document.removeEventListener("mousemove", mousemove)
       window.document.removeEventListener("mouseup", mouseup)
     }
-  }, [vw, draggingRef, setDragging, setSidebarWidth])
+  }, [vw, draggingRef, setDragging, setSidebarWidth, sanitizeSidebarWidth])
   return (
     <div
         style={{width: sidebarWidth + "px"}}

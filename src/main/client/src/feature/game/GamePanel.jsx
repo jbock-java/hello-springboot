@@ -31,23 +31,28 @@ import {
   useGameStore,
 } from "../../store.js"
 import {
+  useLayoutStore,
+} from "../../layout.js"
+import {
   GameChat,
 } from "./GameChat.jsx"
 import {
   SideBar,
 } from "../../component/SideBar.jsx"
 
-export const GamePanel = ({zoom, setZoom}) => {
+export const GamePanel = () => {
   return (
     <SideBar>
       <div className="pr-3 pt-4 pl-2 h-full flex flex-col gap-y-1">
-        <Panel zoom={zoom} setZoom={setZoom} />
+        <Panel />
       </div>
     </SideBar>
   )
 }
 
-function Panel({zoom, setZoom}) {
+function Panel() {
+  let zoom = useLayoutStore(state => state.zoom)
+  let setZoom = useLayoutStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let black = useGameStore(state => state.black)
@@ -98,7 +103,7 @@ function Panel({zoom, setZoom}) {
   let result = gameHasEnded() ? getScore(board) : undefined
   return (
     <>
-      <div className="flex-none grid w-full grid-cols-[min-content_min-content_min-content_auto] gap-x-2">
+      <div className="flex-none grid w-full grid-cols-[min-content_max-content_min-content_auto] gap-x-2">
         <button
           onClick={() => setZoom(zoom - 1)}>
           <IconContext.Provider value={{
@@ -108,14 +113,8 @@ function Panel({zoom, setZoom}) {
             <FaAngleLeft />
           </IconContext.Provider>
         </button>
-        <button onClick={() => {
-          if (!zoom) {
-            setZoom(-zoom) // force re-render
-          } else {
-            setZoom(0)
-          }
-        }}>
-          <span>Zoom:&nbsp;{zoom + 0}</span>
+        <button onClick={() => setZoom(0)}>
+          <span>Zoom: {Math.trunc(zoom)}</span>
         </button>
         <button
           onClick={() => setZoom(zoom + 1)}>
