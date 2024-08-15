@@ -50,15 +50,15 @@ export function ActiveGames() {
     }
   }, [setInit, auth, initialized, stompClient, navigate])
   return (
-    <>
-      <div className="ml-4 grid grid-cols-[min-content_min-content_min-content]">
+    <div>
+      <div className="grid grid-cols-[max-content_max-content_max-content]">
         {activeGames.map((game) => (
           <ActiveGame
             game={game}
             key={game.id} />
         ))}
       </div>
-    </>
+    </div>
   )
 }
 

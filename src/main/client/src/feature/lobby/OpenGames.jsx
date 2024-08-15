@@ -78,7 +78,7 @@ export function OpenGames() {
   }), [auth, navigate])
   return (
     <div>
-      <div className="ml-4 grid grid-cols-[max-content_max-content]">
+      <div className="grid grid-cols-[max-content_max-content]">
         {openGames.map((game) => (
           <OpenGame
             game={game}

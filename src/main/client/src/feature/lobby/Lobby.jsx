@@ -100,7 +100,7 @@ export function Lobby() {
           </button>
         )}
       </div>
-      <div className="mt-2 grid grid-cols-[max-content_auto]">
+      <div className="mt-2 grid gap-x-4 grid-cols-[max-content_auto]">
         <DetailNavigation detail={detail} setDetail={setDetail} />
         {detail === "open" && (
           <OpenGames />
