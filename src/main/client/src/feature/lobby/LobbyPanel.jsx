@@ -11,14 +11,17 @@ import {
 import {
   useAuthStore,
 } from "../../store.js"
+import {
+  SideBar,
+} from "../../component/SideBar.jsx"
 
 export const LobbyPanel = () => {
   return (
-    <div className="fixed top-0 right-0 w-[24rem] h-full bg-slate-800 border-l-2 border-slate-700">
+    <SideBar>
       <div className="pt-2">
         <Panel />
       </div>
-    </div>
+    </SideBar>
   )
 }
 

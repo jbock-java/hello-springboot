@@ -25,6 +25,9 @@ import {
   useGameStore,
 } from "../../store.js"
 import {
+  useLayoutStore,
+} from "../../layout.js"
+import {
   paintShadow,
   paintGrid,
   paintBoardDecorations,
@@ -59,6 +62,8 @@ export const Game = () => {
   let [forbidden_x, forbidden_y] = useGameStore(state => state.forbidden)
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let sidebarWidth = useLayoutStore(state => state.sidebarWidth)
+  let vw = useLayoutStore(state => state.vw)
 
   let context = useMemo(() => {
     let dim = board.length
@@ -247,7 +252,8 @@ export const Game = () => {
   }
 
   return (
-  <div className="w-[calc(100vw-24rem)]">
+  <div
+    style={{width: (vw - sidebarWidth) + "px"}}>
     <div className="grid justify-center mt-8">
       <canvas ref={canvasRef}
         onMouseLeave={() => {

@@ -77,8 +77,8 @@ export function OpenGames() {
     navigate(base + "/game/" + d.game.id)
   }), [auth, navigate])
   return (
-    <>
-      <div className="float-left ml-4 grid grid-cols-[min-content_min-content]">
+    <div>
+      <div className="ml-4 grid grid-cols-[max-content_max-content]">
         {openGames.map((game) => (
           <OpenGame
             game={game}
@@ -94,7 +94,7 @@ export function OpenGames() {
           onAccept={onAccept}
         />
       )}
-    </>
+    </div>
   )
 }
 

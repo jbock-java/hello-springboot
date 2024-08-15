@@ -51,7 +51,7 @@ export function ActiveGames() {
   }, [setInit, auth, initialized, stompClient, navigate])
   return (
     <>
-      <div className="float-left ml-4 grid grid-cols-[min-content_min-content_min-content]">
+      <div className="ml-4 grid grid-cols-[min-content_min-content_min-content]">
         {activeGames.map((game) => (
           <ActiveGame
             game={game}

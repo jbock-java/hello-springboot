@@ -77,7 +77,7 @@ export function Lobby() {
     navigate(base + "/game/" + response.id)
   }), [auth, navigate])
   return (
-    <div>
+    <>
       <div className={twJoin(
           "mt-2 inline-flex py-2 pr-4 gap-x-1 border-r-2 border-y-2",
           isNewGameOpen && "rounded-r-full border-slate-600",
@@ -100,16 +100,17 @@ export function Lobby() {
           </button>
         )}
       </div>
-      <div className="clear-both" />
-      <DetailNavigation detail={detail} setDetail={setDetail} />
-      {detail === "open" && (
-        <OpenGames />
-      )}
-      {detail === "active" && (
-        <ActiveGames />
-      )}
+      <div className="mt-2 grid grid-cols-[max-content_auto]">
+        <DetailNavigation detail={detail} setDetail={setDetail} />
+        {detail === "open" && (
+          <OpenGames />
+        )}
+        {detail === "active" && (
+          <ActiveGames />
+        )}
+      </div>
       <LobbyPanel />
-    </div>
+    </>
   )
 }
 
@@ -145,11 +146,10 @@ function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen}) {
 }
 function DetailNavigation({detail, setDetail}) {
   return (
-    <div className="mt-2">
-      <div className={twJoin(
-        "float-left py-3 pl-2 pr-3 border-r-2 border-y-2 border-slate-600",
-        "rounded-r-xl flex flex-col gap-y-2",
-      )}>
+    <div className={twJoin(
+      "w-fit py-3 pl-2 pr-3 border-r-2 border-y-2 border-slate-600",
+      "rounded-r-xl flex flex-col gap-y-2",
+    )}>
       {detailData.map(([id, label]) => (
         <button
           key={id}
@@ -161,7 +161,6 @@ function DetailNavigation({detail, setDetail}) {
             id !== detail && "border-transparent hover:bg-stone-800",
           )}>{label}</button>
       ))}
-      </div>
     </div>
   )
 }

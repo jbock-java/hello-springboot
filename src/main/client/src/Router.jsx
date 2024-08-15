@@ -38,10 +38,10 @@ export const Router = createBrowserRouter(
       element={<WithConnection />}>
       <Route
         element={
-          <div>
+          <>
             <Outlet />
             <Toaster position="top-right" />
-          </div>}>
+          </>}>
         <Route
           path={base + "/lobby"}
           element={<Lobby />} />
