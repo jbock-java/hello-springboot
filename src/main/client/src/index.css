@@ -3,9 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    @apply h-full;
+  }
   body {
     @apply bg-stone-800;
     @apply font-sans;
     @apply text-stone-100;
+    @apply h-full;
+  }
+  #root {
+    @apply h-full;
   }
 }

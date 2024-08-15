@@ -64,6 +64,7 @@ export const Game = () => {
   let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth)
   let vw = useLayoutStore(state => state.vw)
+  let dragging = useLayoutStore(state => state.dragging)
 
   let context = useMemo(() => {
     let dim = board.length
@@ -128,6 +129,9 @@ export const Game = () => {
     if (gameHasEnded()) {
       return
     }
+    if (dragging) {
+      return
+    }
     if (!board.length) {
       return
     }
@@ -143,7 +147,7 @@ export const Game = () => {
       setCursor_x(-1)
       setCursor_y(-1)
     }
-  }, [context, currentPlayer, auth, board.length, counting, gameHasEnded])
+  }, [context, currentPlayer, auth, board.length, counting, gameHasEnded, dragging])
 
   let onClick = useCallback((e) => {
     if (gameHasEnded()) {
@@ -253,9 +257,10 @@ export const Game = () => {
 
   return (
   <div
-    style={{width: (vw - sidebarWidth) + "px"}}>
-    <div className="grid justify-center mt-8">
-      <canvas ref={canvasRef}
+    style={{width: (vw - sidebarWidth) + "px"}}
+    className="h-full">
+    <div className="grid h-full">
+      <canvas className="place-self-center" ref={canvasRef}
         onMouseLeave={() => {
           setCursor_x(-1)
           setCursor_y(-1)
