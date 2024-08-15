@@ -14,7 +14,10 @@ export const useLayoutStore = create(
       zoom: 0,
       dragging: false,
       vw: Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0),
-      sidebarWidth: 24 * getPixelRem(),
+      sidebarWidth: {
+        "game": 24 * getPixelRem(),
+        "lobby": 24 * getPixelRem(),
+      },
       setZoom: (zoom) => {
         set(produce(state => {
           if (!zoom) {
@@ -34,9 +37,11 @@ export const useLayoutStore = create(
         width = Math.max(200, width)
         return Math.min(Math.abs(get().vw - vh), width)
       },
-      setSidebarWidth: (width) => {
+      setSidebarWidth: (page, width) => {
         set(produce(state => {
-          state.sidebarWidth = width
+          let newSidebarWidth = {...get().sidebarWidth}
+          newSidebarWidth[page] = width
+          state.sidebarWidth = newSidebarWidth
           if (!get().zoom) {
             state.zoom = 0.000244140625 // force re-render
           } else {

@@ -17,7 +17,7 @@ import {
 
 export const LobbyPanel = () => {
   return (
-    <SideBar>
+    <SideBar page="lobby">
       <div className="pt-2">
         <Panel />
       </div>

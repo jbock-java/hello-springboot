@@ -42,7 +42,7 @@ import {
 
 export const GamePanel = () => {
   return (
-    <SideBar>
+    <SideBar page="game">
       <div className="pr-3 pt-4 pl-2 h-full flex flex-col gap-y-1">
         <Panel />
       </div>

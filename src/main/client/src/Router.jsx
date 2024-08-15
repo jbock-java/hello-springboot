@@ -15,6 +15,9 @@ import {
   Toaster,
 } from "react-hot-toast"
 import {
+  twJoin,
+} from "tailwind-merge"
+import {
   useAuthStore,
 } from "./store.js"
 import {
@@ -30,6 +33,9 @@ import {
   base,
   StompContext,
 } from "./util.js"
+import {
+  useLayoutStore,
+} from "./layout.js"
 
 export const Router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,11 +43,7 @@ export const Router = createBrowserRouter(
     <Route
       element={<WithConnection />}>
       <Route
-        element={
-          <>
-            <Outlet />
-            <Toaster position="top-right" />
-          </>}>
+        element={<Frame />}>
         <Route
           path={base + "/lobby"}
           element={<Lobby />} />
@@ -59,6 +61,19 @@ export const Router = createBrowserRouter(
   </>
   )
 )
+
+function Frame() {
+  let dragging = useLayoutStore(state => state.dragging)
+  return <>
+    <div className={twJoin(
+        "h-full",
+        dragging && "cursor-col-resize",
+      )}>
+      <Outlet />
+    </div>
+    <Toaster position="top-right" />
+  </>
+}
 
 function WithConnection() {
   let auth = useAuthStore(state => state.auth)

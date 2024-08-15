@@ -62,7 +62,7 @@ export const Game = () => {
   let [forbidden_x, forbidden_y] = useGameStore(state => state.forbidden)
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
-  let sidebarWidth = useLayoutStore(state => state.sidebarWidth)
+  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
   let vw = useLayoutStore(state => state.vw)
   let dragging = useLayoutStore(state => state.dragging)
 
