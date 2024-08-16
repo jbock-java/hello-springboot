@@ -23,6 +23,7 @@ import {
 import {
   useAuthStore,
   useGameStore,
+  useMuteStore,
 } from "../../store.js"
 import {
   useLayoutStore,
@@ -37,6 +38,16 @@ import {
 import {
   GamePanel,
 } from "./GamePanel.jsx"
+import {
+  Howl,
+} from "howler"
+import {
+  FaVolumeMute,
+  FaVolumeUp,
+} from "react-icons/fa"
+import {
+  IconContext,
+} from "react-icons"
 
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
@@ -65,6 +76,14 @@ export const Game = () => {
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
   let vw = useLayoutStore(state => state.vw)
   let dragging = useLayoutStore(state => state.dragging)
+  let muted = useMuteStore(state => state.muted)
+  let setMuteState = useMuteStore((state) => state.setMuted)
+  let sound = useMemo(() => new Howl({
+    src: ["/app/stone1.wav"],
+    onloaderror: function (id, error) {
+      throw new Error(id + ": " + error)
+    }
+  }),[])
 
   let context = useMemo(() => {
     let dim = board.length
@@ -184,11 +203,22 @@ export const Game = () => {
     if (!isSelfPlay()) { // myColor is 0 in self play
       addMove({...move, color: myColor})
     }
+    if (!muted) {
+      sound.play();
+    }
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor])
+  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, muted])
+
+  let onMuteClick = useCallback(() => {
+    if (muted) {
+      setMuteState(false)
+    } else {
+      setMuteState(true)
+    }
+  }, [setMuteState, muted])
 
   useEffect(() => {
     if (!board.length) {
@@ -256,22 +286,39 @@ export const Game = () => {
   }
 
   return (
-  <div
-    style={{width: (vw - sidebarWidth) + "px"}}
-    className="h-full">
-    <div className="grid h-full">
-      <canvas className="place-self-center" ref={canvasRef}
-        onMouseLeave={() => {
-          setCursor_x(-1)
-          setCursor_y(-1)
-        }}
-        onMouseMove={onMouseMove}
-        onClick={onClick}
-        width={context.width} height={context.width}>
-      </canvas>
+    <div
+      style={{ width: (vw - sidebarWidth) + "px" }}
+      className="h-full">
+      <div className="grid h-full">
+        <canvas className="place-self-center" ref={canvasRef}
+          onMouseLeave={() => {
+            setCursor_x(-1)
+            setCursor_y(-1)
+          }}
+          onMouseMove={onMouseMove}
+          onClick={onClick}
+          width={context.width} height={context.width}>
+        </canvas>
+      </div>
+      <div
+        style={{right: (sidebarWidth + 12) + "px"}}
+        className="absolute bottom-4">
+        <button onClick={onMuteClick}>
+          <IconContext.Provider value={{
+            size: "1.5em",
+            className: "pl-[4px]",
+          }}>
+            {muted && (
+              <FaVolumeMute />
+            )}
+            {!muted && (
+              <FaVolumeUp />
+            )}
+          </IconContext.Provider>
+        </button>
+      </div>
+      <GamePanel />
     </div>
-    <GamePanel />
-  </div>
   )
 }
 
