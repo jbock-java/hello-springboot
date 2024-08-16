@@ -210,7 +210,7 @@ export const Game = () => {
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, muted])
+  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, muted, sound])
 
   let onMuteClick = useCallback(() => {
     if (muted) {

@@ -6,9 +6,6 @@ import {
   useRef,
 } from "react"
 import {
-  useParams,
-} from "react-router-dom"
-import {
   useAuthStore,
 } from "../store.js"
 import {
@@ -19,17 +16,20 @@ import {
 
 export const Chat = ({chatId}) => {
   let [messages, setMessages] = useState([])
-  let divRef = useRef()
+  let [users, setUsers] = useState([])
   let messageRef = useRef()
   let needsScroll = useRef(false)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
 
   useEffect(() => {
-    stompClient.subscribe("/topic/chat/" + chatId, (m) => {
+    let sub1 = stompClient.subscribe("/topic/users/Lobby", (message) => {
+      let r = JSON.parse(message.body)
+      setUsers(r.users)
+    })
+    let sub2 = stompClient.subscribe("/topic/chat/" + chatId, (m) => {
       let message = JSON.parse(m.body)
-      let msg = messageRef.current
-      needsScroll.current = msg.scrollHeight <= msg.scrollTop + msg.offsetHeight
+      needsScroll.current = isLastChildVisible(messageRef.current)
       setMessages(previous => {
         if (previous.length && previous[previous.length - 1].n === message.n) {
           return previous
@@ -48,13 +48,26 @@ export const Chat = ({chatId}) => {
       })
       setMessages(chat.messages || [])
     })
+    return () => {
+      sub1.unsubscribe()
+      sub2.unsubscribe()
+    }
   }, [stompClient, auth, chatId])
 
   useEffect(() => {
     if (!needsScroll.current) {
       return
     }
-    window.setTimeout(() => divRef.current?.scrollIntoView({behavior: "smooth"}), 0)
+    window.setTimeout(() => {
+      if (!messageRef.current) {
+        return
+      }
+      let lastChild = messageRef.current.lastChild
+      if (!lastChild) {
+        return
+      }
+      lastChild.scrollIntoView({behavior: "smooth"})
+    }, 0)
   }, [messages])
 
   let onSendMessage = useCallback((event) => doTry(async () => {
@@ -71,14 +84,21 @@ export const Chat = ({chatId}) => {
   }), [stompClient, chatId])
 
   return <>
-    <div ref={messageRef}
-      className="grow border border-gray-500 bg-gray-900 rounded-lg p-1 overflow-y-scroll">
-      {messages.map(message => (
-          <p key={message.n}>{message.user + ": " + message.message}</p>
-      ))}
-      <div ref={divRef} />
+    <div
+      className="grow border border-gray-500 bg-gray-900 rounded-lg flex flex-col overflow-y-hidden">
+        <div className="px-1 flex-none h-14 overflow-y-scroll">
+          {users.map(user => (
+            <p key={user}>{user}</p>
+          ))}
+        </div>
+      <div className="w-full flex-none h-[2px] bg-gray-500" />
+      <div ref={messageRef} className="px-1 overflow-y-scroll">
+        {messages.map(message => (
+            <p key={message.n}>{message.user + ": " + message.message}</p>
+        ))}
+      </div>
     </div>
-    <form className="flex-0 mb-2" onSubmit={onSendMessage}>
+    <form className="flex-none mb-2" onSubmit={onSendMessage}>
       <input
         className="w-full rounded-lg p-2 border border-gray-500 bg-stone-800 text-stone-100"
         type="text"
@@ -86,4 +106,15 @@ export const Chat = ({chatId}) => {
       />
     </form>
   </>
+}
+
+function isLastChildVisible(container) {
+  let lastChild = container.lastChild
+  if (!lastChild) {
+    return false
+  }
+  let lastChildTop = lastChild.offsetTop
+  let containerTop = container.scrollTop + container.offsetTop
+  let containerBottom = containerTop + container.clientHeight
+  return lastChildTop < containerBottom
 }
