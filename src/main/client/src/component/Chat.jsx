@@ -10,24 +10,23 @@ import {
 } from "react-router-dom"
 import {
   useAuthStore,
-} from "../../store.js"
+} from "../store.js"
 import {
   StompContext,
   tfetch,
   doTry,
-} from "../../util.js"
+} from "../util.js"
 
-export const GameChat = () => {
+export const Chat = ({chatId}) => {
   let [messages, setMessages] = useState([])
   let divRef = useRef()
   let messageRef = useRef()
   let needsScroll = useRef(false)
   let stompClient = useContext(StompContext)
-  let {gameId} = useParams()
   let auth = useAuthStore(state => state.auth)
 
   useEffect(() => {
-    stompClient.subscribe("/topic/chat/" + gameId, (m) => {
+    stompClient.subscribe("/topic/chat/" + chatId, (m) => {
       let message = JSON.parse(m.body)
       let msg = messageRef.current
       needsScroll.current = msg.scrollHeight <= msg.scrollTop + msg.offsetHeight
@@ -40,7 +39,7 @@ export const GameChat = () => {
     })
 
     doTry(async () => {
-      let chat = await tfetch("/api/chat/" + gameId, {
+      let chat = await tfetch("/api/chat/" + chatId, {
         method: "GET",
         headers: {
           "Authorization": "Bearer " + auth.token,
@@ -49,7 +48,7 @@ export const GameChat = () => {
       })
       setMessages(chat.messages || [])
     })
-  }, [stompClient, auth, gameId])
+  }, [stompClient, auth, chatId])
 
   useEffect(() => {
     if (!needsScroll.current) {
@@ -66,10 +65,10 @@ export const GameChat = () => {
       destination: "/app/chat/send/",
       body: JSON.stringify({
         message: data.get("message"),
-        id: gameId,
+        id: chatId,
       }),
     })
-  }), [stompClient, gameId])
+  }), [stompClient, chatId])
 
   return <>
     <div ref={messageRef}

@@ -3,6 +3,7 @@ import {
   useContext,
 } from "react"
 import {
+  useParams,
   useNavigate,
 } from "react-router-dom"
 import {
@@ -34,8 +35,8 @@ import {
   useLayoutStore,
 } from "../../layout.js"
 import {
-  GameChat,
-} from "./GameChat.jsx"
+  Chat,
+} from "../../component/Chat.jsx"
 import {
   SideBar,
 } from "../../component/SideBar.jsx"
@@ -51,6 +52,7 @@ export const GamePanel = () => {
 }
 
 function Panel() {
+  let {gameId} = useParams()
   let zoom = useLayoutStore(state => state.zoom)
   let setZoom = useLayoutStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
@@ -174,7 +176,7 @@ function Panel() {
           {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}
         </div>
       )}
-      <GameChat />
+      <Chat chatId={gameId}/>
     </>
   )
 }
