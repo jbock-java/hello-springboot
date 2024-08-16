@@ -40,8 +40,7 @@ public class ChatController {
   @MessageMapping("/chat/send/")
   public ResponseEntity<?> sendChat(ChatRequest chatRequest, Principal principal) {
     String user = Auth.getPrincipal(principal);
-    Chat chat = chats.map().computeIfAbsent(chatRequest.id(),
-        id -> new Chat(id, new AtomicInteger(0), new ArrayList<>(), new TreeSet<>()));
+    Chat chat = chats.get(chatRequest.id());
     ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), chatRequest.message(), user);
     chat.messages().add(message);
     if (chat.users().add(user)) {

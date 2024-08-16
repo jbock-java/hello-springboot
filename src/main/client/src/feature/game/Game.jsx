@@ -300,9 +300,7 @@ export const Game = () => {
           width={context.width} height={context.width}>
         </canvas>
       </div>
-      <div
-        style={{right: (sidebarWidth + 12) + "px"}}
-        className="absolute bottom-4">
+      <div className="absolute left-2 top-2">
         <button onClick={onMuteClick}>
           <IconContext.Provider value={{
             size: "1.5em",

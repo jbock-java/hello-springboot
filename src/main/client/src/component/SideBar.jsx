@@ -2,6 +2,7 @@ import {
   useRef,
   useEffect,
   useState,
+  useCallback,
 } from "react"
 import {
   useLayoutStore,
@@ -43,15 +44,16 @@ export const SideBar = ({page, children}) => {
       window.document.removeEventListener("mouseup", mouseup)
     }
   }, [vw, page, draggingRef, setDragging, setSidebarWidth, sanitizeSidebarWidth])
+  let onMouseDown = useCallback((e) => {
+    e.preventDefault()
+    setDragging(true)
+  }, [setDragging])
   return (
     <div
         style={{width: sidebarWidth + "px"}}
         className="fixed top-0 right-0 h-full bg-slate-800">
       <div
-        onMouseDown={(e) => {
-          e.preventDefault()
-          setDragging(true)
-        }}
+        onMouseDown={onMouseDown}
         style={{right: sidebarWidth + "px"}}
         className="fixed top-0 w-[3px] h-full bg-slate-700 z-10 cursor-col-resize" />
       {dragging && (

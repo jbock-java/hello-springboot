@@ -4,10 +4,14 @@ import com.bernd.game.Board;
 import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
+import com.bernd.model.Chat;
+import com.bernd.model.ChatMessage;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
+import com.bernd.model.UsersMessage;
 import com.bernd.model.ViewGame;
+import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
 import java.security.Principal;
 import org.springframework.http.HttpStatus;
@@ -33,18 +37,20 @@ public class GameController {
   private final Games games;
   private final OpenGames openGames;
   private final ActiveGames activeGames;
+  private final Chats chats;
 
   GameController(
       MessageSendingOperations<String> operations,
       Users users,
       Games games,
       OpenGames openGames,
-      ActiveGames activeGames) {
+      ActiveGames activeGames, Chats chats) {
     this.operations = operations;
     this.users = users;
     this.games = games;
     this.openGames = openGames;
     this.activeGames = activeGames;
+    this.chats = chats;
   }
 
   @ResponseBody
@@ -54,6 +60,10 @@ public class GameController {
     Game game = games.get(id);
     if (game == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no such game");
+    }
+    Chat chat = chats.get(id);
+    if (chat.users().add(Auth.getPrincipal(p))) {
+      operations.convertAndSend("/topic/users/" + chat.id(), new UsersMessage(chat.users()));
     }
     return game.toView();
   }

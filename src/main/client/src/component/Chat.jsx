@@ -6,6 +6,9 @@ import {
   useRef,
 } from "react"
 import {
+  twJoin,
+} from "tailwind-merge"
+import {
   useAuthStore,
 } from "../store.js"
 import {
@@ -23,7 +26,7 @@ export const Chat = ({chatId}) => {
   let auth = useAuthStore(state => state.auth)
 
   useEffect(() => {
-    let sub1 = stompClient.subscribe("/topic/users/Lobby", (message) => {
+    let sub1 = stompClient.subscribe("/topic/users/" + chatId, (message) => {
       let r = JSON.parse(message.body)
       setUsers(r.users)
     })
@@ -47,6 +50,7 @@ export const Chat = ({chatId}) => {
         },
       })
       setMessages(chat.messages || [])
+      setUsers(chat.users || [])
     })
     return () => {
       sub1.unsubscribe()
@@ -84,20 +88,19 @@ export const Chat = ({chatId}) => {
   }), [stompClient, chatId])
 
   return <>
-    <div
-      className="grow border border-gray-500 bg-gray-900 rounded-lg flex flex-col overflow-y-hidden">
-        <div className="px-1 flex-none h-14 overflow-y-scroll">
-          {users.map(user => (
-            <p key={user}>{user}</p>
-          ))}
-        </div>
-      <div className="w-full flex-none h-[2px] bg-gray-500" />
-      <div ref={messageRef} className="px-1 overflow-y-scroll">
+    <SplitPane
+      messageRef={messageRef}
+      topElement={<>
+        {users.map(user => (
+          <p key={user}>{user}</p>
+        ))}
+      </>}
+      bottomElement={<>
         {messages.map(message => (
             <p key={message.n}>{message.user + ": " + message.message}</p>
         ))}
-      </div>
-    </div>
+      </>}
+    />
     <form className="flex-none mb-2" onSubmit={onSendMessage}>
       <input
         className="w-full rounded-lg p-2 border border-gray-500 bg-stone-800 text-stone-100"
@@ -117,4 +120,79 @@ function isLastChildVisible(container) {
   let containerTop = container.scrollTop + container.offsetTop
   let containerBottom = containerTop + container.clientHeight
   return lastChildTop < containerBottom
+}
+
+function SplitPane({messageRef, topElement, bottomElement}) {
+  let [dragging, setDragging] = useState(false)
+  let [splitPos, setSplitPos] = useState(60)
+  let [ghostPos, setGhostPos] = useState(splitPos)
+  let draggingRef = useRef()
+  let ghostPosRef = useRef()
+  let containerRef = useRef()
+  draggingRef.current = dragging
+  ghostPosRef.current = ghostPos
+  useEffect(() => {
+    let mousemove = (e) => {
+      if (!draggingRef.current) {
+        return
+      }
+      let pos = e.clientY
+      let rect = containerRef.current.getBoundingClientRect()
+      setGhostPos(pos - rect.top)
+    }
+    let mouseup = (e) => {
+      if (!draggingRef.current) {
+        return
+      }
+      let pos = e.clientY
+      let rect = containerRef.current.getBoundingClientRect()
+      setGhostPos(pos - rect.top)
+      setSplitPos(pos - rect.top)
+      setDragging(false)
+    }
+    window.document.addEventListener("mousemove", mousemove)
+    window.document.addEventListener("mouseup", mouseup)
+    return () => {
+      window.document.removeEventListener("mousemove", mousemove)
+      window.document.removeEventListener("mouseup", mouseup)
+    }
+  }, [draggingRef, setGhostPos, setDragging])
+  let onMouseDown = useCallback((e) => {
+    e.preventDefault()
+    let pos = e.clientY
+    let rect = containerRef.current.getBoundingClientRect()
+    setGhostPos(pos - rect.top)
+    setDragging(true)
+  }, [setDragging])
+  return (
+    <div
+      ref={(ref) => {
+        containerRef.current = ref
+      }}
+      className={twJoin(
+        "grow border border-gray-500 bg-gray-900 rounded-lg flex flex-col overflow-y-hidden relative",
+        dragging && "cursor-row-resize",
+      )}>
+      <div
+        style={{height: splitPos + "px"}}
+        className="px-1 flex-none overflow-y-scroll">
+        {topElement}
+      </div>
+      <div
+        onMouseDown={onMouseDown}
+        className={twJoin(
+          "w-full flex-none h-[3px] cursor-row-resize",
+          !dragging && "bg-gray-500",
+          dragging && "bg-transparent",
+        )} />
+      {dragging && (
+        <div
+          style={{top: ghostPos + "px"}}
+          className="w-full absolute h-[3px] bg-gray-500 z-20" />
+      )}
+      <div ref={messageRef} className="px-1 overflow-y-scroll">
+        {bottomElement}
+      </div>
+    </div>
+  )
 }
