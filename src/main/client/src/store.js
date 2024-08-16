@@ -52,6 +52,19 @@ export const useAuthStore = create(
   ),
 )
 
+export const useMuteStore = create(
+  persist(
+    (set) => ({
+      muted: false,
+      setMuted: (mute) => 
+        set(() => ({
+          muted: mute
+        }))
+    }),
+    { name: "mute-storage" }
+  )
+)
+
 export const useGameStore = create((set, get) => ({
   id: "",
   moves: [],

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.0.0",
+    "howler": "^2.2.4",
     "immer": "^10.1.1",
     "react": "^18.2.0",
     "react-click-away-listener": "^2.2.3",
