@@ -10,7 +10,7 @@ import {
 import {
   BLACK,
   WHITE,
-} from "../util.js"
+} from "src/util.js"
 
 export function updateBoard(board, move) {
   if (move.action === "pass") {

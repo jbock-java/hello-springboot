@@ -9,7 +9,7 @@ import {
 import {
   BLACK,
   WHITE,
-} from "../util.js"
+} from "src/util.js"
 
 test("liberties", () => {
   let b = BLACK

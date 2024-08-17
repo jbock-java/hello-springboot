@@ -1,12 +1,12 @@
 import {
   Form,
-} from "./component/Form.jsx"
+} from "src/component/Form.jsx"
 import {
   Input,
-} from "./component/Input.jsx"
+} from "src/component/Input.jsx"
 import {
   Button,
-} from "./component/Button.jsx"
+} from "src/component/Button.jsx"
 import {
   useNavigate,
 } from "react-router-dom"
@@ -17,10 +17,10 @@ import {
   base,
   tfetch,
   doTry,
-} from "./util.js"
+} from "src/util.js"
 import {
   useAuthStore,
-} from "./store.js"
+} from "src/store.js"
 
 export function Login() {
   let navigate = useNavigate()

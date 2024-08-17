@@ -1,17 +1,17 @@
 import ReactDOM from "react-dom/client"
-import "./index.css"
+import "src/index.css"
 import {
   Client,
 } from "@stomp/stompjs"
 import {
   StompContext,
-} from "./util.js"
+} from "src/util.js"
 import {
   RouterProvider,
 } from "react-router-dom"
 import {
   Router,
-} from "./Router.jsx"
+} from "src/Router.jsx"
 
 const stompClient = new Client({
   brokerURL: "ws://" + location.host + "/app/ws/action"

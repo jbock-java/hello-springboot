@@ -21,20 +21,20 @@ import {
 } from "react-router-dom"
 import {
   Form,
-} from "../../component/Form.jsx"
+} from "src/component/Form.jsx"
 import {
   Button,
-} from "../../component/Button.jsx"
+} from "src/component/Button.jsx"
 import {
   base,
   StompContext,
   tfetch,
   doTry,
-} from "../../util.js"
+} from "src/util.js"
 import {
   useAuthStore,
   useGameStore,
-} from "../../store.js"
+} from "src/store.js"
 
 export function OpenGames() {
   let [openGames, setOpenGames] = useState([])

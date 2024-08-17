@@ -11,21 +11,21 @@ import {
   BLACK,
   WHITE,
   COLORS,
-} from "./util.js"
+} from "src/util.js"
 import {
   rehydrate,
-} from "./model/board.js"
+} from "src/model/board.js"
 import {
   updateBoard,
-} from "./model/base.js"
+} from "src/model/base.js"
 import {
   getForbidden,
-} from "./model/ko.js"
+} from "src/model/ko.js"
 import {
   count,
   toggleStonesAt,
   resetCounting,
-} from "./model/count.js"
+} from "src/model/count.js"
 
 export const useAuthStore = create(
   persist(

@@ -15,11 +15,11 @@ import {
   StompContext,
   tfetch,
   doTry,
-} from "../../util.js"
+} from "src/util.js"
 import {
   useAuthStore,
   useGameStore,
-} from "../../store.js"
+} from "src/store.js"
 
 export function ActiveGames() {
   let [activeGames, setActiveGames] = useState([])

@@ -23,23 +23,23 @@ import {
   TERRITORY_B,
   TERRITORY_W,
   base,
-} from "../../util.js"
+} from "src/util.js"
 import {
   Button,
-} from "../../component/Button.jsx"
+} from "src/component/Button.jsx"
 import {
   useAuthStore,
   useGameStore,
-} from "../../store.js"
+} from "src/store.js"
 import {
   useViewStateStore,
-} from "../../layout.js"
+} from "src/layout.js"
 import {
   Chat,
-} from "../../component/Chat.jsx"
+} from "src/component/Chat.jsx"
 import {
   SideBar,
-} from "../../component/SideBar.jsx"
+} from "src/component/SideBar.jsx"
 
 export const GamePanel = () => {
   return (

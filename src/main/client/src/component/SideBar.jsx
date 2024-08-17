@@ -7,11 +7,11 @@ import {
 import {
   vw,
   sanitizeSidebarWidth,
-} from "../util.js"
+} from "src/util.js"
 import {
   useLayoutStore,
   useViewStateStore,
-} from "../layout.js"
+} from "src/layout.js"
 
 export const SideBar = ({page, children}) => {
   let dragging = useViewStateStore(state => state.dragging)

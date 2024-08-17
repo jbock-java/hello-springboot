@@ -17,7 +17,7 @@ import {
   TOGGLE_B,
   TOGGLE_W,
   TOGGLE_STUFF,
-} from "../util.js"
+} from "src/util.js"
 
 export function count(board) {
   let acc = createAcc(board.length)

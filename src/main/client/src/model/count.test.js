@@ -14,7 +14,7 @@ import {
   TERRITORY_W,
   REMOVED_W,
   REMOVED_B,
-} from "../util.js"
+} from "src/util.js"
 
 test("basicCount", () => {
   let B = BLACK

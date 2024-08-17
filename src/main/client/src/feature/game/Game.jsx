@@ -17,19 +17,19 @@ import {
   BLACK,
   tfetch,
   doTry,
-} from "../../util.js"
+} from "src/util.js"
 import {
   PointList,
-} from "../../model/PointList.js"
+} from "src/model/PointList.js"
 import {
   useAuthStore,
   useGameStore,
   useMuteStore,
-} from "../../store.js"
+} from "src/store.js"
 import {
   useLayoutStore,
   useViewStateStore,
-} from "../../layout.js"
+} from "src/layout.js"
 import {
   paintShadow,
   paintGrid,
@@ -79,12 +79,21 @@ export const Game = () => {
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
   let setMuteState = useMuteStore((state) => state.setMuted)
-  let sound = useMemo(() => new Howl({
-    src: ["/app/stone1.wav"],
-    onloaderror: function (id, error) {
-      throw new Error(id + ": " + error)
+  let howler = useRef()
+  let playClickSound = useCallback(() => {
+    if (muted) {
+      return
     }
-  }),[])
+    if (!howler.current) {
+      howler.current = new Howl({
+        src: ["/app/stone1.wav"],
+        onloaderror: (id, error) => {
+          throw new Error(id + ": " + error)
+        },
+      })
+    }
+    howler.current.play()
+  }, [howler, muted])
 
   let context = useMemo(() => {
     let dim = board.length
@@ -204,14 +213,12 @@ export const Game = () => {
     if (!isSelfPlay()) { // myColor is 0 in self play
       addMove({...move, color: myColor})
     }
-    if (!muted) {
-      sound.play();
-    }
+    playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, muted, sound])
+  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, playClickSound])
 
   let onMuteClick = useCallback(() => {
     if (muted) {

@@ -9,7 +9,7 @@ import {
 } from "./PointSet.js"
 import {
   hasStone,
-} from "../util.js"
+} from "src/util.js"
 
 export function getGroupInfo(board, xx, yy) {
   let color = board[yy][xx]

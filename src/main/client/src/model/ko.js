@@ -4,7 +4,7 @@ import {
 import {
   BLACK,
   WHITE,
-} from "../util.js"
+} from "src/util.js"
 
 const NOT_FORBIDDEN = [-1, -1]
 

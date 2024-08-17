@@ -12,13 +12,13 @@ import {
 } from "react-router-dom"
 import {
   Button,
-} from "../../component/Button.jsx"
+} from "src/component/Button.jsx"
 import {
   base,
   StompContext,
   tfetch,
   doTry,
-} from "../../util.js"
+} from "src/util.js"
 import {
   LobbyPanel,
 } from "./LobbyPanel.jsx"
@@ -30,7 +30,7 @@ import {
 } from "./ActiveGames.jsx"
 import {
   useAuthStore,
-} from "../../store.js"
+} from "src/store.js"
 import {
   CgClose,
 } from "react-icons/cg"

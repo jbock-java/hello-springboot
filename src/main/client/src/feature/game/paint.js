@@ -4,7 +4,7 @@ import {
   TERRITORY_B,
   REMOVED_B,
   ANY_REMOVED,
-} from "../../util.js"
+} from "src/util.js"
 
 const kirsch = "#dfbd6d"
 const asch = "#8c7130"

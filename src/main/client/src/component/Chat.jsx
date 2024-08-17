@@ -10,12 +10,12 @@ import {
 } from "tailwind-merge"
 import {
   useAuthStore,
-} from "../store.js"
+} from "src/store.js"
 import {
   StompContext,
   tfetch,
   doTry,
-} from "../util.js"
+} from "src/util.js"
 
 export const Chat = ({chatId}) => {
   let [messages, setMessages] = useState([])
@@ -79,7 +79,7 @@ export const Chat = ({chatId}) => {
     let data = new FormData(event.target)
     event.target.reset()
     stompClient.publish({
-      destination: "/app/chat/send/",
+      destination: "/app/chat/send",
       body: JSON.stringify({
         message: data.get("message"),
         id: chatId,

@@ -19,23 +19,23 @@ import {
 } from "tailwind-merge"
 import {
   useAuthStore,
-} from "./store.js"
+} from "src/store.js"
 import {
   Login,
-} from "./Login.jsx"
+} from "src/Login.jsx"
 import {
   Lobby,
-} from "./feature/lobby/Lobby.jsx"
+} from "src/feature/lobby/Lobby.jsx"
 import {
   Game,
-} from "./feature/game/Game.jsx"
+} from "src/feature/game/Game.jsx"
 import {
   base,
   StompContext,
-} from "./util.js"
+} from "src/util.js"
 import {
   useLayoutStore,
-} from "./layout.js"
+} from "src/layout.js"
 
 export const Router = createBrowserRouter(
   createRoutesFromElements(

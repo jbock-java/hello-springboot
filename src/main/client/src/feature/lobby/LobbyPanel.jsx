@@ -4,16 +4,16 @@ import {
 import {
   tfetch,
   doTry,
-} from "../../util.js"
+} from "src/util.js"
 import {
   useAuthStore,
-} from "../../store.js"
+} from "src/store.js"
 import {
   Chat,
-} from "../../component/Chat.jsx"
+} from "src/component/Chat.jsx"
 import {
   SideBar,
-} from "../../component/SideBar.jsx"
+} from "src/component/SideBar.jsx"
 
 export const LobbyPanel = () => {
   return (
