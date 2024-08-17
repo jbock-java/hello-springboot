@@ -1,7 +1,7 @@
 package com.bernd.model;
 
-import java.util.Set;
+import java.util.Collection;
 
 public record UsersMessage(
-    Set<String> users) {
+    Collection<String> users) {
 }
