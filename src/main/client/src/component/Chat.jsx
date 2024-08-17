@@ -175,7 +175,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
       )}>
       <div
         style={{height: splitPos + "px"}}
-        className="px-1 flex-none overflow-y-scroll">
+        className="px-1 pt-1 flex-none overflow-y-scroll">
         {topElement}
       </div>
       <div

@@ -32,7 +32,7 @@ import {
   useGameStore,
 } from "../../store.js"
 import {
-  useLayoutStore,
+  useViewStateStore,
 } from "../../layout.js"
 import {
   Chat,
@@ -53,8 +53,8 @@ export const GamePanel = () => {
 
 function Panel() {
   let {gameId} = useParams()
-  let zoom = useLayoutStore(state => state.zoom)
-  let setZoom = useLayoutStore(state => state.setZoom)
+  let zoom = useViewStateStore(state => state.zoom)
+  let setZoom = useViewStateStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let black = useGameStore(state => state.black)

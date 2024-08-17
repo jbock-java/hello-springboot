@@ -11,6 +11,7 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
+  vw,
   base,
   StompContext,
   BLACK,
@@ -27,6 +28,7 @@ import {
 } from "../../store.js"
 import {
   useLayoutStore,
+  useViewStateStore,
 } from "../../layout.js"
 import {
   paintShadow,
@@ -52,7 +54,7 @@ import {
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let zoom = useLayoutStore(state => state.zoom)
+  let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
@@ -74,7 +76,6 @@ export const Game = () => {
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
-  let vw = useLayoutStore(state => state.vw)
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
   let setMuteState = useMuteStore((state) => state.setMuted)
@@ -287,7 +288,7 @@ export const Game = () => {
 
   return (
     <div
-      style={{ width: (vw - sidebarWidth) + "px" }}
+      style={{ width: (vw() - sidebarWidth) + "px" }}
       className="h-full">
       <div className="grid h-full">
         <canvas className="place-self-center" ref={canvasRef}

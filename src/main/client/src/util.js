@@ -98,3 +98,15 @@ export async function doTry(task, onError) {
     toast.error(e.message)
   }
 }
+
+export function vw() {
+  return Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+}
+
+export function vh() {
+  return Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+}
+
+export function sanitizeSidebarWidth(width) {
+  return Math.min(Math.abs(vw() - vh()), Math.max(200, width))
+}

@@ -5,16 +5,19 @@ import {
   useCallback,
 } from "react"
 import {
+  vw,
+  sanitizeSidebarWidth,
+} from "../util.js"
+import {
   useLayoutStore,
+  useViewStateStore,
 } from "../layout.js"
 
 export const SideBar = ({page, children}) => {
-  let vw = useLayoutStore(state => state.vw)
-  let dragging = useLayoutStore(state => state.dragging)
-  let setDragging = useLayoutStore(state => state.setDragging)
+  let dragging = useViewStateStore(state => state.dragging)
+  let setDragging = useViewStateStore(state => state.setDragging)
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth[page])
   let setSidebarWidth = useLayoutStore(state => state.setSidebarWidth)
-  let sanitizeSidebarWidth = useLayoutStore(state => state.sanitizeSidebarWidth)
   let [ghostWidth, setGhostWidth] = useState(sidebarWidth)
   let draggingRef = useRef()
   let ghostWidthRef = useRef()
@@ -25,7 +28,7 @@ export const SideBar = ({page, children}) => {
       if (!draggingRef.current) {
         return
       }
-      let width = sanitizeSidebarWidth(vw - e.clientX)
+      let width = sanitizeSidebarWidth(vw() - e.clientX)
       setGhostWidth(width)
     }
     let mouseup = () => {
@@ -43,7 +46,7 @@ export const SideBar = ({page, children}) => {
       window.document.removeEventListener("mousemove", mousemove)
       window.document.removeEventListener("mouseup", mouseup)
     }
-  }, [vw, page, draggingRef, setDragging, setSidebarWidth, sanitizeSidebarWidth])
+  }, [page, draggingRef, setDragging, setSidebarWidth])
   let onMouseDown = useCallback((e) => {
     e.preventDefault()
     setDragging(true)

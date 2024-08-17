@@ -8,45 +8,39 @@ import {
   persist,
 } from "zustand/middleware"
 
+const TINY = 0.0001220703125
+
+export const useViewStateStore = create((set, get) => ({
+  zoom: 0,
+  dragging: false,
+  setDragging: (dragging) => {
+    set(produce(state => {
+      state.dragging = dragging
+    }))
+  },
+  setZoom: (zoom) => {
+    set(produce(state => {
+      if (Math.trunc(zoom)) {
+        state.zoom = zoom
+      } else {
+        state.zoom = get().zoom ? 0 : TINY // force re-render
+      }
+    }))
+  },
+}))
+
 export const useLayoutStore = create(
   persist(
     (set, get) => ({
-      zoom: 0,
-      dragging: false,
-      vw: Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0),
       sidebarWidth: {
-        "game": 24 * getPixelRem(),
-        "lobby": 24 * getPixelRem(),
-      },
-      setZoom: (zoom) => {
-        set(produce(state => {
-          if (!zoom) {
-            state.zoom = 0.000244140625 // force re-render
-          } else {
-            state.zoom = zoom
-          }
-        }))
-      },
-      setDragging: (dragging) => {
-        set(produce(state => {
-          state.dragging = dragging
-        }))
-      },
-      sanitizeSidebarWidth: (width) => {
-        let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-        width = Math.max(200, width)
-        return Math.min(Math.abs(get().vw - vh), width)
+        "game": 24 * getRemInPixel(),
+        "lobby": 24 * getRemInPixel(),
       },
       setSidebarWidth: (page, width) => {
         set(produce(state => {
           let newSidebarWidth = {...get().sidebarWidth}
-          newSidebarWidth[page] = width
+          newSidebarWidth[page] = Math.trunc(width)
           state.sidebarWidth = newSidebarWidth
-          if (!get().zoom) {
-            state.zoom = 0.000244140625 // force re-render
-          } else {
-            state.zoom = 0
-          }
         }))
       },
     }),
@@ -54,6 +48,7 @@ export const useLayoutStore = create(
   ),
 )
 
-function getPixelRem() {
-    return parseFloat(window.getComputedStyle(window.document.documentElement).fontSize)
+function getRemInPixel() {
+  let fontSize = window.getComputedStyle(window.document.documentElement).fontSize
+  return Math.trunc(parseFloat(fontSize))
 }
