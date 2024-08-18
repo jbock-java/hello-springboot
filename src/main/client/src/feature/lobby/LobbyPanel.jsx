@@ -18,7 +18,7 @@ import {
 export const LobbyPanel = () => {
   return (
     <SideBar page="lobby">
-      <div className="pr-3 pt-2 pl-2 h-full flex flex-col gap-y-1">
+      <div className="pr-3 pt-2 pl-2 h-full flex flex-col">
         <Panel />
       </div>
     </SideBar>

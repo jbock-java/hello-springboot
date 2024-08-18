@@ -15,6 +15,7 @@ import {
   StompContext,
   tfetch,
   doTry,
+  getRemInPixel,
 } from "src/util.js"
 
 export const Chat = ({chatId}) => {
@@ -103,7 +104,7 @@ export const Chat = ({chatId}) => {
     />
     <form className="flex-none mb-2" onSubmit={onSendMessage}>
       <input
-        className="w-full rounded-lg p-2 border border-gray-500 bg-stone-800 text-stone-100 focus:outline-none"
+        className="w-full px-1 py-2 border border-gray-500 bg-stone-800 text-stone-100 focus:outline-none"
         type="text"
         name="message"
       />
@@ -124,7 +125,7 @@ function isLastChildVisible(container) {
 
 function SplitPane({messageRef, topElement, bottomElement}) {
   let [dragging, setDragging] = useState(false)
-  let [splitPos, setSplitPos] = useState(200.5)
+  let [splitPos, setSplitPos] = useState(200)
   let draggingRef = useRef()
   let containerRef = useRef()
   draggingRef.current = dragging
@@ -133,13 +134,13 @@ function SplitPane({messageRef, topElement, bottomElement}) {
       if (!draggingRef.current) {
         return
       }
-      setSplitPos(getSplitPos(e.clientY, containerRef))
+      setSplitPos(getSplitPos(e.clientY, containerRef.current))
     }
     let mouseup = (e) => {
       if (!draggingRef.current) {
         return
       }
-      setSplitPos(getSplitPos(e.clientY, containerRef))
+      setSplitPos(getSplitPos(e.clientY, containerRef.current))
       setDragging(false)
     }
     window.document.addEventListener("mousemove", mousemove)
@@ -151,7 +152,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
   }, [draggingRef, setDragging])
   let onMouseDown = useCallback((e) => {
     e.preventDefault()
-    setSplitPos(getSplitPos(e.clientY, containerRef))
+    setSplitPos(getSplitPos(e.clientY, containerRef.current))
     setDragging(true)
   }, [setDragging, setSplitPos])
   let topElementHeight = Math.trunc(splitPos)
@@ -162,10 +163,17 @@ function SplitPane({messageRef, topElement, bottomElement}) {
   return (
     <div
       ref={(ref) => {
+        if (!ref) {
+          return
+        }
+        if (!containerRef.current) {
+          let rect = ref.getBoundingClientRect()
+          setSplitPos(getSplitPos(rect.top, ref))
+        }
         containerRef.current = ref
       }}
       className={twJoin(
-        "grow border border-gray-500 bg-gray-900 rounded-lg flex flex-col overflow-y-hidden",
+        "grow border-t border-x border-gray-500 bg-gray-900 flex flex-col overflow-y-hidden",
         dragging && "cursor-row-resize",
       )}>
       <div
@@ -174,7 +182,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
         {topElement}
       </div>
       <SplitBar
-        containerRef={containerRef}
+        container={containerRef.current}
         splitPos={splitPos}
         dragging={dragging}
         onMouseDown={onMouseDown} />
@@ -185,35 +193,38 @@ function SplitPane({messageRef, topElement, bottomElement}) {
   )
 }
 
-function SplitBar({splitPos, dragging, onMouseDown, containerRef}) {
-  let width = 100, left = 10 // some default values
-  if (containerRef.current) {
-    let container = containerRef.current
-    let rect = containerRef.current.getBoundingClientRect()
-    let parentRect = container.parentNode.getBoundingClientRect()
-    width = rect.width
-    left = rect.left - parentRect.left
+function SplitBar({splitPos, dragging, onMouseDown, container}) {
+  if (!container) {
+    return <div />
   }
+  let innerHeight = Math.trunc(getRemInPixel() * 0.5)
+  let rect = container.getBoundingClientRect()
+  let parentRect = container.parentNode.getBoundingClientRect()
+  let width = rect.width
+  let left = rect.left - parentRect.left
   return <>
     <div
       onMouseDown={dragging ? undefined : onMouseDown}
-      style={{top: Math.trunc(splitPos - 1) + 0.5, width: width, left: left}}
+      style={{top: Math.trunc(splitPos - 1) + 0.5, height: 1, width: width, left: left}}
       className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
     <div
       onMouseDown={dragging ? undefined : onMouseDown}
-      style={{top: Math.trunc(splitPos) + 0.5, width: width, left: left}}
-      className="absolute h-[5px] bg-slate-800 z-20 cursor-row-resize" />
+      style={{top: Math.trunc(splitPos) + 0.5, height: innerHeight, width: width, left: left}}
+      className="absolute bg-slate-800 z-20 cursor-row-resize" />
     <div
       onMouseDown={dragging ? undefined : onMouseDown}
-      style={{top: Math.trunc(splitPos + 5) + 0.5, width: width, left: left}}
+      style={{top: Math.trunc(splitPos + innerHeight) + 0.5, height: 1, width: width, left: left}}
       className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
   </>
 }
 
-function getSplitPos(clientY, containerRef) {
-  let rect = containerRef.current.getBoundingClientRect()
-  let result = clientY
-  result = Math.max(rect.top + 40, result)
-  result = Math.min(rect.top + rect.height - 40, result)
+function getSplitPos(clientY, container) {
+  if (!container) {
+    return Math.trunc(clientY)
+  }
+  let rect = container.getBoundingClientRect()
+  let safety = 4 * getRemInPixel()
+  let result = Math.max(rect.top + safety, clientY)
+  result = Math.min(rect.top + rect.height - safety, result)
   return Math.trunc(result)
 }

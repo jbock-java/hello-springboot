@@ -7,6 +7,9 @@ import {
 import {
   persist,
 } from "zustand/middleware"
+import {
+  getRemInPixel,
+} from "src/util.js"
 
 const TINY = 0.0001220703125
 
@@ -47,8 +50,3 @@ export const useLayoutStore = create(
     {name: "layout-storage"},
   ),
 )
-
-function getRemInPixel() {
-  let fontSize = window.getComputedStyle(window.document.documentElement).fontSize
-  return Math.trunc(parseFloat(fontSize))
-}

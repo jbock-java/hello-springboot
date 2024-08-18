@@ -110,3 +110,8 @@ export function vh() {
 export function sanitizeSidebarWidth(width) {
   return Math.min(Math.abs(vw() - vh()), Math.max(200, width))
 }
+
+export function getRemInPixel() {
+  let fontSize = window.getComputedStyle(document.documentElement).fontSize
+  return parseFloat(fontSize)
+}
