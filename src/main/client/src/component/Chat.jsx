@@ -124,37 +124,30 @@ function isLastChildVisible(container) {
 }
 
 function SplitPane({messageRef, topElement, bottomElement}) {
-  let [dragBase, setDragBase] = useState(Number.NaN)
+  let [dragOffset, setDragOffset] = useState(Number.NaN)
   let [splitPos, setSplitPos] = useState(200)
-  let draggingRef = useRef()
+  let splitPosRef = useRef()
+  splitPosRef.current = splitPos
   let containerRef = useRef()
-  draggingRef.current = dragBase
   useEffect(() => {
-    let mousemove = (e) => {
-      if (!draggingRef.current) {
+    let onMouseMove = (e) => {
+      if (Number.isNaN(dragOffset)) {
         return
       }
-      setSplitPos(getSplitPos(e.clientY, containerRef.current))
+      setSplitPos(getSplitPos(e.clientY + dragOffset, containerRef.current))
     }
-    let mouseup = (e) => {
-      if (!draggingRef.current) {
-        return
-      }
-      setSplitPos(getSplitPos(e.clientY, containerRef.current))
-      setDragBase(Number.NaN)
-    }
-    window.document.addEventListener("mousemove", mousemove)
-    window.document.addEventListener("mouseup", mouseup)
+    let onMouseUp = () => setDragOffset(Number.NaN)
+    window.document.addEventListener("mousemove", onMouseMove)
+    window.document.addEventListener("mouseup", onMouseUp)
     return () => {
-      window.document.removeEventListener("mousemove", mousemove)
-      window.document.removeEventListener("mouseup", mouseup)
+      window.document.removeEventListener("mousemove", onMouseMove)
+      window.document.removeEventListener("mouseup", onMouseUp)
     }
-  }, [draggingRef, setDragBase])
+  }, [dragOffset, setDragOffset])
   let onMouseDown = useCallback((e) => {
     e.preventDefault()
-    setSplitPos(getSplitPos(e.clientY, containerRef.current))
-    setDragBase(e.clientY)
-  }, [setDragBase, setSplitPos])
+    setDragOffset(splitPosRef.current - e.clientY)
+  }, [setDragOffset])
   let topElementHeight = Math.trunc(splitPos)
   if (containerRef.current) {
     let rect = containerRef.current.getBoundingClientRect()
@@ -168,13 +161,13 @@ function SplitPane({messageRef, topElement, bottomElement}) {
         }
         if (!containerRef.current) {
           let rect = ref.getBoundingClientRect()
-          setSplitPos(getSplitPos(rect.top, ref))
+          setSplitPos(getSplitPos(rect.top + 2.5 * getRemInPixel(), ref))
         }
         containerRef.current = ref
       }}
       className={twJoin(
         "grow border-t border-x border-gray-500 bg-gray-900 flex flex-col overflow-y-hidden",
-        !Number.isNaN(dragBase) && "cursor-row-resize",
+        !Number.isNaN(dragOffset) && "cursor-row-resize",
       )}>
       <div
         style={{height: topElementHeight + "px"}}
@@ -184,7 +177,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
       <SplitBar
         container={containerRef.current}
         splitPos={splitPos}
-        dragBase={dragBase}
+        dragOffset={dragOffset}
         onMouseDown={onMouseDown} />
       <div ref={messageRef} className="px-1 pt-3 pb-1 overflow-y-scroll">
         {bottomElement}
@@ -193,7 +186,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
   )
 }
 
-function SplitBar({splitPos, dragBase, onMouseDown, container}) {
+function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
   if (!container) {
     return <div />
   }
@@ -204,16 +197,16 @@ function SplitBar({splitPos, dragBase, onMouseDown, container}) {
   let left = rect.left - parentRect.left
   return <>
     <div
-      onMouseDown={Number.isNaN(dragBase) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos - 1) + 0.5, height: 1, width: width, left: left}}
+      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
+      style={{top: Math.trunc(splitPos - 1), height: 1, width: width, left: left}}
       className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
     <div
-      onMouseDown={Number.isNaN(dragBase) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos) + 0.5, height: innerHeight, width: width, left: left}}
+      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
+      style={{top: Math.trunc(splitPos), height: innerHeight, width: width, left: left}}
       className="absolute bg-slate-800 z-20 cursor-row-resize" />
     <div
-      onMouseDown={Number.isNaN(dragBase) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos + innerHeight) + 0.5, height: 1, width: width, left: left}}
+      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
+      style={{top: Math.trunc(splitPos + innerHeight), height: 1, width: width, left: left}}
       className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
   </>
 }
@@ -223,8 +216,8 @@ function getSplitPos(clientY, container) {
     return Math.trunc(clientY)
   }
   let rect = container.getBoundingClientRect()
-  let safety = 4 * getRemInPixel()
+  let safety = 1 * getRemInPixel()
   let result = Math.max(rect.top + safety, clientY)
-  result = Math.min(rect.top + rect.height - safety, result)
+  result = Math.min(rect.bottom - safety - 5, result)
   return Math.trunc(result)
 }
