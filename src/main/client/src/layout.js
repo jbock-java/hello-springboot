@@ -31,21 +31,16 @@ export const useViewStateStore = create((set, get) => ({
   },
 }))
 
-export const useLayoutStore = create(
-  persist(
-    (set, get) => ({
-      sidebarWidth: {
-        "game": 24 * getRemInPixel(),
-        "lobby": 24 * getRemInPixel(),
-      },
-      setSidebarWidth: (page, width) => {
-        set(produce(state => {
-          let newSidebarWidth = {...get().sidebarWidth}
-          newSidebarWidth[page] = Math.trunc(width)
-          state.sidebarWidth = newSidebarWidth
-        }))
-      },
-    }),
-    {name: "layout-storage"},
-  ),
-)
+export const useLayoutStore = create((set, get) => ({
+  sidebarWidth: {
+    "game": 24 * getRemInPixel(),
+    "lobby": 24 * getRemInPixel(),
+  },
+  setSidebarWidth: (page, width) => {
+    set(produce(state => {
+      let newSidebarWidth = {...get().sidebarWidth}
+      newSidebarWidth[page] = Math.trunc(width)
+      state.sidebarWidth = newSidebarWidth
+    }))
+  },
+}))
