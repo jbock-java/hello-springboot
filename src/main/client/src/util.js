@@ -23,6 +23,9 @@ export const ANY_REMOVED = REMOVED_W | REMOVED_B
 
 export const COLORS = BLACK | WHITE
 
+// some number that is small, yet big enough for adding to typical pixel values like 100 or 1000
+export const DELTA = 0.0001220703125
+
 export async function tfetch(url, options) {
   let response
   try {

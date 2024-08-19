@@ -12,13 +12,16 @@ import {
   useAuthStore,
 } from "src/store.js"
 import {
+  useViewStateStore,
+} from "src/layout.js"
+import {
   StompContext,
   tfetch,
   doTry,
   getRemInPixel,
 } from "src/util.js"
 
-export const Chat = ({chatId}) => {
+export const Chat = ({chatId, className}) => {
   let [messages, setMessages] = useState([])
   let [users, setUsers] = useState([])
   let messageRef = useRef()
@@ -90,6 +93,7 @@ export const Chat = ({chatId}) => {
 
   return <>
     <SplitPane
+      className={className}
       messageRef={messageRef}
       topElement={<>
         {users.map(user => (
@@ -104,7 +108,7 @@ export const Chat = ({chatId}) => {
     />
     <form className="flex-none mb-2" onSubmit={onSendMessage}>
       <input
-        className="w-full px-1 py-2 border border-gray-500 bg-stone-800 text-stone-100 focus:outline-none"
+        className="w-full px-1 py-1 border border-gray-500 bg-stone-800 text-stone-100 focus:outline-none"
         type="text"
         name="message"
       />
@@ -123,12 +127,13 @@ function isLastChildVisible(container) {
   return lastChildTop < containerBottom
 }
 
-function SplitPane({messageRef, topElement, bottomElement}) {
+function SplitPane({className, messageRef, topElement, bottomElement}) {
   let [dragOffset, setDragOffset] = useState(Number.NaN)
   let [splitPos, setSplitPos] = useState(200)
   let splitPosRef = useRef()
   splitPosRef.current = splitPos
   let containerRef = useRef()
+
   useEffect(() => {
     let onMouseMove = (e) => {
       if (Number.isNaN(dragOffset)) {
@@ -166,12 +171,13 @@ function SplitPane({messageRef, topElement, bottomElement}) {
         containerRef.current = ref
       }}
       className={twJoin(
-        "grow border-t border-x border-gray-500 bg-gray-900 flex flex-col overflow-y-hidden",
+        "grow flex flex-col gap-y-2 overflow-y-hidden",
         !Number.isNaN(dragOffset) && "cursor-row-resize",
+        className,
       )}>
       <div
         style={{height: topElementHeight + "px"}}
-        className="px-1 pt-1 pb-2 flex-none overflow-y-scroll">
+        className="p-1 bg-gray-900 border border-gray-500 flex-none overflow-y-scroll">
         {topElement}
       </div>
       <SplitBar
@@ -179,7 +185,7 @@ function SplitPane({messageRef, topElement, bottomElement}) {
         splitPos={splitPos}
         dragOffset={dragOffset}
         onMouseDown={onMouseDown} />
-      <div ref={messageRef} className="px-1 pt-3 pb-1 overflow-y-scroll">
+      <div ref={messageRef} className="p-1 bg-gray-900 border-t border-x border-gray-500 h-full overflow-y-scroll">
         {bottomElement}
       </div>
     </div>
@@ -187,27 +193,36 @@ function SplitPane({messageRef, topElement, bottomElement}) {
 }
 
 function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
+  let dragging = useViewStateStore(state => state.dragging)
   if (!container) {
     return <div />
   }
   let innerHeight = Math.trunc(getRemInPixel() * 0.5)
   let rect = container.getBoundingClientRect()
-  let parentRect = container.parentNode.getBoundingClientRect()
-  let width = rect.width
+  let parentRect = container.offsetParent.getBoundingClientRect()
+  let width = dragging ? 2 * rect.width : rect.width
   let left = rect.left - parentRect.left
+  let lineClass = twJoin(
+    "absolute h-[1px] z-20 cursor-row-resize",
+    "bg-transparent",
+  )
+  let barClass = twJoin(
+    "absolute z-20 cursor-row-resize",
+    "bg-transparent",
+  )
   return <>
     <div
       onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos - 1), height: 1, width: width, left: left}}
-      className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
+      style={{top: Math.trunc(splitPos), height: 1, width: width, left: left}}
+      className={lineClass} />
     <div
       onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos), height: innerHeight, width: width, left: left}}
-      className="absolute bg-slate-800 z-20 cursor-row-resize" />
+      style={{top: Math.trunc(splitPos + 1), height: innerHeight, width: width, left: left}}
+      className={barClass} />
     <div
       onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos + innerHeight), height: 1, width: width, left: left}}
-      className="absolute h-[1px] bg-gray-500 z-20 cursor-row-resize" />
+      style={{top: Math.trunc(splitPos + innerHeight + 1), height: 1, width: width, left: left}}
+      className={lineClass} />
   </>
 }
 

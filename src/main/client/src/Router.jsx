@@ -34,7 +34,7 @@ import {
   StompContext,
 } from "src/util.js"
 import {
-  useLayoutStore,
+  useViewStateStore,
 } from "src/layout.js"
 
 export const Router = createBrowserRouter(
@@ -63,7 +63,7 @@ export const Router = createBrowserRouter(
 )
 
 function Frame() {
-  let dragging = useLayoutStore(state => state.dragging)
+  let dragging = useViewStateStore(state => state.dragging)
   return <>
     <div className={twJoin(
         "h-full",

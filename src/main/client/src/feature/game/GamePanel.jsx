@@ -176,7 +176,7 @@ function Panel() {
           {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}
         </div>
       )}
-      <Chat chatId={gameId}/>
+      <Chat className="mt-1" chatId={gameId}/>
     </>
   )
 }

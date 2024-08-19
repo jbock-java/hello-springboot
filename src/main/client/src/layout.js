@@ -9,9 +9,8 @@ import {
 } from "zustand/middleware"
 import {
   getRemInPixel,
+  DELTA,
 } from "src/util.js"
-
-const TINY = 0.0001220703125
 
 export const useViewStateStore = create((set, get) => ({
   zoom: 0,
@@ -26,7 +25,7 @@ export const useViewStateStore = create((set, get) => ({
       if (Math.trunc(zoom)) {
         state.zoom = zoom
       } else {
-        state.zoom = get().zoom ? 0 : TINY // force re-render
+        state.zoom = get().zoom ? 0 : DELTA // force re-render
       }
     }))
   },

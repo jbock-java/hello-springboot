@@ -1,7 +1,6 @@
 import {
   useRef,
   useEffect,
-  useState,
   useCallback,
 } from "react"
 import {
@@ -18,28 +17,19 @@ export const SideBar = ({page, children}) => {
   let setDragging = useViewStateStore(state => state.setDragging)
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth[page])
   let setSidebarWidth = useLayoutStore(state => state.setSidebarWidth)
-  let [ghostWidth, setGhostWidth] = useState(sidebarWidth)
   let draggingRef = useRef()
   let ghostWidthRef = useRef()
   draggingRef.current = dragging
-  ghostWidthRef.current = ghostWidth
+  ghostWidthRef.current = sidebarWidth
   useEffect(() => {
     let mousemove = (e) => {
       if (!draggingRef.current) {
         return
       }
       let width = sanitizeSidebarWidth(vw() - e.clientX)
-      setGhostWidth(width)
+      setSidebarWidth(page, width)
     }
-    let mouseup = () => {
-      if (!draggingRef.current) {
-        return
-      }
-      let width = sanitizeSidebarWidth(ghostWidthRef.current)
-      setSidebarWidth(page, Math.trunc(width))
-      setGhostWidth(Math.trunc(width))
-      setDragging(false)
-    }
+    let mouseup = () => setDragging(false)
     window.document.addEventListener("mousemove", mousemove)
     window.document.addEventListener("mouseup", mouseup)
     return () => {
@@ -61,7 +51,7 @@ export const SideBar = ({page, children}) => {
         className="fixed top-0 w-[3px] h-full bg-slate-700 z-10 cursor-col-resize" />
       {dragging && (
         <div
-          style={{right: ghostWidth + "px"}}
+          style={{right: sidebarWidth + "px"}}
           className="fixed top-0 w-[3px] h-full bg-slate-600 z-20" />
       )}
       {children}
