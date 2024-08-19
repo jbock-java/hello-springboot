@@ -5,9 +5,6 @@ import {
   produce,
 } from "immer"
 import {
-  persist,
-} from "zustand/middleware"
-import {
   getRemInPixel,
   DELTA,
 } from "src/util.js"

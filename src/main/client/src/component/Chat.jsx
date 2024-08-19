@@ -41,6 +41,14 @@ export const Chat = ({chatId, className}) => {
         return [...previous, message]
       })
     })
+    let intervalId = setInterval(() => {
+      stompClient.publish({
+        destination: "/app/chat/status",
+        body: JSON.stringify({
+          room: chatId,
+        }),
+      })
+    }, 30 * 1000)
 
     doTry(async () => {
       let chat = await tfetch("/api/chat/" + chatId, {
@@ -56,6 +64,7 @@ export const Chat = ({chatId, className}) => {
     return () => {
       sub1.unsubscribe()
       sub2.unsubscribe()
+      clearInterval(intervalId)
     }
   }, [stompClient, auth, chatId])
 
@@ -163,7 +172,7 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
         }
         if (!containerRef.current) {
           let rect = ref.getBoundingClientRect()
-          setSplitPos(getSplitPos(rect.top + 2.5 * getRemInPixel(), ref))
+          setSplitPos(getSplitPos(rect.top + 4.5 * getRemInPixel(), ref))
         }
         containerRef.current = ref
       }}
