@@ -12,9 +12,6 @@ import {
   useAuthStore,
 } from "src/store.js"
 import {
-  useViewStateStore,
-} from "src/layout.js"
-import {
   StompContext,
   tfetch,
   doTry,
@@ -193,37 +190,22 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
 }
 
 function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
-  let dragging = useViewStateStore(state => state.dragging)
   if (!container) {
     return <div />
   }
-  let innerHeight = Math.trunc(getRemInPixel() * 0.5)
   let rect = container.getBoundingClientRect()
   let parentRect = container.offsetParent.getBoundingClientRect()
-  let width = dragging ? 2 * rect.width : rect.width
-  let left = rect.left - parentRect.left
-  let lineClass = twJoin(
-    "absolute h-[1px] z-20 cursor-row-resize",
-    "bg-transparent",
+  return (
+    <div
+      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
+      style={{
+        top: Math.trunc(splitPos) - 1,
+        height: Math.trunc(getRemInPixel() * 0.5) + 2,
+        width: rect.width,
+        left: rect.left - parentRect.left,
+      }}
+      className="absolute z-20 cursor-row-resize bg-transparent" />
   )
-  let barClass = twJoin(
-    "absolute z-20 cursor-row-resize",
-    "bg-transparent",
-  )
-  return <>
-    <div
-      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos), height: 1, width: width, left: left}}
-      className={lineClass} />
-    <div
-      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos + 1), height: innerHeight, width: width, left: left}}
-      className={barClass} />
-    <div
-      onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
-      style={{top: Math.trunc(splitPos + innerHeight + 1), height: 1, width: width, left: left}}
-      className={lineClass} />
-  </>
 }
 
 function getSplitPos(clientY, container) {
