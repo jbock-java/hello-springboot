@@ -11,7 +11,7 @@ import java.util.Map;
 @Component
 public final class StatusMap {
 
-  private static final long USER_TIMEOUT = 12 * 1000;
+  private static final long USER_TIMEOUT = 45 * 1000;
 
   private final Map<String, UserStatus> map = new LinkedHashMap<>();
 

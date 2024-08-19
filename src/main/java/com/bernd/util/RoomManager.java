@@ -10,7 +10,7 @@ import java.util.Map;
 @Component
 public class RoomManager {
 
-  private static final long SCAN_TIMEOUT = 15 * 1000;
+  private static final long SCAN_TIMEOUT = 40 * 1000;
 
   private final Sender sender;
   private final StatusMap statusMap;
