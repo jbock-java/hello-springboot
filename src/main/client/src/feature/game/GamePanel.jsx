@@ -43,21 +43,23 @@ import {
   countingComplete,
   currentPlayer,
   isSelfPlay,
+  isKibitz,
+  moveBack,
   countingAgreed,
   gameHasEnded,
 } from "./state.js"
 
-export const GamePanel = ({gameState}) => {
+export const GamePanel = ({gameState, setGameState}) => {
   return (
     <SideBar page="game">
       <div className="pr-3 pt-4 pl-2 h-full flex flex-col">
-        <Panel gameState={gameState} />
+        <Panel gameState={gameState} setGameState={setGameState} />
       </div>
     </SideBar>
   )
 }
 
-function Panel({gameState}) {
+function Panel({gameState, setGameState}) {
   let {gameId} = useParams()
   let zoom = useViewStateStore(state => state.zoom)
   let setZoom = useViewStateStore(state => state.setZoom)
@@ -146,15 +148,17 @@ function Panel({gameState}) {
       <div className="flex-none">
         Move {queueLength}
       </div>
-      <div className="flex-none">
-        <Button
-          onClick={onPass}
-          className="py-1 px-4"
-          disabled={gameHasEnded(gameState) || counting || currentPlayer(gameState) !== auth.name}>
-          Pass
-        </Button>
-      </div>
-      {counting && <>
+      {!isKibitz(gameState, auth) && (
+        <div className="flex-none">
+          <Button
+            onClick={onPass}
+            className="py-1 px-4"
+            disabled={gameHasEnded(gameState) || counting || currentPlayer(gameState) !== auth.name}>
+            Pass
+          </Button>
+        </div>
+      )}
+      {!isKibitz(gameState, auth) && counting && <>
         <div className="flex-none">
           <Button
             className="py-1 px-4"
@@ -172,6 +176,15 @@ function Panel({gameState}) {
           </Button>
         </div>
       </>}
+      {(gameHasEnded(gameState) || isKibitz(gameState, auth)) && (
+        <div className="flex-none">
+          <Button
+            onClick={() => setGameState(moveBack(gameState))}
+            className="py-1 px-2">
+            Back
+          </Button>
+        </div>
+      )}
       {result && (
         <div className="flex-none">
           {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}

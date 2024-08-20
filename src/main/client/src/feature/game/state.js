@@ -26,6 +26,7 @@ export function initialState() {
     id: "",
     moves: [],
     baseBoard: [],
+    viewPos: 0,
     dim: 0,
     handicap: 0,
     queueStatus: "behind",
@@ -68,6 +69,10 @@ export function isSelfPlay({black, white}) {
   return black === white
 }
 
+export function isKibitz({black, white}, auth) {
+  return black !== auth.name && white !== auth.name
+}
+
 export function currentColor({moves, handicap}) {
   if (handicap > moves.length) {
     return BLACK
@@ -78,7 +83,7 @@ export function currentColor({moves, handicap}) {
   return moves[moves.length - 1].color ^ COLORS
 }
 
-export function countingAgreed ({moves, myColor}) {
+export function countingAgreed({moves, myColor}) {
   if (!moves.length) {
     return false
   }
@@ -92,6 +97,43 @@ export function gameHasEnded({moves}) {
   }
   let move = moves[moves.length - 1]
   return move.action === "end"
+}
+
+export function moveBack(baseState) {
+  return produce(baseState, (draft) => {
+    let moves = baseState.moves
+    let queueLength = baseState.queueLength
+    if (!queueLength) {
+      return
+    }
+    let move = moves[queueLength - 1]
+    let baseBoard = unApply(baseState.baseBoard, move)
+    draft.baseBoard = baseBoard
+    draft.board = rehydrate(baseBoard)
+  })
+}
+
+function unApply(board, move) {
+  let dim = board.length
+  let result = Array(dim)
+  for (let i = 0; i < board.length; i++) {
+    result[i] = Array(dim)
+  }
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      if (move.x === x && move.y === y) {
+        result[y][x] = 0
+      } else {
+        result[y][x] = board[y][x]
+      }
+    }
+  }
+  if (move.dead) {
+    move.dead.forEach((x, y) => {
+      result[y][x] = move.color ^ COLORS
+    })
+  }
+  return result
 }
 
 export function addMove(baseState, move) {
@@ -199,7 +241,7 @@ function createMoveData(baseBoard, moves, move, counting) {
     return [move, count(updated), [-1, -1]]
   }
   let [dead, updated] = updateBoard(baseBoard, move)
-  let storedMove = {...move, dead}
+  let storedMove = {...move, dead: dead}
   let forbidden = getForbidden(baseBoard, updated, storedMove)
   return [storedMove, updated, forbidden]
 }

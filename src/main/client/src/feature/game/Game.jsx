@@ -69,7 +69,7 @@ export function Game() {
       className="h-full">
       <MuteIcon />
       <Board gameState={gameState} setGameState={setGameState} />
-      <GamePanel gameState={gameState} />
+      <GamePanel gameState={gameState} setGameState={setGameState} />
     </div>
   )
 }
