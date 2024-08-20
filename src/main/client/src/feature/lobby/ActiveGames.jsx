@@ -18,7 +18,6 @@ import {
 } from "src/util.js"
 import {
   useAuthStore,
-  useGameStore,
 } from "src/store.js"
 
 export function ActiveGames() {
@@ -27,7 +26,6 @@ export function ActiveGames() {
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
-  let setInit = useGameStore(state => state.setInit)
   useEffect(() => {
     if (initialized.current) {
       return
@@ -48,7 +46,7 @@ export function ActiveGames() {
     return () => {
       sub1.unsubscribe()
     }
-  }, [setInit, auth, initialized, stompClient, navigate])
+  }, [auth, initialized, stompClient, navigate])
   return (
     <div>
       <div className="grid grid-cols-[max-content_max-content_max-content]">

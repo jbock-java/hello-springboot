@@ -33,7 +33,6 @@ import {
 } from "src/util.js"
 import {
   useAuthStore,
-  useGameStore,
 } from "src/store.js"
 
 export function OpenGames() {
@@ -43,7 +42,6 @@ export function OpenGames() {
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
-  let setInit = useGameStore(state => state.setInit)
   useEffect(() => {
     if (initialized.current) {
       return
@@ -64,7 +62,7 @@ export function OpenGames() {
     return () => {
       sub1.unsubscribe()
     }
-  }, [setInit, auth, initialized, stompClient, navigate])
+  }, [auth, initialized, stompClient, navigate])
   let onAccept = useCallback((d) => doTry(async () => {
     await tfetch("/api/accept", {
       method: "POST",

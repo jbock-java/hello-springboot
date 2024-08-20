@@ -11,6 +11,16 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
+  Howl,
+} from "howler"
+import {
+  IconContext,
+} from "react-icons"
+import {
+  FaVolumeMute,
+  FaVolumeUp,
+} from "react-icons/fa"
+import {
   vw,
   base,
   StompContext,
@@ -23,7 +33,6 @@ import {
 } from "src/model/PointList.js"
 import {
   useAuthStore,
-  useGameStore,
   useMuteStore,
 } from "src/store.js"
 import {
@@ -41,40 +50,34 @@ import {
   GamePanel,
 } from "./GamePanel.jsx"
 import {
-  Howl,
-} from "howler"
-import {
-  FaVolumeMute,
-  FaVolumeUp,
-} from "react-icons/fa"
-import {
-  IconContext,
-} from "react-icons"
+  initialState,
+  currentPlayer,
+  isSelfPlay,
+  currentColor,
+  gameHasEnded,
+  addMove,
+  createGameState,
+} from "./state.js"
 
 export const Game = () => {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let [gameState, setGameState] = useState(initialState())
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let id = useGameStore(state => state.id)
-  let gameHasEnded = useGameStore(state => state.gameHasEnded)
-  let lastMove = useGameStore(state => state.lastMove)
-  let setGameState = useGameStore(state => state.setGameState)
-  let queueStatus = useGameStore(state => state.queueStatus)
-  let movesLength = useGameStore(state => state.moves.length)
-  let myColor = useGameStore(state => state.myColor)
-  let isSelfPlay = useGameStore(state => state.isSelfPlay)
-  let addMove = useGameStore(state => state.addMove)
-  let currentPlayer = useGameStore(state => state.currentPlayer)
-  let counting = useGameStore(state => state.counting)
-  let currentColor = useGameStore(state => state.currentColor)
-  let board = useGameStore(state => state.board)
-  let [forbidden_x, forbidden_y] = useGameStore(state => state.forbidden)
+  let id = gameState.id
+  let lastMove = gameState.lastMove
+  let queueStatus = gameState.queueStatus
+  let movesLength = gameState.moves.length
+  let myColor = gameState.myColor
+  let counting = gameState.counting
+  let board = gameState.board
+  let [forbidden_x, forbidden_y] = gameState.forbidden
   let canvasRef = useRef()
-  let countingGroup = !gameHasEnded() && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
+  let countingGroup = !gameHasEnded(gameState) && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
@@ -155,7 +158,7 @@ export const Game = () => {
   }, [board.length, canvasRef, zoom])
 
   let onMouseMove = useCallback((e) => {
-    if (gameHasEnded()) {
+    if (gameHasEnded(gameState)) {
       return
     }
     if (dragging) {
@@ -164,7 +167,7 @@ export const Game = () => {
     if (!board.length) {
       return
     }
-    if (!counting && currentPlayer() !== auth.name) {
+    if (!counting && currentPlayer(gameState) !== auth.name) {
       return
     }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
@@ -176,10 +179,10 @@ export const Game = () => {
       setCursor_x(-1)
       setCursor_y(-1)
     }
-  }, [context, currentPlayer, auth, board.length, counting, gameHasEnded, dragging])
+  }, [gameState, context, auth, board.length, counting, dragging])
 
   let onClick = useCallback((e) => {
-    if (gameHasEnded()) {
+    if (gameHasEnded(gameState)) {
       return
     }
     if (!board.length) {
@@ -195,13 +198,13 @@ export const Game = () => {
         return
       }
     } else {
-      if (board[cursor_y][cursor_x].isForbidden(currentColor())) {
+      if (board[cursor_y][cursor_x].isForbidden(currentColor(gameState))) {
         return
       }
       if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
         return
       }
-      if (currentPlayer() !== auth.name) {
+      if (currentPlayer(gameState) !== auth.name) {
         return
       }
     }
@@ -210,15 +213,15 @@ export const Game = () => {
       x: cursor_x,
       y: cursor_y,
     }
-    if (!isSelfPlay()) { // myColor is 0 in self play
-      addMove({...move, color: myColor})
+    if (!isSelfPlay(gameState)) { // myColor is 0 in self play
+      setGameState(addMove(gameState, {...move, color: myColor}))
     }
     playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [context, currentPlayer, currentColor, auth, board, stompClient, counting, forbidden_x, forbidden_y, gameHasEnded, movesLength, addMove, isSelfPlay, myColor, playClickSound])
+  }, [gameState, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
 
   let onMuteClick = useCallback(() => {
     if (muted) {
@@ -246,7 +249,7 @@ export const Game = () => {
     } else {
       paintStones(context, board, lastMove)
     }
-    if (currentPlayer() !== auth.name) {
+    if (currentPlayer(gameState) !== auth.name) {
       return
     }
     if (!context.isCursorInBounds(cursor_x, cursor_y)) {
@@ -255,17 +258,17 @@ export const Game = () => {
     if (board[cursor_y][cursor_x].hasStone) {
       return
     }
-    if (board[cursor_y][cursor_x].isForbidden(currentColor())) {
+    if (board[cursor_y][cursor_x].isForbidden(currentColor(gameState))) {
       return
     }
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
-    let style = currentColor() === BLACK ?
+    let style = currentColor(gameState) === BLACK ?
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
     paintShadow(context, cursor_x, cursor_y, style)
-  }, [cursor_x, cursor_y, context, canvasRef, auth, currentColor, board, currentPlayer, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
+  }, [gameState, cursor_x, cursor_y, context, canvasRef, auth, board, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {
     if (id === gameId && queueStatus === "up_to_date") {
@@ -277,17 +280,17 @@ export const Game = () => {
           "Authorization": "Bearer " + auth.token,
         },
       })
-      setGameState(game, auth)
+      setGameState(createGameState(game, auth))
     }, () => navigate(base + "/lobby"))
-  }, [setGameState, queueStatus, auth, id, gameId, navigate])
+  }, [queueStatus, auth, id, gameId, navigate])
 
   useEffect(() => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
-      addMove(move)
+      setGameState(addMove(gameState, move))
     })
     return sub.unsubscribe
-  }, [addMove, stompClient, gameId])
+  }, [gameState, stompClient, gameId])
 
   if (!board.length) {
     return <div>Loading...</div>
@@ -323,7 +326,7 @@ export const Game = () => {
           </IconContext.Provider>
         </button>
       </div>
-      <GamePanel />
+      <GamePanel gameState={gameState} />
     </div>
   )
 }

@@ -29,7 +29,6 @@ import {
 } from "src/component/Button.jsx"
 import {
   useAuthStore,
-  useGameStore,
 } from "src/store.js"
 import {
   useViewStateStore,
@@ -40,34 +39,36 @@ import {
 import {
   SideBar,
 } from "src/component/SideBar.jsx"
+import {
+  countingComplete,
+  currentPlayer,
+  isSelfPlay,
+  countingAgreed,
+  gameHasEnded,
+} from "./state.js"
 
-export const GamePanel = () => {
+export const GamePanel = ({gameState}) => {
   return (
     <SideBar page="game">
       <div className="pr-3 pt-4 pl-2 h-full flex flex-col">
-        <Panel />
+        <Panel gameState={gameState} />
       </div>
     </SideBar>
   )
 }
 
-function Panel() {
+function Panel({gameState}) {
   let {gameId} = useParams()
   let zoom = useViewStateStore(state => state.zoom)
   let setZoom = useViewStateStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let black = useGameStore(state => state.black)
-  let white = useGameStore(state => state.white)
-  let isSelfPlay = black === white
-  let queueLength = useGameStore(state => state.queueLength)
-  let movesLength = useGameStore(state => state.moves.length)
-  let counting = useGameStore(state => state.counting)
-  let countingAgreed = useGameStore(state => state.countingAgreed)
-  let gameHasEnded = useGameStore(state => state.gameHasEnded)
-  let countingComplete = useGameStore(state => state.countingComplete)
-  let currentPlayer = useGameStore(state => state.currentPlayer)
-  let board = useGameStore(state => state.board)
+  let black = gameState.black
+  let white = gameState.white
+  let queueLength = gameState.queueLength
+  let movesLength = gameState.moves.length
+  let counting = gameState.counting
+  let board = gameState.board
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -102,7 +103,7 @@ function Panel() {
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = gameHasEnded() ? getScore(board) : undefined
+  let result = gameHasEnded(gameState) ? getScore(board) : undefined
   return (
     <>
       <div className="flex-none grid w-full grid-cols-[min-content_max-content_min-content_auto] gap-x-2">
@@ -149,7 +150,7 @@ function Panel() {
         <Button
           onClick={onPass}
           className="py-1 px-4"
-          disabled={gameHasEnded() || counting || currentPlayer() !== auth.name}>
+          disabled={gameHasEnded(gameState) || counting || currentPlayer(gameState) !== auth.name}>
           Pass
         </Button>
       </div>
@@ -157,14 +158,14 @@ function Panel() {
         <div className="flex-none">
           <Button
             className="py-1 px-4"
-            disabled={gameHasEnded()}
+            disabled={gameHasEnded(gameState)}
             onClick={onResetCounting}>
             Reset Counting
           </Button>
         </div>
         <div className="flex-none">
           <Button
-            disabled={(!isSelfPlay && countingAgreed()) || gameHasEnded() || !countingComplete()}
+            disabled={(!isSelfPlay(gameState) && countingAgreed(gameState)) || gameHasEnded(gameState) || !countingComplete(gameState)}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK
