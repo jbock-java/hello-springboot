@@ -10,7 +10,6 @@ import {
 } from "tailwind-merge"
 import {
   useAuthStore,
-  useGameTicker,
 } from "src/store.js"
 import {
   StompContext,
@@ -135,31 +134,18 @@ function isLastChildVisible(container) {
 }
 
 function SplitPane({className, messageRef, topElement, bottomElement}) {
-  let [initialized, setInitialized] = useState(false)
   let [dragOffset, setDragOffset] = useState(Number.NaN)
   let [splitPos, setSplitPos] = useState(60)
   let splitPosRef = useRef()
   splitPosRef.current = splitPos
   let containerRef = useRef()
-  let gameTicker = useGameTicker(state => state.gameTicker)
-
-  // re-render after each move: sidebar layout may have changed
-  useEffect(() => {
-    let container = containerRef.current
-    if (initialized && container) {
-      setTimeout(() => {
-        let pos = getSplitPos(splitPosRef.current, container)
-        setSplitPos(pos)
-      }, 0)
-    }
-  }, [gameTicker, initialized])
 
   useEffect(() => {
     let onMouseMove = (e) => {
       if (Number.isNaN(dragOffset)) {
         return
       }
-      setSplitPos(getSplitPos(e.clientY + dragOffset, containerRef.current))
+      setSplitPos(e.clientY + dragOffset)
     }
     let onMouseUp = () => setDragOffset(Number.NaN)
     window.document.addEventListener("mousemove", onMouseMove)
@@ -175,50 +161,31 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
     setDragOffset(splitPosRef.current - e.clientY)
   }, [setDragOffset])
 
-  let topElementHeight = Math.trunc(splitPos)
-  if (containerRef.current) {
-    let rect = containerRef.current.getBoundingClientRect()
-    topElementHeight = Math.trunc(getSplitPos(splitPos, containerRef.current) - rect.top)
-  }
-
   return (
     <div
-      ref={(ref) => {
-        if (!ref) {
-          return
-        }
-        if (!containerRef.current) {
-          let rect = ref.getBoundingClientRect()
-          let pos = getSplitPos(rect.top + 60, ref)
-          setSplitPos(pos)
-          splitPosRef.current = pos
-          setInitialized(true)
-        }
-        containerRef.current = ref
-      }}
+      ref={containerRef}
       className={twJoin(
-        "grow flex flex-col gap-y-2 overflow-y-hidden",
+        "grow flex flex-col overflow-hidden",
         !Number.isNaN(dragOffset) && "cursor-row-resize",
         className,
       )}>
       <div
-        style={{height: topElementHeight + "px"}}
-        className="p-1 bg-gray-900 border border-gray-500 flex-none overflow-y-scroll">
+        style={{height: getTopHeight(splitPos, containerRef.current)}}
+        className="p-1 bg-gray-900 border border-gray-500 flex-none overflow-x-hidden overflow-y-scroll">
         {topElement}
       </div>
       <SplitBar
         container={containerRef.current}
-        splitPos={splitPos}
         dragOffset={dragOffset}
         onMouseDown={onMouseDown} />
-      <div ref={messageRef} className="p-1 bg-gray-900 border-t border-x border-gray-500 h-full overflow-y-scroll">
+      <div ref={messageRef} className="p-1 bg-gray-900 border-t border-x border-gray-500 h-full overflow-x-hidden overflow-y-scroll">
         {bottomElement}
       </div>
     </div>
   )
 }
 
-function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
+function SplitBar({dragOffset, onMouseDown, container}) {
   if (!container) {
     return <div />
   }
@@ -228,22 +195,21 @@ function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
     <div
       onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
       style={{
-        top: Math.trunc(getSplitPos(splitPos, container)) - 1,
         height: Math.trunc(getRemInPixel() * 0.5) + 2,
         width: rect.width,
         left: rect.left - parentRect.left,
       }}
-      className="absolute z-20 cursor-row-resize bg-transparent" />
+      className="flex-none cursor-row-resize bg-transparent" />
   )
 }
 
-function getSplitPos(clientY, container) {
+function getTopHeight(splitPos, container) {
   if (!container) {
-    return Math.trunc(clientY)
+    return Math.trunc(splitPos)
   }
   let rect = container.getBoundingClientRect()
   let safety = 1 * getRemInPixel()
-  let result = Math.max(rect.top + safety, clientY)
-  result = Math.min(rect.bottom - safety - 5, result)
+  let result = Math.max(safety, splitPos)
+  result = Math.min(rect.height - safety - Math.trunc(getRemInPixel() * 0.5) - 2, result)
   return Math.trunc(result)
 }

@@ -5,6 +5,7 @@
 @layer base {
   html {
     @apply h-full;
+    @apply overflow-x-hidden;
   }
   body {
     @apply bg-stone-800;
