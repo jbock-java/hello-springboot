@@ -35,11 +35,11 @@ export const useAuthStore = create(
 
 export const useMuteStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       muted: false,
-      setMuted: (mute) => 
+      toggleMuted: () =>
         set(() => ({
-          muted: mute
+          muted: !get().muted
         }))
     }),
     { name: "mute-storage" },

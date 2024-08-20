@@ -136,8 +136,9 @@ function isLastChildVisible(container) {
 }
 
 function SplitPane({className, messageRef, topElement, bottomElement}) {
+  let [initialized, setInitialized] = useState(false)
   let [dragOffset, setDragOffset] = useState(Number.NaN)
-  let [splitPos, setSplitPos] = useState(200)
+  let [splitPos, setSplitPos] = useState(60)
   let splitPosRef = useRef()
   splitPosRef.current = splitPos
   let containerRef = useRef()
@@ -145,11 +146,14 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
 
   // force re-render: sidebar layout may have changed
   useEffect(() => {
-    let splitPos = splitPosRef.current
-    if (containerRef.current) {
-      setTimeout(() => setSplitPos(getSplitPos(chatState ? splitPos + DELTA : splitPos - DELTA), containerRef.current), 0)
+    let container = containerRef.current
+    if (initialized && container) {
+      setTimeout(() => {
+        let pos = getSplitPos(splitPosRef.current, container)
+        setSplitPos(pos)
+      }, 0)
     }
-  }, [chatState])
+  }, [chatState, initialized])
 
   useEffect(() => {
     let onMouseMove = (e) => {
@@ -166,15 +170,18 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
       window.document.removeEventListener("mouseup", onMouseUp)
     }
   }, [dragOffset, setDragOffset])
+
   let onMouseDown = useCallback((e) => {
     e.preventDefault()
     setDragOffset(splitPosRef.current - e.clientY)
   }, [setDragOffset])
+
   let topElementHeight = Math.trunc(splitPos)
   if (containerRef.current) {
     let rect = containerRef.current.getBoundingClientRect()
     topElementHeight = Math.trunc(getSplitPos(splitPos, containerRef.current) - rect.top)
   }
+
   return (
     <div
       ref={(ref) => {
@@ -183,7 +190,10 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
         }
         if (!containerRef.current) {
           let rect = ref.getBoundingClientRect()
-          setSplitPos(getSplitPos(rect.top + 4.5 * getRemInPixel(), ref))
+          let pos = getSplitPos(rect.top + 60, ref)
+          setSplitPos(pos)
+          splitPosRef.current = pos
+          setInitialized(true)
         }
         containerRef.current = ref
       }}

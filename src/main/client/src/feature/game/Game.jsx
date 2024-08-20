@@ -60,10 +60,23 @@ import {
   createGameState,
 } from "./state.js"
 
-export const Game = () => {
+export function Game() {
+  let [gameState, setGameState] = useState(initialState())
+  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
+  return (
+    <div
+      style={{ width: vw() - sidebarWidth }}
+      className="h-full">
+      <MuteIcon />
+      <Board gameState={gameState} setGameState={setGameState} />
+      <GamePanel gameState={gameState} />
+    </div>
+  )
+}
+
+function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let [gameState, setGameState] = useState(initialState())
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
   let toggleChatState = useChatStore(state => state.toggleChatState)
@@ -80,10 +93,8 @@ export const Game = () => {
   let [forbidden_x, forbidden_y] = gameState.forbidden
   let canvasRef = useRef()
   let countingGroup = !gameHasEnded(gameState) && counting ? getCountingGroup(board, cursor_x, cursor_y) : undefined
-  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
-  let setMuteState = useMuteStore((state) => state.setMuted)
   let howler = useRef()
   let playClickSound = useCallback(() => {
     if (muted) {
@@ -224,15 +235,7 @@ export const Game = () => {
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
-
-  let onMuteClick = useCallback(() => {
-    if (muted) {
-      setMuteState(false)
-    } else {
-      setMuteState(true)
-    }
-  }, [setMuteState, muted])
+  }, [gameState, setGameState, toggleChatState, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
 
   useEffect(() => {
     if (!board.length) {
@@ -286,7 +289,7 @@ export const Game = () => {
       setGameState(createGameState(game, auth))
       toggleChatState()
     }, () => navigate(base + "/lobby"))
-  }, [queueStatus, auth, id, gameId, navigate])
+  }, [setGameState, toggleChatState, queueStatus, auth, id, gameId, navigate])
 
   useEffect(() => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
@@ -295,43 +298,23 @@ export const Game = () => {
       toggleChatState()
     })
     return sub.unsubscribe
-  }, [gameState, stompClient, gameId])
+  }, [gameState, setGameState, toggleChatState, stompClient, gameId])
 
   if (!board.length) {
     return <div>Loading...</div>
   }
 
   return (
-    <div
-      style={{ width: (vw() - sidebarWidth) + "px" }}
-      className="h-full">
-      <div className="grid h-full">
-        <canvas className="place-self-center" ref={canvasRef}
-          onMouseLeave={() => {
-            setCursor_x(-1)
-            setCursor_y(-1)
-          }}
-          onMouseMove={onMouseMove}
-          onClick={onClick}
-          width={context.width} height={context.width}>
-        </canvas>
-      </div>
-      <div className="absolute left-2 top-2">
-        <button onClick={onMuteClick}>
-          <IconContext.Provider value={{
-            size: "1.5em",
-            className: "pl-[4px]",
-          }}>
-            {muted && (
-              <FaVolumeMute />
-            )}
-            {!muted && (
-              <FaVolumeUp />
-            )}
-          </IconContext.Provider>
-        </button>
-      </div>
-      <GamePanel gameState={gameState} />
+    <div className="grid h-full">
+      <canvas className="place-self-center" ref={canvasRef}
+        onMouseLeave={() => {
+          setCursor_x(-1)
+          setCursor_y(-1)
+        }}
+        onMouseMove={onMouseMove}
+        onClick={onClick}
+        width={context.width} height={context.width}>
+      </canvas>
     </div>
   )
 }
@@ -356,4 +339,21 @@ function getCountingGroup(board, cursor_x, cursor_y) {
     return undefined
   }
   return has
+}
+
+function MuteIcon() {
+  let toggleMuted = useMuteStore((state) => state.toggleMuted)
+  let muted = useMuteStore(state => state.muted)
+  return (
+    <div className="absolute left-2 top-2">
+      <button onClick={toggleMuted}>
+        <IconContext.Provider value={{
+          size: "1.5em",
+          className: "pl-[4px]",
+        }}>
+          {muted ? <FaVolumeMute /> : <FaVolumeUp /> }
+        </IconContext.Provider>
+      </button>
+    </div>
+  )
 }

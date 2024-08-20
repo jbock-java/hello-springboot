@@ -18,6 +18,7 @@ import {
   StompContext,
   tfetch,
   doTry,
+  vw,
 } from "src/util.js"
 import {
   LobbyPanel,
@@ -31,6 +32,9 @@ import {
 import {
   useAuthStore,
 } from "src/store.js"
+import {
+  useLayoutStore,
+} from "src/layout.js"
 import {
   CgClose,
 } from "react-icons/cg"
@@ -76,8 +80,11 @@ export function Lobby() {
     })
     navigate(base + "/game/" + response.id)
   }), [auth, navigate])
+  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.lobby)
   return (
-    <>
+    <div
+      style={{ width: vw() - sidebarWidth }}
+      className="h-full">
       <div className={twJoin(
           "mt-2 inline-flex py-2 pr-4 gap-x-1 border-r-2 border-y-2",
           isNewGameOpen && "rounded-r-full border-slate-600",
@@ -110,7 +117,7 @@ export function Lobby() {
         )}
       </div>
       <LobbyPanel />
-    </>
+    </div>
   )
 }
 
