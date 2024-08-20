@@ -195,5 +195,5 @@ function getScore(board) {
       }
     }
   }
-  return { w, b }
+  return {w, b}
 }

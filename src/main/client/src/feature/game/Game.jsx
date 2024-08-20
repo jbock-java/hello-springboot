@@ -34,6 +34,7 @@ import {
 import {
   useAuthStore,
   useMuteStore,
+  useChatStore,
 } from "src/store.js"
 import {
   useLayoutStore,
@@ -65,6 +66,7 @@ export const Game = () => {
   let [gameState, setGameState] = useState(initialState())
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
+  let toggleChatState = useChatStore(state => state.toggleChatState)
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
@@ -215,6 +217,7 @@ export const Game = () => {
     }
     if (!isSelfPlay(gameState)) { // myColor is 0 in self play
       setGameState(addMove(gameState, {...move, color: myColor}))
+      toggleChatState()
     }
     playClickSound()
     stompClient.publish({
@@ -281,6 +284,7 @@ export const Game = () => {
         },
       })
       setGameState(createGameState(game, auth))
+      toggleChatState()
     }, () => navigate(base + "/lobby"))
   }, [queueStatus, auth, id, gameId, navigate])
 
@@ -288,6 +292,7 @@ export const Game = () => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
       setGameState(addMove(gameState, move))
+      toggleChatState()
     })
     return sub.unsubscribe
   }, [gameState, stompClient, gameId])

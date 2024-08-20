@@ -10,12 +10,14 @@ import {
 } from "tailwind-merge"
 import {
   useAuthStore,
+  useChatStore,
 } from "src/store.js"
 import {
   StompContext,
   tfetch,
   doTry,
   getRemInPixel,
+  DELTA,
 } from "src/util.js"
 
 export const Chat = ({chatId, className}) => {
@@ -139,6 +141,15 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
   let splitPosRef = useRef()
   splitPosRef.current = splitPos
   let containerRef = useRef()
+  let chatState = useChatStore(state => state.chatState)
+
+  // force re-render: sidebar layout may have changed
+  useEffect(() => {
+    let splitPos = splitPosRef.current
+    if (containerRef.current) {
+      setTimeout(() => setSplitPos(getSplitPos(chatState ? splitPos + DELTA : splitPos - DELTA), containerRef.current), 0)
+    }
+  }, [chatState])
 
   useEffect(() => {
     let onMouseMove = (e) => {
@@ -162,7 +173,7 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
   let topElementHeight = Math.trunc(splitPos)
   if (containerRef.current) {
     let rect = containerRef.current.getBoundingClientRect()
-    topElementHeight = Math.trunc(splitPos - rect.top)
+    topElementHeight = Math.trunc(getSplitPos(splitPos, containerRef.current) - rect.top)
   }
   return (
     <div
@@ -208,7 +219,7 @@ function SplitBar({splitPos, dragOffset, onMouseDown, container}) {
     <div
       onMouseDown={Number.isNaN(dragOffset) ? onMouseDown : undefined}
       style={{
-        top: Math.trunc(splitPos) - 1,
+        top: Math.trunc(getSplitPos(splitPos, container)) - 1,
         height: Math.trunc(getRemInPixel() * 0.5) + 2,
         width: rect.width,
         left: rect.left - parentRect.left,

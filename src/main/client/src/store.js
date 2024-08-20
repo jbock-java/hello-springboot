@@ -42,6 +42,16 @@ export const useMuteStore = create(
           muted: mute
         }))
     }),
-    { name: "mute-storage" }
+    { name: "mute-storage" },
   )
+)
+
+// trick to re-render the chat
+export const useChatStore = create((set, get) => ({
+  chatState: false,
+  toggleChatState: () =>
+    set(() => ({
+      chatState: !get().chatState
+    }))
+  }),
 )
