@@ -58,6 +58,7 @@ import {
   gameHasEnded,
   addMove,
   createGameState,
+  isReviewing,
 } from "./state.js"
 
 export function Game() {
@@ -69,7 +70,7 @@ export function Game() {
       className="h-full">
       <MuteIcon />
       <Board gameState={gameState} setGameState={setGameState} />
-      <GamePanel gameState={gameState} />
+      <GamePanel gameState={gameState} setGameState={setGameState} />
     </div>
   )
 }
@@ -249,7 +250,7 @@ function Board({gameState, setGameState}) {
       return
     }
     paintGrid(context)
-    if (counting) {
+    if (counting && !isReviewing(gameState)) {
       paintStonesCounting(context, board, countingGroup)
       return
     } else {

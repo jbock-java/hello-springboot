@@ -6,6 +6,7 @@ import {
 } from "./PointSet.js"
 import {
   hasStone,
+  resurrect,
   BLACK,
   WHITE,
   COLORS,
@@ -203,16 +204,6 @@ function toggleRemoved(color) {
     return color ^ TOGGLE_B
   }
   if (color & TOGGLE_W) {
-    return color ^ TOGGLE_W
-  }
-  return color
-}
-
-function resurrect(color) {
-  if (color & REMOVED_B) {
-    return color ^ TOGGLE_B
-  }
-  if (color & REMOVED_W) {
     return color ^ TOGGLE_W
   }
   return color

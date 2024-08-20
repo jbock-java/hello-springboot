@@ -5,6 +5,8 @@ import {
   BLACK,
   WHITE,
   COLORS,
+  hasStone,
+  resurrect,
 } from "src/util.js"
 import {
   rehydrate,
@@ -20,12 +22,16 @@ import {
   toggleStonesAt,
   resetCounting,
 } from "src/model/count.js"
+import {
+  PointList,
+} from "src/model/PointList.js"
 
 export function initialState() {
   return {
     id: "",
     moves: [],
     baseBoard: [],
+    viewPos: Number.NaN,
     dim: 0,
     handicap: 0,
     queueStatus: "behind",
@@ -68,6 +74,10 @@ export function isSelfPlay({black, white}) {
   return black === white
 }
 
+export function isKibitz({black, white}, auth) {
+  return black !== auth.name && white !== auth.name
+}
+
 export function currentColor({moves, handicap}) {
   if (handicap > moves.length) {
     return BLACK
@@ -78,7 +88,7 @@ export function currentColor({moves, handicap}) {
   return moves[moves.length - 1].color ^ COLORS
 }
 
-export function countingAgreed ({moves, myColor}) {
+export function countingAgreed({moves, myColor}) {
   if (!moves.length) {
     return false
   }
@@ -92,6 +102,48 @@ export function gameHasEnded({moves}) {
   }
   let move = moves[moves.length - 1]
   return move.action === "end"
+}
+
+export function isReviewing(baseState) {
+  return baseState.viewPos < baseState.queueLength
+}
+
+export function moveBack(baseState) {
+  return produce(baseState, (draft) => {
+    let moves = baseState.moves
+    let viewPos = baseState.viewPos
+    viewPos--
+    if (viewPos < 0) {
+      return
+    }
+    let move = moves[viewPos]
+    let baseBoard = unApply(baseState.baseBoard, move)
+    draft.baseBoard = baseBoard
+    draft.board = cheapRehydrate(baseBoard)
+    draft.viewPos = viewPos
+    if (viewPos) {
+      let previous = moves[viewPos - 1]
+      draft.lastMove = previous.action === "pass" ? undefined : previous
+    } else {
+      draft.lastMove = undefined
+    }
+  })
+}
+
+export function moveForward(baseState) {
+  return produce(baseState, (draft) => {
+    let moves = baseState.moves
+    let viewPos = baseState.viewPos
+    if (viewPos - baseState.queueLength >= 0) {
+      return
+    }
+    let move = moves[viewPos]
+    let [, updated] = updateBoard(baseState.baseBoard, move)
+    draft.baseBoard = updated
+    draft.board = cheapRehydrate(updated)
+    draft.viewPos = viewPos + 1
+    draft.lastMove = move.action === "pass" ? undefined : move
+  })
 }
 
 export function addMove(baseState, move) {
@@ -112,6 +164,7 @@ export function addMove(baseState, move) {
     draft.queueStatus = "up_to_date"
     if (!counting) {
       draft.queueLength = queueLength + 1
+      draft.viewPos = queueLength + 1
     }
     let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting)
     draft.moves.push(storedMove)
@@ -166,6 +219,7 @@ export function createGameState(game, auth) {
     moves: moves,
     board: rehydrate(baseBoard),
     forbidden: forbidden,
+    viewPos: queueLength || moves.length,
     queueLength: queueLength || moves.length,
     queueStatus: "up_to_date",
   }
@@ -199,7 +253,52 @@ function createMoveData(baseBoard, moves, move, counting) {
     return [move, count(updated), [-1, -1]]
   }
   let [dead, updated] = updateBoard(baseBoard, move)
-  let storedMove = {...move, dead}
+  let storedMove = {...move, dead: dead}
   let forbidden = getForbidden(baseBoard, updated, storedMove)
   return [storedMove, updated, forbidden]
+}
+
+function unApply(board, move) {
+  let dim = board.length
+  let result = Array(dim)
+  for (let i = 0; i < board.length; i++) {
+    result[i] = Array(dim)
+  }
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      if (move.action !== "pass" && move.x === x && move.y === y) {
+        result[y][x] = 0
+      } else {
+        result[y][x] = (resurrect(board[y][x]) & COLORS)
+      }
+    }
+  }
+  if (move.dead) {
+    move.dead.forEach((x, y) => {
+      result[y][x] = (move.color ^ COLORS)
+    })
+  }
+  return result
+}
+
+function cheapRehydrate(board) {
+  let dim = board.length
+  let result = Array(dim)
+  for (let i = 0; i < board.length; i++) {
+    result[i] = Array(dim)
+  }
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[y].length; x++) {
+      result[y][x] = {
+        x: x,
+        y: y,
+        color: board[y][x],
+        hasStone: hasStone(board[y][x]),
+        liberties: 0,
+        has: () => false,
+        points: PointList.empty(),
+      }
+    }
+  }
+  return result
 }

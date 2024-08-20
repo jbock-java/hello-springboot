@@ -43,32 +43,32 @@ import {
   countingComplete,
   currentPlayer,
   isSelfPlay,
+  isKibitz,
+  moveBack,
+  moveForward,
   countingAgreed,
   gameHasEnded,
+  isReviewing,
 } from "./state.js"
 
-export const GamePanel = ({gameState}) => {
+export const GamePanel = ({gameState, setGameState}) => {
   return (
     <SideBar page="game">
       <div className="pr-3 pt-4 pl-2 h-full flex flex-col">
-        <Panel gameState={gameState} />
+        <Panel gameState={gameState} setGameState={setGameState} />
       </div>
     </SideBar>
   )
 }
 
-function Panel({gameState}) {
+function Panel({gameState, setGameState}) {
   let {gameId} = useParams()
   let zoom = useViewStateStore(state => state.zoom)
   let setZoom = useViewStateStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let black = gameState.black
-  let white = gameState.white
-  let queueLength = gameState.queueLength
+  let {black, white, viewPos, counting, board} = gameState
   let movesLength = gameState.moves.length
-  let counting = gameState.counting
-  let board = gameState.board
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
@@ -106,7 +106,7 @@ function Panel({gameState}) {
   let result = gameHasEnded(gameState) ? getScore(board) : undefined
   return (
     <>
-      <div className="flex-none grid w-full grid-cols-[min-content_max-content_min-content_auto] gap-x-2">
+      <div className="flex-none flex w-full gap-x-2">
         <button
           onClick={() => setZoom(zoom - 1)}>
           <IconContext.Provider value={{
@@ -128,8 +128,8 @@ function Panel({gameState}) {
             <FaAngleRight />
           </IconContext.Provider>
         </button>
-        <button title="Leave the game" onClick={onExit}
-          className="justify-self-end">
+        <div className="grow" />
+        <button title="Leave the game" onClick={onExit}>
           <IconContext.Provider value={{
             size: "1.5em",
             className: "pr-[4px]",
@@ -143,18 +143,38 @@ function Panel({gameState}) {
         <div>vs</div>
         <div>{black}</div>
       </div>
-      <div className="flex-none">
-        Move {queueLength}
-      </div>
-      <div className="flex-none">
-        <Button
-          onClick={onPass}
-          className="py-1 px-4"
-          disabled={gameHasEnded(gameState) || counting || currentPlayer(gameState) !== auth.name}>
-          Pass
-        </Button>
-      </div>
-      {counting && <>
+      {(gameHasEnded(gameState) || isKibitz(gameState, auth)) ? (
+        <div className="flex-none flex gap-x-1 items-center">
+          <Button
+            onClick={() => setGameState(moveBack(gameState))}
+            className="py-1 px-2">
+            Back
+          </Button>
+          <div className="flex-none">
+            <div>Move {viewPos}</div>
+          </div>
+          <Button
+            onClick={() => setGameState(moveForward(gameState))}
+            className="py-1 px-2">
+            Forward
+          </Button>
+        </div>
+      ) : (
+        <div className="flex-none">
+          <div>Move {viewPos}</div>
+        </div>
+      )}
+      {!isKibitz(gameState, auth) && !gameHasEnded(gameState) && (
+        <div className="flex-none">
+          <Button
+            onClick={onPass}
+            className="py-1 px-4"
+            disabled={counting || currentPlayer(gameState) !== auth.name}>
+            Pass
+          </Button>
+        </div>
+      )}
+      {!isKibitz(gameState, auth) && !gameHasEnded(gameState) && counting && <>
         <div className="flex-none">
           <Button
             className="py-1 px-4"
@@ -165,14 +185,14 @@ function Panel({gameState}) {
         </div>
         <div className="flex-none">
           <Button
-            disabled={(!isSelfPlay(gameState) && countingAgreed(gameState)) || gameHasEnded(gameState) || !countingComplete(gameState)}
+            disabled={(!isSelfPlay(gameState) && countingAgreed(gameState)) || !countingComplete(gameState)}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK
           </Button>
         </div>
       </>}
-      {result && (
+      {result && !isReviewing(gameState) && (
         <div className="flex-none">
           {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}
         </div>

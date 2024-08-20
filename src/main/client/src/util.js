@@ -118,3 +118,13 @@ export function getRemInPixel() {
   let fontSize = window.getComputedStyle(document.documentElement).fontSize
   return parseFloat(fontSize)
 }
+
+export function resurrect(color) {
+  if (color & REMOVED_B) {
+    return color ^ TOGGLE_B
+  }
+  if (color & REMOVED_W) {
+    return color ^ TOGGLE_W
+  }
+  return color
+}

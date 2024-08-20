@@ -1,12 +1,12 @@
 import {
   PointQueue,
-} from "./PointQueue.js"
+} from "src/model/PointQueue.js"
 import {
   PointList,
-} from "./PointList.js"
+} from "src/model/PointList.js"
 import {
   PointSet,
-} from "./PointSet.js"
+} from "src/model/PointSet.js"
 import {
   hasStone,
 } from "src/util.js"
