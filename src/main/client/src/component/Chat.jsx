@@ -10,14 +10,13 @@ import {
 } from "tailwind-merge"
 import {
   useAuthStore,
-  useChatStore,
+  useGameTicker,
 } from "src/store.js"
 import {
   StompContext,
   tfetch,
   doTry,
   getRemInPixel,
-  DELTA,
 } from "src/util.js"
 
 export const Chat = ({chatId, className}) => {
@@ -142,9 +141,9 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
   let splitPosRef = useRef()
   splitPosRef.current = splitPos
   let containerRef = useRef()
-  let chatState = useChatStore(state => state.chatState)
+  let gameTicker = useGameTicker(state => state.gameTicker)
 
-  // force re-render: sidebar layout may have changed
+  // re-render after each move: sidebar layout may have changed
   useEffect(() => {
     let container = containerRef.current
     if (initialized && container) {
@@ -153,7 +152,7 @@ function SplitPane({className, messageRef, topElement, bottomElement}) {
         setSplitPos(pos)
       }, 0)
     }
-  }, [chatState, initialized])
+  }, [gameTicker, initialized])
 
   useEffect(() => {
     let onMouseMove = (e) => {

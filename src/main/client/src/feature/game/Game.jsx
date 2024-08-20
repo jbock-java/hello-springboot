@@ -34,7 +34,7 @@ import {
 import {
   useAuthStore,
   useMuteStore,
-  useChatStore,
+  useGameTicker,
 } from "src/store.js"
 import {
   useLayoutStore,
@@ -79,7 +79,7 @@ function Board({gameState, setGameState}) {
   let [cursor_y, setCursor_y] = useState(-1)
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
-  let toggleChatState = useChatStore(state => state.toggleChatState)
+  let toggleGameTicker = useGameTicker(state => state.toggleGameTicker)
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
@@ -228,14 +228,14 @@ function Board({gameState, setGameState}) {
     }
     if (!isSelfPlay(gameState)) { // myColor is 0 in self play
       setGameState(addMove(gameState, {...move, color: myColor}))
-      toggleChatState()
+      toggleGameTicker()
     }
     playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, toggleChatState, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
+  }, [gameState, setGameState, toggleGameTicker, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
 
   useEffect(() => {
     if (!board.length) {
@@ -287,18 +287,18 @@ function Board({gameState, setGameState}) {
         },
       })
       setGameState(createGameState(game, auth))
-      toggleChatState()
+      toggleGameTicker()
     }, () => navigate(base + "/lobby"))
-  }, [setGameState, toggleChatState, queueStatus, auth, id, gameId, navigate])
+  }, [setGameState, toggleGameTicker, queueStatus, auth, id, gameId, navigate])
 
   useEffect(() => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
       setGameState(addMove(gameState, move))
-      toggleChatState()
+      toggleGameTicker()
     })
     return sub.unsubscribe
-  }, [gameState, setGameState, toggleChatState, stompClient, gameId])
+  }, [gameState, setGameState, toggleGameTicker, stompClient, gameId])
 
   if (!board.length) {
     return <div>Loading...</div>

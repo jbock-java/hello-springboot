@@ -46,12 +46,12 @@ export const useMuteStore = create(
   )
 )
 
-// trick to re-render the chat
-export const useChatStore = create((set, get) => ({
-  chatState: false,
-  toggleChatState: () =>
+// trick to re-render chat after each move
+export const useGameTicker = create((set, get) => ({
+  gameTicker: false,
+  toggleGameTicker: () =>
     set(() => ({
-      chatState: !get().chatState
+      gameTicker: !get().gameTicker
     }))
   }),
 )
