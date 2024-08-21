@@ -108,7 +108,14 @@ export const Chat = ({chatId, className}) => {
       </>}
       bottomElement={<>
         {messages.map(message => (
-            <p key={message.n}>{message.user + ": " + message.message}</p>
+          <p key={message.n}>
+            {
+              message.user ? (
+                <span>{message.user + ": " + message.message}</span>
+              ) : (
+                <span className="italic text-gray-400">{message.message}</span>
+              )}
+          </p>
         ))}
       </>}
     />

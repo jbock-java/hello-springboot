@@ -4,6 +4,7 @@ import com.bernd.game.Count;
 import com.bernd.game.Direction;
 import com.bernd.game.MoveList;
 import com.bernd.game.Toggle;
+import com.bernd.game.Board;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -189,5 +190,22 @@ public record Game(
 
   public boolean isForbidden(Move move) {
     return move.x() == forbidden[0] && move.y() == forbidden[1];
+  }
+
+  public String getScore() {
+    int w = 0;
+    int b = 0;
+    for (int y = 0; y < board().length; y++){
+      for (int x = 0; x < board[y].length; x++){
+        int color  = board[y][x];
+        if ((color & (Board.W | Board.TERRITORY_W)) != 0) {
+          w++;
+        }
+        if ((color & (Board.B | Board.TERRITORY_B)) != 0) {
+          b++;
+        }
+      }
+    }
+    return w > b ? "W+" + w : "B+" + b;
   }
 }

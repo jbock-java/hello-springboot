@@ -1,6 +1,7 @@
 import {
   useCallback,
   useContext,
+  useEffect,
 } from "react"
 import {
   useParams,
@@ -18,10 +19,6 @@ import {
 } from "react-icons"
 import {
   StompContext,
-  BLACK,
-  WHITE,
-  TERRITORY_B,
-  TERRITORY_W,
   base,
 } from "src/util.js"
 import {
@@ -48,7 +45,6 @@ import {
   moveForward,
   countingAgreed,
   gameHasEnded,
-  isReviewing,
 } from "./state.js"
 
 export const GamePanel = ({gameState, setGameState}) => {
@@ -70,6 +66,7 @@ function Panel({gameState, setGameState}) {
   let {black, white, viewPos, counting, board} = gameState
   let movesLength = gameState.moves.length
   let navigate = useNavigate()
+
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
   }, [navigate])
@@ -103,7 +100,6 @@ function Panel({gameState, setGameState}) {
   if (!board.length) {
     return <span>Loading...</span>
   }
-  let result = gameHasEnded(gameState) ? getScore(board) : undefined
   return (
     <>
       <div className="flex-none flex w-full gap-x-2">
@@ -192,28 +188,7 @@ function Panel({gameState, setGameState}) {
           </Button>
         </div>
       </>}
-      {result && !isReviewing(gameState) && (
-        <div className="flex-none">
-          {(result.w > result.b ? "W+" : "B+") + Math.abs(result.b - result.w)}
-        </div>
-      )}
       <Chat className="mt-1" chatId={gameId}/>
     </>
   )
-}
-
-function getScore(board) {
-  let w = 0, b = 0
-  for (let y = 0; y < board.length; y++) {
-    for (let x = 0; x < board[y].length; x++) {
-      let { color } = board[y][x]
-      if ((color & WHITE) || (color & TERRITORY_W)) {
-        w++
-      }
-      if ((color & BLACK) || (color & TERRITORY_B)) {
-        b++
-      }
-    }
-  }
-  return {w, b}
 }
