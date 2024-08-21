@@ -4,10 +4,14 @@ import com.bernd.game.Board;
 import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
+import com.bernd.model.Chat;
+import com.bernd.model.ChatMessage;
+import com.bernd.model.ChatRequest;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
+import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,6 +86,12 @@ public class GameController {
     Game updated = game.update(updatedMove);
     games.put(updated);
     Move lastMove = game.getLastMove();
+    if (lastMove.end()) {
+      Chat chat = chats.get(game.id());
+      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null);
+      chat.messages().add(message);
+      operations.convertAndSend("/topic/chat/" + chat.id(), message);
+    }
     operations.convertAndSend("/topic/move/" + game.id(), lastMove.removeColor());
   }
 
