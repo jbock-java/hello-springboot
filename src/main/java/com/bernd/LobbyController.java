@@ -3,6 +3,8 @@ package com.bernd;
 import com.bernd.game.MoveList;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.ActiveGameList;
+import com.bernd.model.Chat;
+import com.bernd.model.ChatMessage;
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
 import com.bernd.model.OpenGameList;
@@ -25,18 +27,21 @@ public class LobbyController {
   private final Games games;
   private final OpenGames openGames;
   private final ActiveGames activeGames;
+  private final Chats chats;
 
   LobbyController(
       MessageSendingOperations<String> operations,
       LobbyUsers lobbyUsers,
       OpenGames openGames,
       Games games,
-      ActiveGames activeGames) {
+      ActiveGames activeGames,
+      Chats chats) {
     this.operations = operations;
     this.lobbyUsers = lobbyUsers;
     this.games = games;
     this.openGames = openGames;
     this.activeGames = activeGames;
+    this.chats = chats;
   }
 
   @GetMapping(value = "/api/lobby/hello")
@@ -78,6 +83,9 @@ public class LobbyController {
         new int[]{-1, -1},
         MoveList.create(request.dim())));
     activeGames.put(ActiveGame.fromGame(game));
+    Chat chat = chats.get(game.id());
+    ChatMessage startMessage = ChatMessage.createStartMessage(chat, game);
+    chat.messages().add(startMessage);
     return game.toView();
   }
 

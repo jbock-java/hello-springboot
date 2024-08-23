@@ -109,26 +109,21 @@ export const Chat = ({chatId, className}) => {
       bottomElement={<>
         {messages.map(message => (
           <p key={message.n}>
-            {
-              message.user ? (
-                <span>{message.user + ": " + message.message}</span>
-              ) : (
-                message.type ? (
-                  <>
-                    <table className="table-fixed italic text-gray-400">
-                          <th>Spiel gestartet</th>
-                      {Object.keys(message.pair).map((key, i) => (
-                        <tr key={i}>
-                          <td>{key}</td>
-                          <td>{message.pair[key]}</td>
-                        </tr>
-                      ))}
-                    </table>
-                  </>
-                ) : (
-                  <span className="italic text-gray-400">{message.message}</span>
-                )
-              )}
+            {message.type === "start" && <>
+              <div className="w-full grid grid-cols-2 text-stone-100">
+                {Object.keys(message.rows).map((key) => <>
+                  <div>{key}</div>
+                  <div>{message.rows[key]}</div>
+                </>)}
+              </div>
+              <div className="my-2 italic text-gray-400">{message.message}</div>
+            </>}
+            {message.type === "status" && (
+              <div className="my-2 italic text-gray-400">{message.message}</div>
+            )}
+            {message.type === "user" && (
+              <div>{message.user + ": " + message.message}</div>
+            )}
           </p>
         ))}
       </>}

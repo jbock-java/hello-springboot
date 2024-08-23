@@ -11,7 +11,6 @@ import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.RandomString;
-import java.util.HashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -87,7 +86,7 @@ public class GameController {
     Move lastMove = game.getLastMove();
     if (lastMove.end()) {
       Chat chat = chats.get(game.id());
-      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null, false, null);
+      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null, "status", null);
       chat.messages().add(message);
       operations.convertAndSend("/topic/chat/" + chat.id(), message);
     }
@@ -137,13 +136,9 @@ public class GameController {
     activeGames.put(ActiveGame.fromGame(fullGame));
     Chat chat = chats.get(openGame.id());
 
-    HashMap<String, String> spielwerte = new HashMap<>();
-    spielwerte.put("Handicap", Integer.toString(fullGame.handicap()));
-    spielwerte.put("Black", fullGame.black());
-    spielwerte.put("White", fullGame.white());
-    ChatMessage typeMessage = new ChatMessage(chat.counter().getAndIncrement(), "", null,true, spielwerte);
-    chat.messages().add(typeMessage);
-    operations.convertAndSend("/topic/chat/" + chat.id(), typeMessage);
+    ChatMessage startMessage = ChatMessage.createStartMessage(chat, fullGame);
+    chat.messages().add(startMessage);
+    operations.convertAndSend("/topic/chat/" + chat.id(), startMessage);
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame.toView());
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
