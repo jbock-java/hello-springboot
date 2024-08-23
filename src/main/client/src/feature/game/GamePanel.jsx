@@ -1,7 +1,6 @@
 import {
   useCallback,
   useContext,
-  useEffect,
 } from "react"
 import {
   useParams,
