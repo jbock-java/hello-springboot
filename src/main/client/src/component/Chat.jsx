@@ -113,7 +113,21 @@ export const Chat = ({chatId, className}) => {
               message.user ? (
                 <span>{message.user + ": " + message.message}</span>
               ) : (
-                <span className="italic text-gray-400">{message.message}</span>
+                message.type ? (
+                  <>
+                    <table className="table-fixed italic text-gray-400">
+                          <th>Spiel gestartet</th>
+                      {Object.keys(message.pair).map((key, i) => (
+                        <tr key={i}>
+                          <td>{key}</td>
+                          <td>{message.pair[key]}</td>
+                        </tr>
+                      ))}
+                    </table>
+                  </>
+                ) : (
+                  <span className="italic text-gray-400">{message.message}</span>
+                )
               )}
           </p>
         ))}

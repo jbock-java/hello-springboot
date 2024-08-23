@@ -6,13 +6,12 @@ import com.bernd.model.AcceptRequest;
 import com.bernd.model.ActiveGame;
 import com.bernd.model.Chat;
 import com.bernd.model.ChatMessage;
-import com.bernd.model.ChatRequest;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
-import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
+import java.util.HashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
@@ -88,7 +87,7 @@ public class GameController {
     Move lastMove = game.getLastMove();
     if (lastMove.end()) {
       Chat chat = chats.get(game.id());
-      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null);
+      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null, false, null);
       chat.messages().add(message);
       operations.convertAndSend("/topic/chat/" + chat.id(), message);
     }
@@ -136,6 +135,15 @@ public class GameController {
     OpenGame openGame = openGames.remove(acceptRequest.game().user());
     Game fullGame = games.put(openGame.accept(principal, acceptRequest));
     activeGames.put(ActiveGame.fromGame(fullGame));
+    Chat chat = chats.get(openGame.id());
+
+    HashMap<String, String> spielwerte = new HashMap<>();
+    spielwerte.put("Handicap", Integer.toString(fullGame.handicap()));
+    spielwerte.put("Black", fullGame.black());
+    spielwerte.put("White", fullGame.white());
+    ChatMessage typeMessage = new ChatMessage(chat.counter().getAndIncrement(), "", null,true, spielwerte);
+    chat.messages().add(typeMessage);
+    operations.convertAndSend("/topic/chat/" + chat.id(), typeMessage);
     operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame.toView());
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());

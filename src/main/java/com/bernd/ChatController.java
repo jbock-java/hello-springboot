@@ -48,7 +48,7 @@ public class ChatController {
   public void sendChat(ChatRequest chatRequest, Principal principal) {
     String user = Auth.getPrincipal(principal);
     Chat chat = chats.get(chatRequest.id());
-    ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), chatRequest.message(), user);
+    ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), chatRequest.message(), user, false, null);
     chat.messages().add(message);
     roomManager.updateRooms(user, chat.id());
     operations.convertAndSend("/topic/chat/" + chat.id(), message);
