@@ -5,13 +5,13 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public final class StatusMap {
-
-  private static final long USER_TIMEOUT = 45 * 1000;
 
   private final Map<String, UserStatus> map = new LinkedHashMap<>();
 
@@ -37,16 +37,27 @@ public final class StatusMap {
       UserStatus status = e.getValue();
       String room = status.room();
       String user = e.getKey();
-      if (status.lastSeen() + USER_TIMEOUT < current) {
-        remove.add(new RemoveItem(user, room));
-      } else {
+      if (status.isActive(current)) {
         tmp.computeIfAbsent(room, key -> new ArrayList<>()).add(user);
+      } else {
+        remove.add(new RemoveItem(user, room));
       }
     }
     Map<String, List<String>> result = new LinkedHashMap<>(Math.max(8, (int) (tmp.size() * 1.5)));
     for (RemoveItem item : remove) {
-      result.put(item.room, tmp.get(item.room));
+      result.put(item.room, tmp.getOrDefault(item.room, List.of()));
       map.remove(item.user);
+    }
+    return result;
+  }
+
+  public Set<String> activeGames() {
+    Set<String> result = new LinkedHashSet<>();
+    long current = System.currentTimeMillis();
+    for (UserStatus status : map.values()) {
+      if (status.isActive(current)) {
+        result.add(status.room());
+      }
     }
     return result;
   }
