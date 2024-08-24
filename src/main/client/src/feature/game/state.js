@@ -131,14 +131,14 @@ export function moveBack(baseState) {
 }
 
 export function moveForward(baseState) {
+  let viewPos = baseState.viewPos
+  if (viewPos - baseState.queueLength >= 0) {
+    return goToEnd(baseState)
+  }
+  let moves = baseState.moves
+  let move = moves[viewPos]
+  let [, updated] = updateBoard(baseState.baseBoard, move)
   return produce(baseState, (draft) => {
-    let moves = baseState.moves
-    let viewPos = baseState.viewPos
-    if (viewPos - baseState.queueLength >= 0) {
-      return
-    }
-    let move = moves[viewPos]
-    let [, updated] = updateBoard(baseState.baseBoard, move)
     draft.baseBoard = updated
     draft.board = cheapRehydrate(updated)
     draft.viewPos = viewPos + 1
@@ -146,33 +146,51 @@ export function moveForward(baseState) {
   })
 }
 
-export function addMove(baseState, move) {
+function goToEnd(baseState) {
+  let moves = baseState.moves
+  let queueLength = baseState.queueLength
+  let baseBoard = baseState.baseBoard
+  for (let i = queueLength; i < moves.length; i++) {
+    let move = moves[i]
+    let previousMove = getMove(moves, i - 1)
+    let [, updated] = updateBoardState(baseBoard, previousMove, move, true)
+    baseBoard = updated
+  }
   return produce(baseState, (draft) => {
-    let {action, n} = move
-    if (action === "end") {
-      draft.moves.push(move)
-      return
-    }
-    let {moves, baseBoard, counting, queueLength} = baseState
-    if (n < moves.length) {
-      return
-    }
-    if (moves.length < n) {
+    draft.board = rehydrate(baseBoard)
+  })
+}
+
+export function addMove(baseState, move) {
+  let {action, n} = move
+  let {moves, baseBoard, counting, queueLength} = baseState
+  let previousMove = getMove(moves, n - 1)
+  if (n < moves.length) {
+    return baseState
+  }
+  if (moves.length < n) {
+    return produce(baseState, (draft) => {
       draft.queueStatus = "behind"
-      return
-    }
+    })
+  }
+  if (action === "end") {
+    return produce(baseState, (draft) => {
+      draft.moves.push(move)
+    })
+  }
+  let [storedMove, updated, forbidden] = updateBoardState(baseBoard, previousMove, move, counting)
+  return produce(baseState, (draft) => {
     draft.queueStatus = "up_to_date"
     if (!counting) {
       draft.queueLength = queueLength + 1
       draft.viewPos = queueLength + 1
     }
-    let [storedMove, updated, forbidden] = createMoveData(baseBoard, moves, move, counting)
     draft.moves.push(storedMove)
     draft.lastMove = action === "pass" ? undefined : storedMove
     draft.baseBoard = updated
     draft.board = rehydrate(updated)
     draft.forbidden = forbidden
-    if (action === "pass" && moves.length && moves[moves.length - 1].action === "pass") {
+    if (action === "pass" && previousMove?.action === "pass") {
       draft.counting = true
     }
   })
@@ -188,7 +206,8 @@ export function createGameState(game, auth) {
   let passes = 0
   let counting = false
   let queueLength = 0
-  for (let move of game.moves) {
+  for (let i = 0; i < game.moves.length; i++) {
+    let move = game.moves[i]
     if (move.action === "end") {
       moves.push(move)
       break
@@ -203,7 +222,8 @@ export function createGameState(game, auth) {
     } else {
       passes = 0
     }
-    let [storedMove, updated, newForbidden] = createMoveData(baseBoard, moves, move, counting)
+    let previousMove = getMove(moves, i - 1)
+    let [storedMove, updated, newForbidden] = updateBoardState(baseBoard, previousMove, move, counting)
     moves.push(storedMove)
     forbidden = newForbidden
     baseBoard = updated
@@ -239,11 +259,14 @@ export function createGameState(game, auth) {
   return result
 }
 
-function createMoveData(baseBoard, moves, move, counting) {
+function updateBoardState(baseBoard, previousMove, move, counting) {
+  if (move.action === "end") {
+    return [move, baseBoard, [-1, -1]]
+  }
   if (move.action === "agreeCounting") {
     return [move, baseBoard, [-1, -1]]
   }
-  if (move.action === "pass" && moves.length && moves[moves.length - 1].action === "pass") {
+  if (move.action === "pass" && previousMove?.action === "pass") {
     return [move, count(baseBoard), [-1, -1]]
   }
   if (counting) {
@@ -301,4 +324,14 @@ function cheapRehydrate(board) {
     }
   }
   return result
+}
+
+function getMove(moves, i) {
+  if (i < 0) {
+    return undefined
+  }
+  if (i >= moves.length) {
+    return undefined
+  }
+  return moves[i]
 }

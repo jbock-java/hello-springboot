@@ -103,18 +103,20 @@ export const Chat = ({chatId, className}) => {
       messageRef={messageRef}
       topElement={<>
         {users.map(user => (
-          <p key={user}>{user}</p>
+          <div key={user}>{user}</div>
         ))}
       </>}
       bottomElement={<>
         {messages.map(message => (
-          <p key={message.n}>
+          <div key={message.n}>
             {message.type === "start" && <>
               <div className="w-full grid grid-cols-2 text-stone-100">
-                {Object.keys(message.rows).map((key) => <>
-                  <div>{key}</div>
-                  <div>{message.rows[key]}</div>
-                </>)}
+                {Object.keys(message.rows).map((key) => (
+                  <div className="content" key={key}>
+                    <div>{key}</div>
+                    <div>{message.rows[key]}</div>
+                  </div>
+                ))}
               </div>
               <div className="my-2 italic text-gray-400">{message.message}</div>
             </>}
@@ -124,7 +126,7 @@ export const Chat = ({chatId, className}) => {
             {message.type === "user" && (
               <div>{message.user + ": " + message.message}</div>
             )}
-          </p>
+          </div>
         ))}
       </>}
     />

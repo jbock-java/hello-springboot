@@ -140,7 +140,7 @@ function Panel({gameState, setGameState}) {
       </div>
       {(gameHasEnded(gameState) || isKibitz(gameState, auth)) ? (
         <div className="flex-none flex gap-x-1 items-center">
-          <Button
+          <Button title="Back"
             onClick={() => setGameState(moveBack(gameState))}
             className="py-1 px-2">
             Back
@@ -148,7 +148,7 @@ function Panel({gameState, setGameState}) {
           <div className="flex-none">
             <div>Move {viewPos}</div>
           </div>
-          <Button
+          <Button title="Forward"
             onClick={() => setGameState(moveForward(gameState))}
             className="py-1 px-2">
             Forward
