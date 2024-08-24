@@ -16,8 +16,6 @@ export function getGroupInfo(board, xx, yy) {
   let dim = board.length
   if (!hasStone(color)) {
     return {
-      x: xx,
-      y: yy,
       color: color,
       hasStone: false,
       liberties: 0,
@@ -77,8 +75,6 @@ export function getGroupInfo(board, xx, yy) {
   }
   let set = points.toSet()
   return {
-    x: xx,
-    y: yy,
     color: color,
     hasStone: true,
     liberties: liberties,
@@ -87,7 +83,7 @@ export function getGroupInfo(board, xx, yy) {
   }
 }
 
-export function rehydrate(board) {
+export function rehydrate(board, countBoard) {
   let dim = board.length
   let result = Array(dim)
   for (let i = 0; i < board.length; i++) {
@@ -96,12 +92,16 @@ export function rehydrate(board) {
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
       if (result[y][x]) {
-        result[y][x] = {...result[y][x], x: x, y: y}
         continue
       }
       let groupInfo = getGroupInfo(board, x, y)
-      groupInfo.points.forEach((_x, _y) => {
-        result[_y][_x] = groupInfo
+      groupInfo.points.forEach((xx, yy) => {
+        result[yy][xx] = {
+          ...groupInfo,
+          x: xx,
+          y: yy,
+          n: countBoard[yy][xx],
+        }
       })
     }
   }

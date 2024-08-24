@@ -112,7 +112,7 @@ export const Chat = ({chatId, className}) => {
             {message.type === "start" && <>
               <div className="w-full grid grid-cols-2 text-stone-100">
                 {Object.keys(message.rows).map((key) => (
-                  <div className="content" key={key}>
+                  <div className="contents" key={key}>
                     <div>{key}</div>
                     <div>{message.rows[key]}</div>
                   </div>

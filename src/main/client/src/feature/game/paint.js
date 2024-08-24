@@ -76,18 +76,27 @@ export function paintShadow({canvasRef, grid, stoneRadius}, grid_x, grid_y, styl
 }
 
 export function paintStones(context, board, lastMove) {
+  let showMoveNumbers = context.showMoveNumbersRef.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color} = board[grid_y][grid_x]
+      let {hasStone, color, n} = board[grid_y][grid_x]
       if (hasStone) {
         let style = color === BLACK ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
         paintStone(context, grid_x, grid_y, style)
+        if (showMoveNumbers) {
+          let antiStyle = color === BLACK ?
+            "rgba(255,255,255)" :
+            "rgba(0,0,0)"
+          paintMoveNumber(context, grid_x, grid_y, antiStyle, n + 1)
+        }
       }
     }
   }
-  paintLastMove(context, lastMove)
+  if (!showMoveNumbers) {
+    paintLastMove(context, lastMove)
+  }
 }
 
 export function paintStonesCounting(context, board, countingGroup) {
@@ -139,6 +148,17 @@ function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, style) {
   ctx.beginPath()
   ctx.arc(x, y, stoneRadius, 0, TAU)
   ctx.fill()
+}
+
+function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, style, n) {
+  let [x, y] = grid[grid_y][grid_x]
+  let size = Math.trunc(stoneRadius * 0.75)
+  let ctx = canvasRef.current.getContext("2d")
+  ctx.font = size + "px sans-serif"
+  ctx.textBaseline = "middle"
+  ctx.textAlign = "center"
+  ctx.fillStyle = style
+  ctx.fillText(n, x, y)
 }
 
 function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {

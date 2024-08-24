@@ -31,6 +31,7 @@ export function initialState() {
     id: "",
     moves: [],
     baseBoard: [],
+    countBoard: [],
     viewPos: Number.NaN,
     dim: 0,
     handicap: 0,
@@ -109,17 +110,17 @@ export function isReviewing(baseState) {
 }
 
 export function moveBack(baseState) {
+  let viewPos = baseState.viewPos - 1
+  if (viewPos < 0) {
+    return baseState
+  }
+  let moves = baseState.moves
+  let move = moves[viewPos]
+  let baseBoard = unApply(baseState.baseBoard, move)
+  let countBoard = baseState.countBoard
   return produce(baseState, (draft) => {
-    let moves = baseState.moves
-    let viewPos = baseState.viewPos
-    viewPos--
-    if (viewPos < 0) {
-      return
-    }
-    let move = moves[viewPos]
-    let baseBoard = unApply(baseState.baseBoard, move)
     draft.baseBoard = baseBoard
-    draft.board = cheapRehydrate(baseBoard)
+    draft.board = cheapRehydrate(baseBoard, countBoard)
     draft.viewPos = viewPos
     if (viewPos) {
       let previous = moves[viewPos - 1]
@@ -138,9 +139,10 @@ export function moveForward(baseState) {
   let moves = baseState.moves
   let move = moves[viewPos]
   let [, updated] = updateBoard(baseState.baseBoard, move)
+  let countBoard = baseState.countBoard
   return produce(baseState, (draft) => {
     draft.baseBoard = updated
-    draft.board = cheapRehydrate(updated)
+    draft.board = cheapRehydrate(updated, countBoard)
     draft.viewPos = viewPos + 1
     draft.lastMove = move.action === "pass" ? undefined : move
   })
@@ -150,6 +152,7 @@ function goToEnd(baseState) {
   let moves = baseState.moves
   let queueLength = baseState.queueLength
   let baseBoard = baseState.baseBoard
+  let countBoard = baseState.countBoard
   for (let i = queueLength; i < moves.length; i++) {
     let move = moves[i]
     let previousMove = getMove(moves, i - 1)
@@ -157,13 +160,13 @@ function goToEnd(baseState) {
     baseBoard = updated
   }
   return produce(baseState, (draft) => {
-    draft.board = rehydrate(baseBoard)
+    draft.board = rehydrate(baseBoard, countBoard)
   })
 }
 
 export function addMove(baseState, move) {
   let {action, n} = move
-  let {moves, baseBoard, counting, queueLength} = baseState
+  let {moves, baseBoard, countBoard, counting, queueLength} = baseState
   let previousMove = getMove(moves, n - 1)
   if (n < moves.length) {
     return baseState
@@ -188,7 +191,9 @@ export function addMove(baseState, move) {
     draft.moves.push(storedMove)
     draft.lastMove = action === "pass" ? undefined : storedMove
     draft.baseBoard = updated
-    draft.board = rehydrate(updated)
+    let updatedCountBoard = updateCountBoard(countBoard, move)
+    draft.countBoard = updatedCountBoard
+    draft.board = rehydrate(updated, updatedCountBoard)
     draft.forbidden = forbidden
     if (action === "pass" && previousMove?.action === "pass") {
       draft.counting = true
@@ -198,8 +203,10 @@ export function addMove(baseState, move) {
 
 export function createGameState(game, auth) {
   let baseBoard = Array(game.dim)
+  let countBoard = Array(game.dim)
   for (let y = 0; y < game.dim; y++) {
     baseBoard[y] = new Int32Array(game.dim)
+    countBoard[y] = new Int32Array(game.dim)
   }
   let moves = []
   let forbidden = [-1, -1]
@@ -224,6 +231,7 @@ export function createGameState(game, auth) {
     }
     let previousMove = getMove(moves, i - 1)
     let [storedMove, updated, newForbidden] = updateBoardState(baseBoard, previousMove, move, counting)
+    countBoard[move.y][move.x] = move.n
     moves.push(storedMove)
     forbidden = newForbidden
     baseBoard = updated
@@ -236,8 +244,9 @@ export function createGameState(game, auth) {
     handicap: game.handicap,
     counting: counting,
     baseBoard: baseBoard,
+    countBoard: countBoard,
     moves: moves,
-    board: rehydrate(baseBoard),
+    board: rehydrate(baseBoard, countBoard),
     forbidden: forbidden,
     viewPos: queueLength || moves.length,
     queueLength: queueLength || moves.length,
@@ -304,7 +313,7 @@ function unApply(board, move) {
   return result
 }
 
-function cheapRehydrate(board) {
+function cheapRehydrate(board, countBoard) {
   let dim = board.length
   let result = Array(dim)
   for (let i = 0; i < board.length; i++) {
@@ -313,6 +322,7 @@ function cheapRehydrate(board) {
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < board[y].length; x++) {
       result[y][x] = {
+        n: countBoard[y][x],
         x: x,
         y: y,
         color: board[y][x],
@@ -334,4 +344,11 @@ function getMove(moves, i) {
     return undefined
   }
   return moves[i]
+}
+
+function updateCountBoard(countBoard, {x, y, n}) {
+  let updated = countBoard.slice()
+  updated[y] = countBoard[y].slice()
+  updated[y][x] = n
+  return updated
 }
