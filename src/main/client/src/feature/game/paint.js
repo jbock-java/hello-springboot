@@ -76,6 +76,7 @@ export function paintShadow({canvasRef, grid, stoneRadius}, grid_x, grid_y, styl
 }
 
 export function paintStones(context, board, lastMove) {
+  let ctrlKeyDown = context.ctrlKeyDownRef.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
       let {hasStone, color} = board[grid_y][grid_x]
@@ -84,6 +85,9 @@ export function paintStones(context, board, lastMove) {
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
         paintStone(context, grid_x, grid_y, style)
+        if (ctrlKeyDown) {
+          console.log("ctrlKeyDown: " + grid_x + " " + grid_y)
+        }
       }
     }
   }

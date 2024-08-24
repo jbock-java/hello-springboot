@@ -45,13 +45,3 @@ export const useMuteStore = create(
     { name: "mute-storage" },
   )
 )
-
-// trick to re-render chat after each move
-export const useGameTicker = create((set, get) => ({
-  gameTicker: false,
-  toggleGameTicker: () =>
-    set(() => ({
-      gameTicker: !get().gameTicker
-    }))
-  }),
-)

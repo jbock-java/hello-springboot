@@ -34,7 +34,6 @@ import {
 import {
   useAuthStore,
   useMuteStore,
-  useGameTicker,
 } from "src/store.js"
 import {
   useLayoutStore,
@@ -78,9 +77,11 @@ export function Game() {
 function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
+  let ctrlKeyDownRef = useRef()
+  ctrlKeyDownRef.current = ctrlKeyDown
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
-  let toggleGameTicker = useGameTicker(state => state.toggleGameTicker)
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
@@ -111,6 +112,25 @@ function Board({gameState, setGameState}) {
     }
     howler.current.play()
   }, [howler, muted])
+
+  useEffect(() => {
+    let onKeyDown = (e) => {
+      if (e.ctrlKey) {
+        setCtrlKeyDown(true)
+      }
+    }
+    let onKeyUp = (e) => {
+      if (!e.ctrlKey) {
+        setCtrlKeyDown(false)
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    window.addEventListener("keyup", onKeyUp)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("keyup", onKeyUp)
+    }
+  }, [setCtrlKeyDown])
 
   let context = useMemo(() => {
     let dim = board.length
@@ -161,6 +181,7 @@ function Board({gameState, setGameState}) {
       step,
       grid,
       canvasRef,
+      ctrlKeyDownRef,
       isCursorInBounds: function(x, y) {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
@@ -181,6 +202,7 @@ function Board({gameState, setGameState}) {
     if (!board.length) {
       return
     }
+    setCtrlKeyDown(e.ctrlKey)
     if (!counting && currentPlayer(gameState) !== auth.name) {
       return
     }
@@ -229,14 +251,13 @@ function Board({gameState, setGameState}) {
     }
     if (!isSelfPlay(gameState)) { // myColor is 0 in self play
       setGameState(addMove(gameState, {...move, color: myColor}))
-      toggleGameTicker()
     }
     playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, toggleGameTicker, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
+  }, [gameState, setGameState, context, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound])
 
   useEffect(() => {
     if (!board.length) {
@@ -275,7 +296,7 @@ function Board({gameState, setGameState}) {
       "rgba(0,0,0,0.25)" :
       "rgba(255,255,255,0.25)"
     paintShadow(context, cursor_x, cursor_y, style)
-  }, [gameState, cursor_x, cursor_y, context, canvasRef, auth, board, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
+  }, [gameState, cursor_x, cursor_y, context, ctrlKeyDown, canvasRef, auth, board, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {
     if (id === gameId && queueStatus === "up_to_date") {
@@ -288,18 +309,16 @@ function Board({gameState, setGameState}) {
         },
       })
       setGameState(createGameState(game, auth))
-      toggleGameTicker()
     }, () => navigate(base + "/lobby"))
-  }, [setGameState, toggleGameTicker, queueStatus, auth, id, gameId, navigate])
+  }, [setGameState, queueStatus, auth, id, gameId, navigate])
 
   useEffect(() => {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
       setGameState(addMove(gameState, move))
-      toggleGameTicker()
     })
     return sub.unsubscribe
-  }, [gameState, setGameState, toggleGameTicker, stompClient, gameId])
+  }, [gameState, setGameState, stompClient, gameId])
 
   if (!board.length) {
     return <div>Loading...</div>
