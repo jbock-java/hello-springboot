@@ -167,14 +167,11 @@ function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, color, 
   ctx.fillText(n, x, y)
 }
 
-export function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {
+export function paintLastMove({canvasRef, grid, stoneRadius}, lastMove) {
   if (!lastMove) {
     return
   }
   let {x: grid_x, y: grid_y, color} = lastMove
-  if (!isCursorInBounds(grid_x, grid_y)) {
-    return
-  }
   let style = color === BLACK ?
     "rgba(255,255,255)" :
     "rgba(0,0,0)"
