@@ -123,12 +123,12 @@ function Board({gameState, setGameState}) {
 
   useEffect(() => {
     let onKeyDown = (e) => {
-      if (e.ctrlKey) {
+      if (e.ctrlKey || e.shiftKey) {
         setCtrlKeyDown(true)
       }
     }
     let onKeyUp = (e) => {
-      if (!e.ctrlKey) {
+      if (!e.shiftKey && !e.shiftKey) {
         setCtrlKeyDown(false)
       }
     }
@@ -151,7 +151,7 @@ function Board({gameState, setGameState}) {
     if (gameHasEnded(gameState)) {
       return undefined
     }
-    if (!gameState.counting) {
+    if (!counting) {
       return undefined
     }
     if (!isCursorInBounds()) {
@@ -159,12 +159,16 @@ function Board({gameState, setGameState}) {
     }
     let x = cursorXref.current
     let y = cursorYref.current
-    let {has, hasStone} = board[x][y]
+    let {has, hasStone} = board[y][x]
     if (!hasStone) {
       return undefined
     }
     return has
-  }, [gameState, board, isCursorInBounds])
+  }, [gameState, counting, board, isCursorInBounds])
+
+  let showMoveNumbers = useCallback(() => {
+    return ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
+  }, [gameState, auth])
 
   let context = useMemo(() => {
     let dim = board.length
@@ -215,7 +219,6 @@ function Board({gameState, setGameState}) {
       step,
       grid,
       canvasRef,
-      ctrlKeyDownRef,
       cursorXref,
       cursorYref,
       hoshis: hoshis,
@@ -233,7 +236,7 @@ function Board({gameState, setGameState}) {
       return
     }
     let dim = board.length
-    setCtrlKeyDown(e.ctrlKey)
+    setCtrlKeyDown(e.shiftKey || e.ctrlKey)
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
     if (cursor_x >= 0 && cursor_x < dim && cursor_y >= 0 && cursor_y < dim) {
@@ -299,16 +302,15 @@ function Board({gameState, setGameState}) {
       return
     }
     paintGrid(context)
-    let showMoveNumbers = ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
     if (counting && !isReviewing(gameState)) {
-      paintStonesCounting(context, board, getCountingGroup())
-      if (showMoveNumbers) {
+      paintStonesCounting(context, board, getCountingGroup(), showMoveNumbers())
+      if (showMoveNumbers()) {
         paintMoveNumbers(context, board)
       }
       return
     }
-    paintStones(context, board, showMoveNumbers)
-    if (showMoveNumbers) {
+    paintStones(context, board, showMoveNumbers())
+    if (showMoveNumbers()) {
       paintMoveNumbers(context, board)
     } else {
       paintLastMove(context, lastMove)
@@ -329,7 +331,7 @@ function Board({gameState, setGameState}) {
       return
     }
     paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
-  }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup])
+  }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers])
 
   useEffect(() => {
     if (id === gameId && queueStatus === "up_to_date") {
@@ -359,7 +361,11 @@ function Board({gameState, setGameState}) {
 
   return (
     <div className="grid h-full">
-      <canvas className={twJoin("place-self-center")} ref={canvasRef}
+      <canvas className={twJoin(
+          "place-self-center",
+          isCursorInBounds() && showMoveNumbers() && board[cursor_y][cursor_x].hasStone && "cursor-pointer",
+        )}
+        ref={canvasRef}
         onMouseLeave={() => {
           setCursor_x(-1)
           setCursor_y(-1)

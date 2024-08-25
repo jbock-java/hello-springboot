@@ -108,12 +108,16 @@ export function paintMoveNumbers(context, board) {
   }
 }
 
-export function paintStonesCounting(context, board, countingGroup) {
+export function paintStonesCounting(context, board, countingGroup, showMoveNumbers) {
+  let cursor_x = context.cursorXref.current
+  let cursor_y = context.cursorYref.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let { hasStone, color } = board[grid_y][grid_x]
+      let {hasStone, color} = board[grid_y][grid_x]
       if (hasStone) {
         if (countingGroup && countingGroup(grid_x, grid_y)) {
+          paintShadow(context, grid_x, grid_y, color)
+        } else if (showMoveNumbers && grid_x === cursor_x && grid_y === cursor_y) {
           paintShadow(context, grid_x, grid_y, color)
         } else {
           paintStone(context, grid_x, grid_y, color)
