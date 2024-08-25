@@ -24,7 +24,6 @@ import {
   vw,
   base,
   StompContext,
-  BLACK,
   tfetch,
   doTry,
 } from "src/util.js"
@@ -45,6 +44,8 @@ import {
   paintBoardDecorations,
   paintStones,
   paintStonesCounting,
+  paintLastMove,
+  paintMoveNumbers,
 } from "./paint.js"
 import {
   GamePanel,
@@ -84,8 +85,12 @@ function Board({gameState, setGameState}) {
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let showMoveNumbersRef = useRef()
-  showMoveNumbersRef.current = ctrlKeyDown && isKibitz(gameState, auth)
+  let ctrlKeyDownRef = useRef()
+  ctrlKeyDownRef.current = ctrlKeyDown
+  let cursorXref = useRef()
+  cursorXref.current = cursor_x
+  let cursorYref = useRef()
+  cursorYref.current = cursor_y
   let id = gameState.id
   let lastMove = gameState.lastMove
   let queueStatus = gameState.queueStatus
@@ -182,7 +187,9 @@ function Board({gameState, setGameState}) {
       step,
       grid,
       canvasRef,
-      showMoveNumbersRef,
+      ctrlKeyDownRef,
+      cursorXref,
+      cursorYref,
       isCursorInBounds: function(x, y) {
         return x >= 0 && x < dim && y >= 0 && y < dim
       },
@@ -194,9 +201,6 @@ function Board({gameState, setGameState}) {
   }, [board.length, canvasRef, zoom])
 
   let onMouseMove = useCallback((e) => {
-    if (gameHasEnded(gameState)) {
-      return
-    }
     if (dragging) {
       return
     }
@@ -204,9 +208,6 @@ function Board({gameState, setGameState}) {
       return
     }
     setCtrlKeyDown(e.ctrlKey)
-    if (!counting && currentPlayer(gameState) !== auth.name) {
-      return
-    }
     let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
     let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
     if (context.isCursorInBounds(cursor_x, cursor_y)) {
@@ -216,7 +217,7 @@ function Board({gameState, setGameState}) {
       setCursor_x(-1)
       setCursor_y(-1)
     }
-  }, [gameState, context, auth, board.length, counting, dragging])
+  }, [context, board.length, dragging])
 
   let onClick = useCallback((e) => {
     if (gameHasEnded(gameState)) {
@@ -272,11 +273,19 @@ function Board({gameState, setGameState}) {
       return
     }
     paintGrid(context)
+    let showMoveNumbers = ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
     if (counting && !isReviewing(gameState)) {
       paintStonesCounting(context, board, countingGroup)
+      if (showMoveNumbers) {
+        paintMoveNumbers(context, board)
+      }
       return
+    }
+    paintStones(context, board, showMoveNumbers)
+    if (showMoveNumbers) {
+      paintMoveNumbers(context, board)
     } else {
-      paintStones(context, board, lastMove)
+      paintLastMove(context, lastMove)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return
@@ -293,10 +302,7 @@ function Board({gameState, setGameState}) {
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
-    let style = currentColor(gameState) === BLACK ?
-      "rgba(0,0,0,0.25)" :
-      "rgba(255,255,255,0.25)"
-    paintShadow(context, cursor_x, cursor_y, style)
+    paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
   }, [gameState, cursor_x, cursor_y, context, ctrlKeyDown, canvasRef, auth, board, counting, countingGroup, forbidden_x, forbidden_y, lastMove])
 
   useEffect(() => {

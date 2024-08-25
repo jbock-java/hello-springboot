@@ -327,6 +327,7 @@ function cheapRehydrate(board, countBoard) {
         y: y,
         color: board[y][x],
         hasStone: hasStone(board[y][x]),
+        isForbidden: () => false,
         liberties: 0,
         has: () => false,
         points: PointList.empty(),

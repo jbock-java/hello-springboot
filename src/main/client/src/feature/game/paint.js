@@ -66,7 +66,10 @@ export function paintBoardDecorations({width, margin, canvasRef, grid}) {
   }
 }
 
-export function paintShadow({canvasRef, grid, stoneRadius}, grid_x, grid_y, style) {
+export function paintShadow({canvasRef, grid, stoneRadius}, grid_x, grid_y, color) {
+  let style = (color & (BLACK | REMOVED_B)) ?
+    "rgba(0,0,0,0.25)" :
+    "rgba(255,255,255,0.25)"
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
@@ -75,27 +78,33 @@ export function paintShadow({canvasRef, grid, stoneRadius}, grid_x, grid_y, styl
   ctx.fill()
 }
 
-export function paintStones(context, board, lastMove) {
-  let showMoveNumbers = context.showMoveNumbersRef.current
+export function paintStones(context, board, showMoveNumbers) {
+  let cursor_x = context.cursorXref.current
+  let cursor_y = context.cursorYref.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color, n} = board[grid_y][grid_x]
-      if (hasStone) {
-        let style = color === BLACK ?
-          "rgba(0,0,0)" :
-          "rgba(255,255,255)"
-        paintStone(context, grid_x, grid_y, style)
-        if (showMoveNumbers) {
-          let antiStyle = color === BLACK ?
-            "rgba(255,255,255)" :
-            "rgba(0,0,0)"
-          paintMoveNumber(context, grid_x, grid_y, antiStyle, n + 1)
-        }
+      let {hasStone, color} = board[grid_y][grid_x]
+      if (!hasStone) {
+        continue
+      }
+      if (showMoveNumbers && grid_x === cursor_x && grid_y === cursor_y) {
+        paintShadow(context, grid_x, grid_y, color)
+      } else {
+        paintStone(context, grid_x, grid_y, color)
       }
     }
   }
-  if (!showMoveNumbers) {
-    paintLastMove(context, lastMove)
+}
+
+export function paintMoveNumbers(context, board) {
+  for (let grid_y = 0; grid_y < board.length; grid_y++) {
+    for (let grid_x = 0; grid_x < board.length; grid_x++) {
+      let {hasStone, color, n} = board[grid_y][grid_x]
+      if (!hasStone) {
+        continue
+      }
+      paintMoveNumber(context, grid_x, grid_y, color, n + 1)
+    }
   }
 }
 
@@ -105,22 +114,13 @@ export function paintStonesCounting(context, board, countingGroup) {
       let { hasStone, color } = board[grid_y][grid_x]
       if (hasStone) {
         if (countingGroup && countingGroup(grid_x, grid_y)) {
-          let style = color & BLACK ?
-            "rgba(0,0,0,0.25)" :
-            "rgba(255,255,255,0.25)"
-          paintShadow(context, grid_x, grid_y, style)
+          paintShadow(context, grid_x, grid_y, color)
         } else {
-          let style = color & BLACK ?
-            "rgba(0,0,0)" :
-            "rgba(255,255,255)"
-          paintStone(context, grid_x, grid_y, style)
+          paintStone(context, grid_x, grid_y, color)
         }
       }
       if (color & ANY_REMOVED) {
-        let style = (color & ANY_REMOVED) === REMOVED_B ?
-          "rgba(0,0,0,0.25)" :
-          "rgba(255,255,255,0.25)"
-        paintShadow(context, grid_x, grid_y, style)
+        paintShadow(context, grid_x, grid_y, color)
       }
       if (color & TERRITORY) {
         let style = (color & TERRITORY) === TERRITORY_B ?
@@ -141,7 +141,10 @@ function paintTerritory({canvasRef, grid, territoryRadius}, grid_x, grid_y, styl
   ctx.fill()
 }
 
-function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, style) {
+function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, color) {
+  let style = color === BLACK ?
+    "rgba(0,0,0)" :
+    "rgba(255,255,255)"
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = style
@@ -150,7 +153,10 @@ function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, style) {
   ctx.fill()
 }
 
-function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, style, n) {
+function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, color, n) {
+  let style = color === BLACK ?
+    "rgba(255,255,255)" :
+    "rgba(0,0,0)"
   let [x, y] = grid[grid_y][grid_x]
   let size = Math.trunc(stoneRadius * 0.75)
   let ctx = canvasRef.current.getContext("2d")
@@ -161,7 +167,7 @@ function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, style, 
   ctx.fillText(n, x, y)
 }
 
-function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {
+export function paintLastMove({isCursorInBounds, canvasRef, grid, stoneRadius}, lastMove) {
   if (!lastMove) {
     return
   }
