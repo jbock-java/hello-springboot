@@ -134,6 +134,7 @@ export const Chat = ({chatId, className}) => {
       <input
         className="w-full px-1 py-1 border border-gray-500 bg-stone-800 text-stone-100 focus:outline-none"
         type="text"
+        id="chat-input"
         name="message"
       />
     </form>

@@ -123,6 +123,10 @@ function Board({gameState, setGameState}) {
 
   useEffect(() => {
     let onKeyDown = (e) => {
+      let activeElement = window.document.activeElement
+      if (activeElement?.id === "chat-input") {
+        return
+      }
       if (e.ctrlKey || e.shiftKey) {
         setCtrlKeyDown(true)
       }
