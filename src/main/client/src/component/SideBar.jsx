@@ -53,7 +53,7 @@ export const SideBar = ({page, children}) => {
   return (
     <div
         style={{width: sidebarWidth + "px"}}
-        className="absolute border-l border-gray-500 top-0 right-0 h-full bg-slate-800">
+        className="fixed border-l border-gray-500 top-0 right-0 h-full bg-slate-800">
       <div
         onMouseDown={!dragging ? onMouseDown : undefined}
         style={{

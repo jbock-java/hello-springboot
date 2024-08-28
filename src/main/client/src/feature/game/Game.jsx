@@ -367,7 +367,7 @@ function Board({gameState, setGameState}) {
     <div className="grid h-full">
       <canvas className={twJoin(
           "place-self-center",
-          isCursorInBounds() && showMoveNumbers() && board[cursor_y][cursor_x].hasStone && "cursor-pointer",
+          isCursorInBounds() && showMoveNumbers() && board[cursor_y][cursor_x].historyEntry.n !== -1 && "cursor-pointer",
         )}
         ref={canvasRef}
         onMouseLeave={() => {

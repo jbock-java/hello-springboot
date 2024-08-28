@@ -83,7 +83,7 @@ export function getGroupInfo(board, xx, yy) {
   }
 }
 
-export function rehydrate(board, countBoard) {
+export function rehydrate(board, historyBoard) {
   let dim = board.length
   let result = Array(dim)
   for (let i = 0; i < board.length; i++) {
@@ -100,7 +100,7 @@ export function rehydrate(board, countBoard) {
           ...groupInfo,
           x: xx,
           y: yy,
-          n: countBoard[yy][xx],
+          historyEntry: historyBoard[yy][xx],
         }
       })
     }

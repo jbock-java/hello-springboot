@@ -83,13 +83,10 @@ export function paintStones(context, board, showMoveNumbers) {
   let cursor_y = context.cursorYref.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color} = board[grid_y][grid_x]
-      if (!hasStone) {
-        continue
-      }
-      if (showMoveNumbers && grid_x === cursor_x && grid_y === cursor_y) {
-        paintShadow(context, grid_x, grid_y, color)
-      } else {
+      let {hasStone, color, historyEntry} = board[grid_y][grid_x]
+      if (showMoveNumbers && historyEntry.n !== -1 && grid_x === cursor_x && grid_y === cursor_y) {
+        paintShadow(context, grid_x, grid_y, historyEntry.color)
+      } else if (hasStone) {
         paintStone(context, grid_x, grid_y, color)
       }
     }
@@ -99,11 +96,8 @@ export function paintStones(context, board, showMoveNumbers) {
 export function paintMoveNumbers(context, board) {
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color, n} = board[grid_y][grid_x]
-      if (!hasStone) {
-        continue
-      }
-      paintMoveNumber(context, grid_x, grid_y, color, n + 1)
+      let {color, historyEntry} = board[grid_y][grid_x]
+      paintMoveNumber(context, grid_x, grid_y, color, historyEntry)
     }
   }
 }
@@ -113,20 +107,18 @@ export function paintStonesCounting(context, board, countingGroup, showMoveNumbe
   let cursor_y = context.cursorYref.current
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color} = board[grid_y][grid_x]
-      if (hasStone) {
-        if (countingGroup && countingGroup(grid_x, grid_y)) {
-          paintShadow(context, grid_x, grid_y, color)
-        } else if (showMoveNumbers && grid_x === cursor_x && grid_y === cursor_y) {
-          paintShadow(context, grid_x, grid_y, color)
-        } else {
-          paintStone(context, grid_x, grid_y, color)
-        }
-      }
-      if (color & ANY_REMOVED) {
+      let {hasStone, color, historyEntry} = board[grid_y][grid_x]
+      let isHover = showMoveNumbers && historyEntry.n !== -1 && grid_x === cursor_x && grid_y === cursor_y
+      if (countingGroup && countingGroup(grid_x, grid_y)) {
+        paintShadow(context, grid_x, grid_y, color)
+      } else if (isHover) {
+        paintShadow(context, grid_x, grid_y, historyEntry.color)
+      } else if (hasStone) {
+        paintStone(context, grid_x, grid_y, color)
+      } else if (color & ANY_REMOVED) {
         paintShadow(context, grid_x, grid_y, color)
       }
-      if (color & TERRITORY) {
+      if (color & TERRITORY && !isHover) {
         let style = (color & TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"
@@ -157,18 +149,31 @@ function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, color) {
   ctx.fill()
 }
 
-function paintMoveNumber({stoneRadius, canvasRef, grid}, grid_x, grid_y, color, n) {
-  let style = color === BLACK ?
-    "rgba(255,255,255)" :
-    "rgba(0,0,0)"
+function paintMoveNumber({cursorXref, cursorYref, stoneRadius, canvasRef, grid}, grid_x, grid_y, color, historyEntry) {
+  if (historyEntry.n === -1) {
+    return
+  }
+  let cursor_x = cursorXref.current
+  let cursor_y = cursorYref.current
+  let textColor
+  if (cursor_x === grid_x && cursor_y === grid_y) {
+    textColor = historyEntry.color === BLACK ?
+      "rgba(255,255,255)" :
+      "rgba(0,0,0)"
+  } else {
+    textColor = (color & (BLACK | TERRITORY_B)) ?
+      "rgba(255,255,255)" :
+      "rgba(0,0,0)"
+  }
   let [x, y] = grid[grid_y][grid_x]
-  let size = Math.trunc(stoneRadius * 0.75)
   let ctx = canvasRef.current.getContext("2d")
-  ctx.font = size + "px sans-serif"
+  ctx.font = (cursor_x === grid_x && cursor_y === grid_y) ?
+    ("bold " + Math.trunc(stoneRadius * 1.125) + "px sans-serif") :
+    Math.trunc(stoneRadius * 0.75) + "px sans-serif"
   ctx.textBaseline = "middle"
   ctx.textAlign = "center"
-  ctx.fillStyle = style
-  ctx.fillText(n, x, y)
+  ctx.fillStyle = textColor
+  ctx.fillText(historyEntry.n + 1, x, y)
 }
 
 export function paintLastMove({canvasRef, grid, stoneRadius}, lastMove) {
