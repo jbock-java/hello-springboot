@@ -17,13 +17,6 @@ import {
   Howl,
 } from "howler"
 import {
-  IconContext,
-} from "react-icons"
-import {
-  FaVolumeMute,
-  FaVolumeUp,
-} from "react-icons/fa"
-import {
   vw,
   base,
   StompContext,
@@ -64,6 +57,9 @@ import {
   createGameState,
   isReviewing,
 } from "./state.js"
+import { 
+  BoardSettings,
+} from "./BoardSettings.jsx"
 
 export function Game() {
   let [gameState, setGameState] = useState(initialState())
@@ -72,7 +68,7 @@ export function Game() {
     <div
       style={{ width: vw() - sidebarWidth }}
       className="h-full">
-      <MuteIcon />
+      <BoardSettings />
       <Board gameState={gameState} setGameState={setGameState} />
       <GamePanel gameState={gameState} setGameState={setGameState} />
     </div>
@@ -388,21 +384,4 @@ function getRadius(radius) {
     diameter += 1
   }
   return diameter / 2
-}
-
-function MuteIcon() {
-  let toggleMuted = useMuteStore((state) => state.toggleMuted)
-  let muted = useMuteStore(state => state.muted)
-  return (
-    <div className="absolute left-2 top-2">
-      <button onClick={toggleMuted}>
-        <IconContext.Provider value={{
-          size: "1.5em",
-          className: "pl-[4px]",
-        }}>
-          {muted ? <FaVolumeMute /> : <FaVolumeUp /> }
-        </IconContext.Provider>
-      </button>
-    </div>
-  )
 }

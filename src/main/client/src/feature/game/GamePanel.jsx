@@ -7,10 +7,6 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
-  FaAngleLeft,
-  FaAngleRight,
-} from "react-icons/fa"
-import {
   IoMdExit,
 } from "react-icons/io"
 import {
@@ -26,9 +22,6 @@ import {
 import {
   useAuthStore,
 } from "src/store.js"
-import {
-  useViewStateStore,
-} from "src/layout.js"
 import {
   Chat,
 } from "src/component/Chat.jsx"
@@ -58,8 +51,6 @@ export const GamePanel = ({gameState, setGameState}) => {
 
 function Panel({gameState, setGameState}) {
   let {gameId} = useParams()
-  let zoom = useViewStateStore(state => state.zoom)
-  let setZoom = useViewStateStore(state => state.setZoom)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
   let {black, white, viewPos, counting, board} = gameState
@@ -101,28 +92,10 @@ function Panel({gameState, setGameState}) {
   }
   return (
     <>
-      <div className="flex-none flex w-full gap-x-2">
-        <button
-          onClick={() => setZoom(zoom - 1)}>
-          <IconContext.Provider value={{
-            size: "1.25em",
-            className: "pl-[4px]",
-          }}>
-            <FaAngleLeft />
-          </IconContext.Provider>
-        </button>
-        <button onClick={() => setZoom(0)}>
-          <span>Zoom: {Math.trunc(zoom)}</span>
-        </button>
-        <button
-          onClick={() => setZoom(zoom + 1)}>
-          <IconContext.Provider value={{
-            size: "1.25em",
-            className: "pr-[4px]",
-          }}>
-            <FaAngleRight />
-          </IconContext.Provider>
-        </button>
+      <div className="flex-none flex w-full gap-x-1">
+        <div>{white}</div>
+        <div>vs</div>
+        <div>{black}</div>
         <div className="grow" />
         <button title="Leave the game" onClick={onExit}>
           <IconContext.Provider value={{
@@ -132,11 +105,6 @@ function Panel({gameState, setGameState}) {
             <IoMdExit />
           </IconContext.Provider>
         </button>
-      </div>
-      <div className="flex-none flex gap-x-1">
-        <div>{white}</div>
-        <div>vs</div>
-        <div>{black}</div>
       </div>
       {(gameHasEnded(gameState) || isKibitz(gameState, auth)) ? (
         <div className="flex-none flex gap-x-1 items-center">
