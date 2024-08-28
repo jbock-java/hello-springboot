@@ -84,8 +84,11 @@ export function paintStones(context, board, showMoveNumbers) {
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
       let {hasStone, color, historyEntry} = board[grid_y][grid_x]
-      if (showMoveNumbers && historyEntry.n !== -1 && grid_x === cursor_x && grid_y === cursor_y) {
-        paintShadow(context, grid_x, grid_y, historyEntry.color)
+      let isHover = showMoveNumbers && historyEntry.n !== -1 && grid_x === cursor_x && grid_y === cursor_y
+      if (hasStone && isHover) {
+        paintStone(context, grid_x, grid_y, historyEntry.color)
+      } else if (isHover) {
+        paintStone(context, grid_x, grid_y, historyEntry.color)
       } else if (hasStone) {
         paintStone(context, grid_x, grid_y, color)
       }
@@ -102,23 +105,18 @@ export function paintMoveNumbers(context, board) {
   }
 }
 
-export function paintStonesCounting(context, board, countingGroup, showMoveNumbers) {
-  let cursor_x = context.cursorXref.current
-  let cursor_y = context.cursorYref.current
+export function paintStonesCounting(context, board, countingGroup) {
   for (let grid_y = 0; grid_y < board.length; grid_y++) {
     for (let grid_x = 0; grid_x < board.length; grid_x++) {
-      let {hasStone, color, historyEntry} = board[grid_y][grid_x]
-      let isHover = showMoveNumbers && historyEntry.n !== -1 && grid_x === cursor_x && grid_y === cursor_y
+      let {hasStone, color} = board[grid_y][grid_x]
       if (countingGroup && countingGroup(grid_x, grid_y)) {
         paintShadow(context, grid_x, grid_y, color)
-      } else if (isHover) {
-        paintShadow(context, grid_x, grid_y, historyEntry.color)
       } else if (hasStone) {
         paintStone(context, grid_x, grid_y, color)
       } else if (color & ANY_REMOVED) {
         paintShadow(context, grid_x, grid_y, color)
       }
-      if (color & TERRITORY && !isHover) {
+      if (color & TERRITORY) {
         let style = (color & TERRITORY) === TERRITORY_B ?
           "rgba(0,0,0)" :
           "rgba(255,255,255)"

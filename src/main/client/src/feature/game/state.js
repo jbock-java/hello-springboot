@@ -236,9 +236,11 @@ export function createGameState(game, auth) {
     }
     let previousMove = getMove(moves, i - 1)
     let [storedMove, updated, newForbidden] = updateBoardState(baseBoard, previousMove, move, counting)
-    historyBoard[move.y][move.x] = {
-      n: move.n,
-      color: 0,
+    if (!counting && !move.action && move.color) {
+      historyBoard[move.y][move.x] = {
+        n: move.n,
+        color: move.color,
+      }
     }
     moves.push(storedMove)
     forbidden = newForbidden
@@ -365,7 +367,7 @@ function updateHistoryBoard(historyBoard, move) {
   }
   let updated = historyBoard.slice()
   updated[y] = historyBoard[y].slice()
-  let oldColor = updated[y][x].color
-  updated[y][x] = {n, color: color || oldColor}
+  let oldColor = historyBoard[y][x].color
+  updated[y][x] = {n, color: (color || oldColor)}
   return updated
 }

@@ -120,7 +120,7 @@ function Board({gameState, setGameState}) {
   useEffect(() => {
     let onKeyDown = (e) => {
       let activeElement = window.document.activeElement
-      if (activeElement?.id === "chat-input") {
+      if (e.shiftKey && activeElement?.id === "chat-input") {
         return
       }
       if (e.ctrlKey || e.shiftKey) {
@@ -166,9 +166,7 @@ function Board({gameState, setGameState}) {
     return has
   }, [gameState, counting, board, isCursorInBounds])
 
-  let showMoveNumbers = useCallback(() => {
-    return ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
-  }, [gameState, auth])
+  let showMoveNumbers = ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
 
   let context = useMemo(() => {
     let dim = board.length
@@ -302,15 +300,12 @@ function Board({gameState, setGameState}) {
       return
     }
     paintGrid(context)
-    if (counting && !isReviewing(gameState)) {
-      paintStonesCounting(context, board, getCountingGroup(), showMoveNumbers())
-      if (showMoveNumbers()) {
-        paintMoveNumbers(context, board)
-      }
+    if (counting && !showMoveNumbers && !isReviewing(gameState)) {
+      paintStonesCounting(context, board, getCountingGroup())
       return
     }
-    paintStones(context, board, showMoveNumbers())
-    if (showMoveNumbers()) {
+    paintStones(context, board, showMoveNumbers)
+    if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else {
       paintLastMove(context, lastMove)
@@ -330,7 +325,9 @@ function Board({gameState, setGameState}) {
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
-    paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
+    if (!showMoveNumbers) {
+      paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
+    }
   }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers])
 
   useEffect(() => {
@@ -363,7 +360,7 @@ function Board({gameState, setGameState}) {
     <div className="grid h-full">
       <canvas className={twJoin(
           "place-self-center",
-          isCursorInBounds() && showMoveNumbers() && board[cursor_y][cursor_x].historyEntry.n !== -1 && "cursor-pointer",
+          isCursorInBounds() && showMoveNumbers && board[cursor_y][cursor_x].historyEntry.n !== -1 && "cursor-pointer",
         )}
         ref={canvasRef}
         onMouseLeave={() => {
