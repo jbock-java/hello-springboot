@@ -69,7 +69,7 @@ export function Game() {
     <div
       style={{ width: vw() - sidebarWidth }}
       className="h-full">
-      <BoardSettings />
+      <BoardSettings gameId={gameState.id} black={gameState.black} white={gameState.white} />
       <Board gameState={gameState} setGameState={setGameState} />
       <GamePanel gameState={gameState} setGameState={setGameState} />
     </div>
