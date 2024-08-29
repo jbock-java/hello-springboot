@@ -11,7 +11,11 @@ import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.RandomString;
+import com.bernd.util.SgfCreator;
+import java.security.Principal;
+import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,8 +26,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.security.Principal;
 
 import static com.bernd.util.Auth.getPrincipal;
 import static com.bernd.util.Util.COLORS;
@@ -143,5 +145,16 @@ public class GameController {
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
     return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/api/sgf/{id}/{black}_vs_{white}.sgf")
+  public ResponseEntity<String> getSgf(
+      @PathVariable String id) {
+    Game game = games.get(id);
+    if (game == null) {
+      return ResponseEntity.notFound().build();
+    }
+    String sgf = SgfCreator.createSgf(game, LocalDate.now());
+    return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(sgf);
   }
 }
