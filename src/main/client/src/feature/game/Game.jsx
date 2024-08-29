@@ -56,6 +56,7 @@ import {
   isKibitz,
   createGameState,
   isReviewing,
+  teleport,
 } from "./state.js"
 import { 
   BoardSettings,
@@ -84,8 +85,6 @@ function Board({gameState, setGameState}) {
   let navigate = useNavigate()
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let ctrlKeyDownRef = useRef()
-  ctrlKeyDownRef.current = ctrlKeyDown
   let cursorXref = useRef()
   cursorXref.current = cursor_x
   let cursorYref = useRef()
@@ -166,7 +165,7 @@ function Board({gameState, setGameState}) {
     return has
   }, [gameState, counting, board, isCursorInBounds])
 
-  let showMoveNumbers = ctrlKeyDownRef.current && (isKibitz(gameState, auth) || gameHasEnded(gameState))
+  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
 
   let context = useMemo(() => {
     let dim = board.length
@@ -249,6 +248,13 @@ function Board({gameState, setGameState}) {
   let onClick = useCallback(() => {
     let cursor_x = cursorXref.current
     let cursor_y = cursorYref.current
+    if (showMoveNumbers) {
+      let historyEntry = board[cursor_y][cursor_x].historyEntry
+      if (historyEntry.n !== -1) {
+        setGameState(teleport(gameState, historyEntry.n + 1))
+      }
+      return
+    }
     if (gameHasEnded(gameState)) {
       return
     }
@@ -278,15 +284,15 @@ function Board({gameState, setGameState}) {
       x: cursor_x,
       y: cursor_y,
     }
-    if (!isSelfPlay(gameState)) { // myColor is 0 in self play
-      setGameState(addMove(gameState, {...move, color: myColor}))
+    if (!isSelfPlay(gameState)) { // can't add early in self play; myColor is 0
+      setGameState(addMove(gameState, {...move, color: myColor})) // early add move
     }
     playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound, isCursorInBounds])
+  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound, isCursorInBounds, showMoveNumbers])
 
   useEffect(() => {
     if (!board.length) {

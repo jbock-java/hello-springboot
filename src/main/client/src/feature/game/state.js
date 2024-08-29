@@ -109,14 +109,21 @@ export function isReviewing(baseState) {
   return baseState.viewPos < baseState.queueLength
 }
 
-export function moveBack(baseState) {
-  let viewPos = baseState.viewPos - 1
-  if (viewPos < 0) {
-    return baseState
+export function teleport(baseState, targetPos) {
+  let viewPos = baseState.viewPos
+  if (targetPos >= baseState.queueLength) {
+    return goToEnd(baseState)
   }
+  let diff = targetPos - viewPos
+  let direction = Math.sign(diff)
   let moves = baseState.moves
-  let move = moves[viewPos]
-  let baseBoard = unApply(baseState.baseBoard, move)
+  let baseBoard = baseState.baseBoard
+  let action = diff < 0 ? unApply : updateBoard
+  for (let i = 0; i < Math.abs(diff); i++) {
+    let [, updated] = action(baseBoard, diff < 0 ? moves[viewPos - 1] : moves[viewPos])
+    baseBoard = updated
+    viewPos += direction
+  }
   let historyBoard = baseState.historyBoard
   return produce(baseState, (draft) => {
     draft.baseBoard = baseBoard
@@ -131,21 +138,14 @@ export function moveBack(baseState) {
   })
 }
 
+export function moveBack(baseState) {
+  let viewPos = baseState.viewPos
+  return teleport(baseState, viewPos - 1)
+}
+
 export function moveForward(baseState) {
   let viewPos = baseState.viewPos
-  if (viewPos - baseState.queueLength >= 0) {
-    return goToEnd(baseState)
-  }
-  let moves = baseState.moves
-  let move = moves[viewPos]
-  let [, updated] = updateBoard(baseState.baseBoard, move)
-  let historyBoard = baseState.historyBoard
-  return produce(baseState, (draft) => {
-    draft.baseBoard = updated
-    draft.board = cheapRehydrate(updated, historyBoard)
-    draft.viewPos = viewPos + 1
-    draft.lastMove = move.action === "pass" ? undefined : move
-  })
+  return teleport(baseState, viewPos + 1)
 }
 
 function goToEnd(baseState) {
@@ -161,6 +161,7 @@ function goToEnd(baseState) {
   }
   return produce(baseState, (draft) => {
     draft.board = rehydrate(baseBoard, historyBoard)
+    draft.viewPos = baseState.queueLength
   })
 }
 
@@ -320,7 +321,7 @@ function unApply(board, move) {
       result[y][x] = (move.color ^ COLORS)
     })
   }
-  return result
+  return [1, result]
 }
 
 function cheapRehydrate(baseBoard, historyBoard) {
