@@ -1,4 +1,4 @@
-package com.bernd;
+package com.bernd.config;
 
 import java.security.Principal;
 

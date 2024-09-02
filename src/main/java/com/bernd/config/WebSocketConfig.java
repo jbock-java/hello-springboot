@@ -1,4 +1,4 @@
-package com.bernd;
+package com.bernd.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;

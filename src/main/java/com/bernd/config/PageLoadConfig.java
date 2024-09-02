@@ -1,4 +1,4 @@
-package com.bernd;
+package com.bernd.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Configuration;

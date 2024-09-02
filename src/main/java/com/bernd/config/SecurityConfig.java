@@ -1,5 +1,6 @@
-package com.bernd.util;
+package com.bernd.config;
 
+import com.bernd.util.AuthFilter;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
