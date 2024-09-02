@@ -128,7 +128,7 @@ function Panel({gameState, setGameState}) {
         </div>
       )}
       {!isKibitz(gameState, auth) && !gameHasEnded(gameState) && (
-        <div className="flex-none">
+        <div className="mt-1 flex-none">
           <Button
             onClick={onPass}
             className="py-1 px-4"
@@ -138,17 +138,15 @@ function Panel({gameState, setGameState}) {
         </div>
       )}
       {!isKibitz(gameState, auth) && !gameHasEnded(gameState) && counting && <>
-        <div className="flex-none">
+        <div className="mt-1 flex-none flex gap-x-1">
           <Button
             className="py-1 px-4"
             disabled={gameHasEnded(gameState)}
             onClick={onResetCounting}>
             Reset Counting
           </Button>
-        </div>
-        <div className="flex-none">
           <Button
-            disabled={(!isSelfPlay(gameState) && countingAgreed(gameState)) || !countingComplete(gameState)}
+            disabled={countingAgreed(gameState) || !countingComplete(gameState)}
             className="py-1 px-4"
             onClick={onCountingAgree}>
             OK

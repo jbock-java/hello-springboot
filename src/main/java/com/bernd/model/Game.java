@@ -38,7 +38,7 @@ public record Game(
   }
 
   private Game updateInternal(Move move) {
-    if (move.agreeCounting() && (countingAgreed() | move.color()) == COLORS) {
+    if (move.agreeCounting() && (isSelfPlay() || (countingAgreed() | move.color()) == COLORS)) {
       moves.addGameEndMarker();
     } else {
       moves.add(move);
