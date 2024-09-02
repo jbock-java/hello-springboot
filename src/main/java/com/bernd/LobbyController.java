@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class LobbyController {
 
   private final MessageSendingOperations<String> operations;
-  private final LobbyUsers lobbyUsers;
   private final Games games;
   private final OpenGames openGames;
   private final ActiveGames activeGames;
@@ -31,13 +30,11 @@ public class LobbyController {
 
   LobbyController(
       MessageSendingOperations<String> operations,
-      LobbyUsers lobbyUsers,
       OpenGames openGames,
       Games games,
       ActiveGames activeGames,
       Chats chats) {
     this.operations = operations;
-    this.lobbyUsers = lobbyUsers;
     this.games = games;
     this.openGames = openGames;
     this.activeGames = activeGames;
@@ -47,8 +44,6 @@ public class LobbyController {
   @GetMapping(value = "/api/lobby/hello")
   public ResponseEntity<?> sayHello() {
     String principal = Auth.getPrincipal();
-    lobbyUsers.add(principal);
-    operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
     return ResponseEntity.ok().build();
@@ -70,8 +65,6 @@ public class LobbyController {
   @PostMapping(value = "/api/start_edit", consumes = "application/json")
   public ViewGame startEdit(@RequestBody MatchRequest request) {
     String principal = Auth.getPrincipal();
-    lobbyUsers.remove(principal);
-    operations.convertAndSend("/topic/lobby/users", lobbyUsers.users());
     Game game = games.put(new Game(
         RandomString.get(),
         principal,

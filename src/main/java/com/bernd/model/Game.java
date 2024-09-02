@@ -1,10 +1,10 @@
 package com.bernd.model;
 
+import com.bernd.game.Board;
 import com.bernd.game.Count;
 import com.bernd.game.Direction;
 import com.bernd.game.MoveList;
 import com.bernd.game.Toggle;
-import com.bernd.game.Board;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
@@ -44,8 +44,7 @@ public record Game(
       moves.add(move);
     }
     if (move.agreeCounting()) {
-      return toBuilder()
-          .build();
+      return toBuilder().build();
     }
     if (counting) {
       int[][] updated = move.resetCounting() ?
@@ -195,9 +194,9 @@ public record Game(
   public String getScore() {
     int w = 0;
     int b = 0;
-    for (int y = 0; y < board().length; y++){
-      for (int x = 0; x < board[y].length; x++){
-        int color  = board[y][x];
+    for (int y = 0; y < board().length; y++) {
+      for (int x = 0; x < board[y].length; x++) {
+        int color = board[y][x];
         if ((color & (Board.W | Board.TERRITORY_W)) != 0) {
           w++;
         }

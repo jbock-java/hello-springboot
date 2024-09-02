@@ -15,14 +15,14 @@ import java.util.Set;
 public class ActiveGames {
 
   private final StatusMap statusMap;
-  private final Map<String, ActiveGame> map = new LinkedHashMap<>();
+  private final Map<String, ActiveGame> cache = new LinkedHashMap<>();
 
   ActiveGames(StatusMap statusMap) {
     this.statusMap = statusMap;
   }
 
   ActiveGame put(ActiveGame game) {
-    map.put(game.id(), game);
+    cache.put(game.id(), game);
     return game;
   }
 
@@ -30,7 +30,7 @@ public class ActiveGames {
     Set<String> active = statusMap.activeGames();
     List<ActiveGame> result = new ArrayList<>(active.size());
     for (String gameId : active) {
-      ActiveGame game = map.get(gameId);
+      ActiveGame game = cache.get(gameId);
       if (game != null) {
         result.add(game);
       }
