@@ -12,8 +12,6 @@ import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.RandomString;
 import com.bernd.util.SgfCreator;
-import java.security.Principal;
-import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +24,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.security.Principal;
+import java.time.LocalDate;
 
 import static com.bernd.util.Auth.getPrincipal;
 import static com.bernd.util.Util.COLORS;
@@ -82,6 +83,7 @@ public class GameController {
       return;
     }
     Move updatedMove = move
+        .withCount(game.moves().size())
         .withColor(game.isSelfPlay() ? color : principalColor);
     Game updated = game.update(updatedMove);
     games.put(updated);

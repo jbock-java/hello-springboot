@@ -92,7 +92,6 @@ function Board({gameState, setGameState}) {
   let id = gameState.id
   let lastMove = gameState.lastMove
   let queueStatus = gameState.queueStatus
-  let movesLength = gameState.moves.length
   let myColor = gameState.myColor
   let counting = gameState.counting
   let board = gameState.board
@@ -280,7 +279,6 @@ function Board({gameState, setGameState}) {
       }
     }
     let move = {
-      n: movesLength,
       x: cursor_x,
       y: cursor_y,
     }
@@ -292,7 +290,7 @@ function Board({gameState, setGameState}) {
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, movesLength, myColor, playClickSound, isCursorInBounds, showMoveNumbers])
+  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers])
 
   useEffect(() => {
     if (!board.length) {
