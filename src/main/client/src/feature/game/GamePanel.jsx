@@ -31,7 +31,6 @@ import {
 import {
   countingComplete,
   currentPlayer,
-  isSelfPlay,
   isKibitz,
   moveBack,
   moveForward,

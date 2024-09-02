@@ -24,7 +24,9 @@ export function BoardSettings({gameId, black, white}) {
   return (
     <div className="absolute pl-2 pt-1 flex flex-col items-center">
       <MuteIcon />
+      <div className="flex-none w-full h-[1px] my-2 bg-gray-500" />
       <Zoom />
+      <div className="flex-none w-full h-[1px] my-2 bg-gray-500" />
       <SaveGameFile gameId={gameId} black={black} white={white} />
     </div>
   )
@@ -34,7 +36,9 @@ function MuteIcon() {
   let toggleMuted = useMuteStore((state) => state.toggleMuted)
   let muted = useMuteStore(state => state.muted)
   return (
-    <button onClick={toggleMuted}>
+    <button
+        title={muted ? "Unmute" : "Mute"}
+        onClick={toggleMuted}>
       <IconContext.Provider value={{
         size: "1.5em",
       }}>
@@ -50,6 +54,7 @@ function Zoom() {
   return (
     <>
       <button
+        title="Zoom in"
         className="mt-[0.25rem]"
         onClick={() => setZoom(zoom + 1)}>
         <IconContext.Provider value={{
@@ -58,10 +63,13 @@ function Zoom() {
           <FaSearchPlus />
         </IconContext.Provider>
       </button>
-      <button onClick={() => setZoom(0)}>
-        <span className="text-2xl">{Math.trunc(zoom)}</span>
+      <button
+        title="Reset zoom"
+        onClick={() => setZoom(0)}>
+        <span className="font-mono text-2xl">{Math.trunc(zoom)}</span>
       </button>
       <button
+        title="Zoom out"
         className="mt-[0.125rem]"
         onClick={() => setZoom(zoom - 1)}>
         <IconContext.Provider value={{
@@ -77,6 +85,7 @@ function Zoom() {
 function SaveGameFile({gameId, black, white}) {
   return (
     <a
+      title="Download sgf file"
       href={base + "/api/sgf/" + gameId + "/" + black + "_vs_" + white + ".sgf"}
       target="_blank"
       download={gameId + "_" + black + "_vs_" + white + ".sgf"}
