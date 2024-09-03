@@ -109,6 +109,14 @@ export function isReviewing(baseState) {
   return baseState.viewPos < baseState.queueLength
 }
 
+export function isAtStart(gameState) {
+  return !gameState.viewPos
+}
+
+export function isAtEnd(gameState) {
+  return gameState.viewPos >= gameState.queueLength
+}
+
 export function teleport(baseState, targetPos) {
   let viewPos = baseState.viewPos
   if (targetPos >= baseState.queueLength) {

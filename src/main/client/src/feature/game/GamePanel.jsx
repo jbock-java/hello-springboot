@@ -36,6 +36,8 @@ import {
   moveForward,
   countingAgreed,
   gameHasEnded,
+  isAtStart,
+  isAtEnd,
 } from "./state.js"
 
 export const GamePanel = ({gameState, setGameState}) => {
@@ -101,7 +103,7 @@ function WarpControls({gameState, setGameState, activePlay}) {
   return (
     <div className="flex-none flex gap-x-1 items-center">
       <Button title="Back"
-        disabled={activePlay}
+        disabled={activePlay || isAtStart(gameState)}
         onClick={() => setGameState(moveBack(gameState))}
         className="py-1 px-2">
         Back
@@ -110,7 +112,7 @@ function WarpControls({gameState, setGameState, activePlay}) {
         <div>Move {gameState.viewPos}</div>
       </div>
       <Button title="Forward"
-        disabled={activePlay}
+        disabled={activePlay || isAtEnd(gameState)}
         onClick={() => setGameState(moveForward(gameState))}
         className="py-1 px-2">
         Forward
