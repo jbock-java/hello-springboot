@@ -174,16 +174,26 @@ function paintMoveNumber({cursorXref, cursorYref, stoneRadius, canvasRef, grid},
   ctx.fillText(historyEntry.n + 1, x, y)
 }
 
-export function paintLastMove({canvasRef, grid, stoneRadius}, lastMove) {
+export function paintLastMove(context, lastMove, countdown) {
   if (!lastMove) {
     return
   }
+  let {canvasRef, grid, stoneRadius} = context
   let {x: grid_x, y: grid_y, color} = lastMove
   let style = color === BLACK ?
     "rgba(255,255,255)" :
     "rgba(0,0,0)"
+  paintStone(context, grid_x, grid_y, color)
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
+  if (countdown && countdown < 10 && countdown > 0) {
+    ctx.font = "bold " + Math.trunc(stoneRadius * 1.125) + "px sans-serif"
+    ctx.textBaseline = "middle"
+    ctx.textAlign = "center"
+    ctx.fillStyle = style
+    ctx.fillText(countdown, x, y)
+    return
+  }
   let length = stoneRadius * 0.875
   ctx.fillStyle = style
   ctx.beginPath()

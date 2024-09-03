@@ -79,6 +79,9 @@ export function Game() {
 function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let [countdown, setCountdown] = useState(9)
+  let countdownRef = useRef()
+  countdownRef.current = countdown
   let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
@@ -100,6 +103,29 @@ function Board({gameState, setGameState}) {
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
   let howler = useRef()
+  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
+  let intervalIdRef = useRef()
+
+  let resetCountdown = useCallback(() => {
+    if (intervalIdRef.current) {
+      clearInterval(intervalIdRef.current)
+    }
+    setCountdown(10)
+    intervalIdRef.current = setInterval(() => {
+      setCountdown(countdown => countdown - 1)
+    }, 1000)
+
+  }, [])
+
+  useEffect(() => {
+    resetCountdown()
+    return () => {
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current)
+      }
+    }
+  }, [resetCountdown])
+
   let playClickSound = useCallback(() => {
     if (muted) {
       return
@@ -164,8 +190,6 @@ function Board({gameState, setGameState}) {
     return has
   }, [gameState, counting, board, isCursorInBounds])
 
-  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
-
   let context = useMemo(() => {
     let dim = board.length
     if (!dim) {
@@ -223,6 +247,12 @@ function Board({gameState, setGameState}) {
       hoshiRadius: getRadius(step * 0.0625),
     }
   }, [board, canvasRef, zoom])
+
+  useEffect(() => {
+    if (!showMoveNumbers) {
+      paintLastMove(context, lastMove, countdown)
+    }
+  }, [showMoveNumbers, context, lastMove, countdown])
 
   let onMouseMove = useCallback((e) => {
     if (dragging) {
@@ -285,12 +315,13 @@ function Board({gameState, setGameState}) {
     if (!isSelfPlay(gameState)) { // can't add early in self play; myColor is 0
       setGameState(addMove(gameState, {...move, color: myColor})) // early add move
     }
+    resetCountdown()
     playClickSound()
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers])
+  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers, resetCountdown])
 
   useEffect(() => {
     if (!board.length) {
@@ -312,7 +343,7 @@ function Board({gameState, setGameState}) {
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else {
-      paintLastMove(context, lastMove)
+      paintLastMove(context, lastMove, countdownRef.current)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return
@@ -352,9 +383,10 @@ function Board({gameState, setGameState}) {
     let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
       let move = JSON.parse(message.body)
       setGameState(addMove(gameState, move))
+      resetCountdown()
     })
     return sub.unsubscribe
-  }, [gameState, setGameState, stompClient, gameId])
+  }, [gameState, setGameState, stompClient, gameId, resetCountdown])
 
   if (!board.length) {
     return <div>Loading...</div>
