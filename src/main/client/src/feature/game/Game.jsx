@@ -79,6 +79,9 @@ export function Game() {
 function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
+  let [countdown, setCountdown] = useState(9)
+  let countdownRef = useRef()
+  countdownRef.current = countdown
   let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
@@ -100,6 +103,18 @@ function Board({gameState, setGameState}) {
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
   let howler = useRef()
+  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
+
+  useEffect(() => {
+    let intervalId = setInterval(() => {
+      setCountdown(countdown => {
+        if (countdown <= 1) {
+          clearInterval(intervalId)
+        }
+        return countdown - 1
+      })
+    }, 1000)
+  }, [setCountdown])
   let playClickSound = useCallback(() => {
     if (muted) {
       return
@@ -164,8 +179,6 @@ function Board({gameState, setGameState}) {
     return has
   }, [gameState, counting, board, isCursorInBounds])
 
-  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
-
   let context = useMemo(() => {
     let dim = board.length
     if (!dim) {
@@ -223,6 +236,12 @@ function Board({gameState, setGameState}) {
       hoshiRadius: getRadius(step * 0.0625),
     }
   }, [board, canvasRef, zoom])
+
+  useEffect(() => {
+    if (!showMoveNumbers) {
+      paintLastMove(context, lastMove, countdown)
+    }
+  }, [showMoveNumbers, context, lastMove, countdown])
 
   let onMouseMove = useCallback((e) => {
     if (dragging) {
@@ -312,7 +331,7 @@ function Board({gameState, setGameState}) {
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else {
-      paintLastMove(context, lastMove)
+      paintLastMove(context, lastMove, countdownRef.current)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return
