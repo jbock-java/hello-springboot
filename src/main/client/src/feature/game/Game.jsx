@@ -115,7 +115,11 @@ function Board({gameState, setGameState}) {
     }
     setTimeout(10)
     intervalIdRef.current = setInterval(() => {
-      setTimeout(timeoutRef.current - 1)
+      let t = timeoutRef.current - 1
+      setTimeout(t)
+      if (t <= 0) {
+        clearInterval(intervalIdRef.current)
+      }
     }, 1000)
 
   }, [setTimeout])

@@ -15,12 +15,15 @@ import {
 import {
   StompContext,
   base,
+  BLACK,
+  WHITE,
 } from "src/util.js"
 import {
   Button,
 } from "src/component/Button.jsx"
 import {
   useAuthStore,
+  useTimeoutStore,
 } from "src/store.js"
 import {
   Chat,
@@ -29,8 +32,12 @@ import {
   SideBar,
 } from "src/component/SideBar.jsx"
 import {
+  BabyStone,
+} from "src/component/BabyStone.jsx"
+import {
   countingComplete,
   currentPlayer,
+  currentColor,
   isKibitz,
   moveBack,
   moveForward,
@@ -53,7 +60,7 @@ export const GamePanel = ({gameState, setGameState}) => {
 function Panel({gameState, setGameState}) {
   let {gameId} = useParams()
   let auth = useAuthStore(state => state.auth)
-  let {black, white, counting, board} = gameState
+  let {counting, board} = gameState
 
   if (!board.length) {
     return <span>Loading...</span>
@@ -61,7 +68,7 @@ function Panel({gameState, setGameState}) {
   let activePlay = !isKibitz(gameState, auth) && !gameHasEnded(gameState)
   return (
     <>
-      <WhoIsWho black={black} white={white} />
+      <WhoIsWho gameState={gameState} />
       <WarpControls
         gameState={gameState}
         setGameState={setGameState}
@@ -76,17 +83,20 @@ function Panel({gameState, setGameState}) {
   )
 }
 
-function WhoIsWho({black, white}) {
+function WhoIsWho({gameState}) {
+  let {black, white} = gameState
+  let timeout = useTimeoutStore(state => state.timeout)
+  let color = currentColor(gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
   }, [navigate])
   return (
-    <div className="flex-none flex w-full gap-x-1">
-      <div>{white}</div>
-      <div>vs</div>
-      <div>{black}</div>
-      <div className="grow" />
+    <div className="flex-none grid grid-cols-[max-content_max-content_max-content_auto_max-content] w-full gap-x-4">
+      <div className="flex"><BabyStone color="white" className="pr-1" />{white}</div>
+      <div>VS</div>
+      <div className="flex"><BabyStone color="black" className="pr-1" />{black}</div>
+      <div />
       <button title="Leave the game" onClick={onExit}>
         <IconContext.Provider value={{
           size: "1.5em",
@@ -95,6 +105,11 @@ function WhoIsWho({black, white}) {
           <IoMdExit />
         </IconContext.Provider>
       </button>
+      <div>{color === WHITE ? timeout : "10"}</div>
+      <div />
+      <div>{color === BLACK ? timeout : "10"}</div>
+      <div />
+      <div />
     </div>
   )
 }

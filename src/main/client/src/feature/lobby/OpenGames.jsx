@@ -6,7 +6,6 @@ import {
   useCallback,
 } from "react"
 import {
-  FaCircle,
   FaAngleLeft,
   FaAngleRight,
 } from "react-icons/fa"
@@ -25,6 +24,9 @@ import {
 import {
   Button,
 } from "src/component/Button.jsx"
+import {
+  BabyStone,
+} from "src/component/BabyStone.jsx"
 import {
   base,
   StompContext,
@@ -156,13 +158,13 @@ function AcceptDialog({acceptableGame, onAccept}) {
       className="absolute bg-sky-200 px-4 py-3 rounded-lg z-10 flex flex-col">
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
-          <BabyStone color={isFlip ? "white": "black"} />
+          <BabyStone color={isFlip ? "white": "black"} className="pr-2" />
           {acceptableGame.game.user}
         </button>
       </div>
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
-          <BabyStone color={isFlip ? "black": "white"} />
+          <BabyStone color={isFlip ? "black": "white"} className="pr-2" />
           {auth.name}
         </button>
       </div>
@@ -193,10 +195,3 @@ function AcceptDialog({acceptableGame, onAccept}) {
   )
 }
 
-function BabyStone({color}) {
-  return (
-    <IconContext.Provider value={{ color: color, size: "1.5em", className: "pr-2" }}>
-      <FaCircle />
-    </IconContext.Provider>
-  )
-}
