@@ -143,12 +143,13 @@ function paintStone({canvasRef, grid, stoneRadius}, grid_x, grid_y, color) {
     "rgba(80,80,80,0)" :
     "hsla(0,0%,100%,0)"
   let [x, y] = grid[grid_y][grid_x]
+  let offset = Math.trunc(stoneRadius / 4)
   let ctx = canvasRef.current.getContext("2d")
   ctx.fillStyle = color === BLACK ? "#111" : "#ddd"
   ctx.beginPath()
   ctx.arc(x, y, stoneRadius, 0, TAU)
   ctx.fill()
-  let gradient = ctx.createRadialGradient(x - (stoneRadius/4), y - (stoneRadius/4), 0, x - (stoneRadius/4), y - (stoneRadius/4), stoneRadius)
+  let gradient = ctx.createRadialGradient(x - offset, y - offset, 0, x - offset, y - offset, stoneRadius)
   gradient.addColorStop(color === BLACK ? 0.55 : 0.7, innerStyle);
   gradient.addColorStop(color === BLACK ? 0.1 : 0.2, outerStyle);
   ctx.fillStyle = gradient
