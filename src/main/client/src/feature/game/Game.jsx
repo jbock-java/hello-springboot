@@ -105,7 +105,8 @@ function Board({gameState, setGameState}) {
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
   let howler = useRef()
-  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || gameHasEnded(gameState))
+  let end = gameHasEnded(gameState)
+  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
   let intervalIdRef = useRef()
 
   let resetCountdown = useCallback(() => {
@@ -174,10 +175,7 @@ function Board({gameState, setGameState}) {
   }, [board.length])
 
   let getCountingGroup = useCallback(() => {
-    if (gameHasEnded(gameState)) {
-      return undefined
-    }
-    if (!counting) {
+    if (end || !counting) {
       return undefined
     }
     if (!isCursorInBounds()) {
@@ -190,7 +188,7 @@ function Board({gameState, setGameState}) {
       return undefined
     }
     return has
-  }, [gameState, counting, board, isCursorInBounds])
+  }, [counting, board, isCursorInBounds, end])
 
   let context = useMemo(() => {
     let dim = board.length
@@ -251,10 +249,10 @@ function Board({gameState, setGameState}) {
   }, [board, canvasRef, zoom])
 
   useEffect(() => {
-    if (!showMoveNumbers) {
+    if (!showMoveNumbers && !counting && !end) {
       paintLastMove(context, lastMove, timeout)
     }
-  }, [showMoveNumbers, context, lastMove, timeout])
+  }, [showMoveNumbers, context, lastMove, timeout, counting, end])
 
   let onMouseMove = useCallback((e) => {
     if (dragging) {
@@ -286,7 +284,7 @@ function Board({gameState, setGameState}) {
       }
       return
     }
-    if (gameHasEnded(gameState)) {
+    if (end) {
       return
     }
     if (!board.length) {
@@ -323,7 +321,7 @@ function Board({gameState, setGameState}) {
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers, resetCountdown])
+  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers, resetCountdown, end])
 
   useEffect(() => {
     if (!board.length) {
@@ -344,8 +342,10 @@ function Board({gameState, setGameState}) {
     paintStones(context, board, showMoveNumbers)
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
-    } else {
+    } else if (!counting && !end) {
       paintLastMove(context, lastMove, timeoutRef.current)
+    } else {
+      paintLastMove(context, lastMove)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return
@@ -362,10 +362,10 @@ function Board({gameState, setGameState}) {
     if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
       return
     }
-    if (!showMoveNumbers) {
+    if (!showMoveNumbers && !counting && !end) {
       paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
     }
-  }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers])
+  }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers, end])
 
   useEffect(() => {
     if (id === gameId && queueStatus === "up_to_date") {
