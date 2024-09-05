@@ -29,6 +29,7 @@ import {
 import {
   useAuthStore,
   useMuteStore,
+  useTimeoutStore,
 } from "src/store.js"
 import {
   useLayoutStore,
@@ -79,9 +80,10 @@ export function Game() {
 function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let [countdown, setCountdown] = useState(9)
-  let countdownRef = useRef()
-  countdownRef.current = countdown
+  let timeout = useTimeoutStore(state => state.timeout)
+  let setTimeout = useTimeoutStore(state => state.setTimeout)
+  let timeoutRef = useRef()
+  timeoutRef.current = timeout
   let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
@@ -110,12 +112,12 @@ function Board({gameState, setGameState}) {
     if (intervalIdRef.current) {
       clearInterval(intervalIdRef.current)
     }
-    setCountdown(10)
+    setTimeout(10)
     intervalIdRef.current = setInterval(() => {
-      setCountdown(countdown => countdown - 1)
+      setTimeout(timeoutRef.current - 1)
     }, 1000)
 
-  }, [])
+  }, [setTimeout])
 
   useEffect(() => {
     resetCountdown()
@@ -250,9 +252,9 @@ function Board({gameState, setGameState}) {
 
   useEffect(() => {
     if (!showMoveNumbers) {
-      paintLastMove(context, lastMove, countdown)
+      paintLastMove(context, lastMove, timeout)
     }
-  }, [showMoveNumbers, context, lastMove, countdown])
+  }, [showMoveNumbers, context, lastMove, timeout])
 
   let onMouseMove = useCallback((e) => {
     if (dragging) {
@@ -343,7 +345,7 @@ function Board({gameState, setGameState}) {
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else {
-      paintLastMove(context, lastMove, countdownRef.current)
+      paintLastMove(context, lastMove, timeoutRef.current)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return

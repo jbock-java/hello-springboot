@@ -45,3 +45,12 @@ export const useMuteStore = create(
     { name: "mute-storage" },
   )
 )
+
+export const useTimeoutStore = create(set => (
+  {
+    timeout: 10,
+    setTimeout: timeout => set({
+      timeout: timeout,
+    })
+  }
+))
