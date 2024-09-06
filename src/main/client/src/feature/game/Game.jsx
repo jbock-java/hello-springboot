@@ -81,6 +81,7 @@ function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
   let timeout = useTimeoutStore(state => state.timeout)
+  let fulltime = useTimeoutStore(state => state.fulltime)
   let setTimeout = useTimeoutStore(state => state.setTimeout)
   let timeoutRef = useRef()
   timeoutRef.current = timeout
@@ -113,7 +114,7 @@ function Board({gameState, setGameState}) {
     if (intervalIdRef.current) {
       clearInterval(intervalIdRef.current)
     }
-    setTimeout(10)
+    setTimeout(fulltime)
     intervalIdRef.current = setInterval(() => {
       let t = timeoutRef.current - 1
       setTimeout(t)
@@ -122,7 +123,7 @@ function Board({gameState, setGameState}) {
       }
     }, 1000)
 
-  }, [setTimeout])
+  }, [setTimeout, fulltime])
 
   useEffect(() => {
     resetCountdown()

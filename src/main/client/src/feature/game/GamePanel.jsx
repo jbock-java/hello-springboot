@@ -87,6 +87,7 @@ function WhoIsWho({gameState}) {
   let {black, white, counting} = gameState
   let end = gameHasEnded(gameState)
   let timeout = useTimeoutStore(state => state.timeout)
+  let fulltime = useTimeoutStore(state => state.fulltime)
   let color = currentColor(gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
@@ -106,9 +107,9 @@ function WhoIsWho({gameState}) {
           <IoMdExit />
         </IconContext.Provider>
       </button>
-      <div>{!counting && !end && color === WHITE ? timeout : "10"}</div>
+      <div>{!counting && !end && color === WHITE ? timeout : fulltime}</div>
       <div />
-      <div>{!counting && !end && color === BLACK ? timeout : "10"}</div>
+      <div>{!counting && !end && color === BLACK ? timeout : fulltime}</div>
       <div />
       <div />
     </div>
