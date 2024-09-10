@@ -22,6 +22,7 @@ import {
   StompContext,
   tfetch,
   doTry,
+  COLORS,
 } from "src/util.js"
 import {
   PointList,
@@ -42,6 +43,7 @@ import {
   paintStones,
   paintStonesCounting,
   paintLastMove,
+  paintNumber,
   paintMoveNumbers,
 } from "./paint.js"
 import {
@@ -58,6 +60,7 @@ import {
   createGameState,
   isReviewing,
   teleport,
+  setWinnerByTime,
 } from "./state.js"
 import { 
   BoardSettings,
@@ -85,6 +88,8 @@ function Board({gameState, setGameState}) {
   let setTimeout = useTimeoutStore(state => state.setTimeout)
   let timeoutRef = useRef()
   timeoutRef.current = timeout
+  let gameStateRef = useRef()
+  gameStateRef.current = gameState
   let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
   let zoom = useViewStateStore(state => state.zoom)
   let {gameId} = useParams()
@@ -120,10 +125,13 @@ function Board({gameState, setGameState}) {
       setTimeout(t)
       if (t <= 0) {
         clearInterval(intervalIdRef.current)
+        let gameState = gameStateRef.current
+        let updated = setWinnerByTime(gameState, currentColor(gameState) ^ COLORS)
+        setGameState(updated)
       }
     }, 1000)
 
-  }, [setTimeout, fulltime])
+  }, [setTimeout, fulltime, setGameState])
 
   useEffect(() => {
     resetCountdown()
@@ -349,8 +357,8 @@ function Board({gameState, setGameState}) {
       paintMoveNumbers(context, board)
     } else if (!counting && !end) {
       paintLastMove(context, lastMove, timeoutRef.current)
-    } else {
-      paintLastMove(context, lastMove)
+    } else if (lastMove) {
+      paintNumber(context, lastMove.x, lastMove.y, lastMove.n + 1, lastMove.color)
     }
     if (currentPlayer(gameState) !== auth.name) {
       return

@@ -33,6 +33,7 @@ export function initialState() {
     baseBoard: [],
     historyBoard: [],
     viewPos: Number.NaN,
+    winnerByTime: 0,
     dim: 0,
     handicap: 0,
     queueStatus: "behind",
@@ -97,7 +98,10 @@ export function countingAgreed({moves, myColor}) {
   return move.color === myColor && move.action === "agreeCounting"
 }
 
-export function gameHasEnded({moves}) {
+export function gameHasEnded({winnerByTime, moves}) {
+  if (winnerByTime) {
+    return true
+  }
   if (!moves.length) {
     return false
   }
@@ -161,15 +165,17 @@ function goToEnd(baseState) {
   let queueLength = baseState.queueLength
   let baseBoard = baseState.baseBoard
   let historyBoard = baseState.historyBoard
-  for (let i = queueLength; i < moves.length; i++) {
+  for (let i = baseState.viewPos; i < moves.length; i++) {
     let move = moves[i]
     let previousMove = getMove(moves, i - 1)
-    let [, updated] = updateBoardState(baseBoard, previousMove, move, true)
+    let [, updated] = updateBoardState(baseBoard, previousMove, move, !baseState.winnerByTime)
     baseBoard = updated
   }
+  let board = rehydrate(baseBoard, historyBoard)
   return produce(baseState, (draft) => {
-    draft.board = rehydrate(baseBoard, historyBoard)
-    draft.viewPos = baseState.queueLength
+    draft.board = board
+    draft.viewPos = queueLength
+    draft.lastMove = getMove(moves, queueLength - 1)
   })
 }
 
@@ -207,6 +213,12 @@ export function addMove(baseState, move) {
     if (action === "pass" && previousMove?.action === "pass") {
       draft.counting = true
     }
+  })
+}
+
+export function setWinnerByTime(baseState, winnerByTime) {
+  return produce(baseState, (draft) => {
+    draft.winnerByTime = winnerByTime
   })
 }
 
