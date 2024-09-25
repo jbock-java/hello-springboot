@@ -7,6 +7,7 @@ public record ViewGame(
     String black,
     String white,
     int dim,
+    int timesetting,
     int handicap,
     List<Move> moves
 ) {
@@ -17,6 +18,7 @@ public record ViewGame(
         game.black(),
         game.white(),
         game.dim(),
+        game.timesetting(),
         game.handicap(),
         game.moves().moves());
   }

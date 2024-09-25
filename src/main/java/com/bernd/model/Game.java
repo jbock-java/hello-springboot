@@ -20,6 +20,7 @@ public record Game(
     boolean counting,
     int[][] board,
     int dim,
+    int timesetting,
     int handicap,
     int[] forbidden,
     MoveList moves
