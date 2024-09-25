@@ -8,14 +8,15 @@ public record OpenGame(
     String id,
     String user,
     int dim,
+    int timesetting,
     int handicap) {
 
   public OpenGame withId(String id) {
-    return new OpenGame(id, user, dim, handicap);
+    return new OpenGame(id, user, dim, timesetting, handicap);
   }
 
   public OpenGame withUser(String name) {
-    return new OpenGame(id, name, dim, handicap);
+    return new OpenGame(id, name, dim, timesetting, handicap);
   }
 
   public Game accept(String opponent, AcceptRequest acceptRequest) {
@@ -28,6 +29,7 @@ public record OpenGame(
         false,
         createEmptyBoard(dim),
         dim,
+        timesetting,
         acceptRequest.handicap(),
         new int[]{-1, -1},
         MoveList.create(dim));

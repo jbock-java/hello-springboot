@@ -72,6 +72,7 @@ public class LobbyController {
         false,
         createEmptyBoard(request.dim()),
         request.dim(),
+        request.timesetting(),
         request.handicap(),
         new int[]{-1, -1},
         MoveList.create(request.dim())));

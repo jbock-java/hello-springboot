@@ -46,6 +46,7 @@ public final class GameBuilder {
         counting,
         board,
         game.dim(),
+        game.timesetting(),
         game.handicap(),
         forbidden,
         game.moves()
