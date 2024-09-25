@@ -133,7 +133,7 @@ export function Lobby() {
 
 function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen, newGameRef}) {
   let dimRef = useRef(9)
-  let timeRef = useRef(0)
+  let timeRef = useRef(10)
   let [edit, setEdit] = useState(false)
   return (
     <form className="contents" onSubmit={(e) => {
@@ -145,56 +145,60 @@ function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen, newGameRef}) {
           onNewGame(game)
         }
       }}>
-      <div className="flex justify-start">
-        <div ref={newGameRef} className="absolute ml-40 bg-slate-800 w-96 border-2 border-slate-600 rounded-lg">
-          <div className="absolute top-1 right-0 mr-2">
-            <button onClick={() => setNewGameOpen(false)} className="ml-1 text-stone-100 hover:text-stone-300">
-              <IconContext.Provider value={{ size: "1.25em" }}>
-                <CgClose />
-              </IconContext.Provider>
-            </button>
+      <div ref={newGameRef} className="absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg z-10 px-3 py-2">
+        <div className="absolute top-1 right-1">
+          <button onClick={() => setNewGameOpen(false)} className="text-stone-100 hover:text-stone-300">
+            <IconContext.Provider value={{ size: "1.25em" }}>
+              <CgClose />
+            </IconContext.Provider>
+          </button>
+        </div>
+        <div className="mt-1">
+          <span className="italic text-gray-400">Board Dimension:</span>
+        </div>
+        <div className="flex flex-row gap-x-4">
+          <div>
+            <input id="dim-9" type="radio" name="dim" value="9" defaultChecked={true} onClick={() => dimRef.current = 9} />
+            <label htmlFor="dim-9" className="pt-[0.625rem]">9x9</label>
           </div>
-          <div className="grid grid-cols-3 gap-1">
-            <div className="col-span-3 pt-3">
-              <label className="italic text-gray-400 ml-2">Dimension</label>
-            </div>
-            <div>
-              <input id="dim-9" type="radio" name="dim" value="9" className="ml-2" defaultChecked={true} onClick={() => dimRef.current = 9} />
-              <label htmlFor="dim-9" className="pt-[0.625rem] pr-1" >9x9</label>
-            </div>
-            <div>
-              <input id="dim-13" type="radio" name="dim" value="13" onClick={() => dimRef.current = 13} />
-              <label htmlFor="dim-13" className="pt-[0.625rem] pr-1">13x13</label>
-            </div>
-            <div>
-              <input id="dim-19" type="radio" name="dim" value="19" onClick={() => dimRef.current = 19} />
-              <label htmlFor="dim-19" className="pt-[0.625rem] pr-5">19x19</label>
-            </div>
-            <div className="col-span-3">
-              <label className="italic text-gray-400 ml-2">Time</label>
-            </div>
-            <div>
-              <input id="time-0" type="radio" name="time" value="0" className="ml-2" defaultChecked={true} onClick={() => timeRef.current = 0} />
-              <label htmlFor="time-0" className="pt-[0.625rem] pr-1" >0s</label>
-            </div>
-            <div>
-              <input id="time-10" type="radio" name="time" value="10" onClick={() => timeRef.current = 10} />
-              <label htmlFor="time-10" className="pt-[0.625rem] pr-1">10s</label>
-            </div>
-            <div>
-              <input id="time-30" type="radio" name="time" value="30" onClick={() => timeRef.current = 30} />
-              <label htmlFor="time-30" className="pt-[0.625rem] pr-1">30s</label>
-            </div>
+          <div>
+            <input id="dim-13" type="radio" name="dim" value="13" onClick={() => dimRef.current = 13} />
+            <label htmlFor="dim-13" className="pt-[0.625rem]">13x13</label>
           </div>
-          <div className="flex flex-row w-full pt-2 pr-2 pb-2">
-            <input className="ml-2" id="cb-edit" type="checkbox" name="edit" checked={edit} onChange={() => setEdit(!edit)} />
-            <label htmlFor="cb-edit" className="pt-[0.625rem] ml-1">Edit</label>
-            <div className="grow" />
-            <Button type="submit" className="ml-2">OK</Button>
+          <div>
+            <input id="dim-19" type="radio" name="dim" value="19" onClick={() => dimRef.current = 19} />
+            <label htmlFor="dim-19" className="pt-[0.625rem]">19x19</label>
           </div>
         </div>
+        <div className="mt-3">
+          <span className="italic text-gray-400">Time Setting:</span>
+        </div>
+        <div className="flex flex-row gap-x-3">
+          <div>
+            <input id="time-0" type="radio" name="time" value="0" onClick={() => timeRef.current = 0} />
+            <label htmlFor="time-0" className="pt-[0.625rem]" >No time limit</label>
+          </div>
+          <div>
+            <input id="time-10" type="radio" name="time" value="10" defaultChecked={true} onClick={() => timeRef.current = 10} />
+            <label htmlFor="time-10" className="pt-[0.625rem]">10s</label>
+          </div>
+          <div>
+            <input id="time-30" type="radio" name="time" value="30" onClick={() => timeRef.current = 30} />
+            <label htmlFor="time-30" className="pt-[0.625rem]">30s</label>
+          </div>
+        </div>
+        <div className="flex flex-row w-full mt-3">
+          <div className="self-end">
+          <input id="cb-edit" type="checkbox" name="edit" checked={edit} onChange={() => setEdit(!edit)} />
+          <label htmlFor="cb-edit" className={twJoin(
+            !edit && "text-gray-400",
+            "pt-[0.625rem] ml-1",
+          )}>Edit Mode</label>
+          </div>
+          <div className="grow" />
+          <Button type="submit">OK</Button>
+        </div>
       </div>
-      
     </form>
   )
 }

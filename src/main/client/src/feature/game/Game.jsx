@@ -84,7 +84,7 @@ function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
   let timeout = useTimeoutStore(state => state.timeout)
-  let fulltime = useTimeoutStore(state => state.fulltime)
+  let timesetting = gameState.timesetting
   let setTimeout = useTimeoutStore(state => state.setTimeout)
   let timeoutRef = useRef()
   timeoutRef.current = timeout
@@ -119,7 +119,7 @@ function Board({gameState, setGameState}) {
     if (intervalIdRef.current) {
       clearInterval(intervalIdRef.current)
     }
-    setTimeout(fulltime)
+    setTimeout(timesetting)
     intervalIdRef.current = setInterval(() => {
       let t = timeoutRef.current - 1
       setTimeout(t)
@@ -131,7 +131,7 @@ function Board({gameState, setGameState}) {
       }
     }, 1000)
 
-  }, [setTimeout, fulltime, setGameState])
+  }, [setTimeout, timesetting, setGameState])
 
   useEffect(() => {
     resetCountdown()
@@ -372,7 +372,7 @@ function Board({gameState, setGameState}) {
     if (board[cursor_y][cursor_x].isForbidden(currentColor(gameState))) {
       return
     }
-    if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
+    if (cursor_x === forbidden_x && cursor_y === forbidden_y) {
       return
     }
     if (!showMoveNumbers && !counting && !end) {
