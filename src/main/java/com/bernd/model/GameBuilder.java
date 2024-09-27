@@ -3,7 +3,7 @@ package com.bernd.model;
 public final class GameBuilder {
   private final Game game;
 
-  private boolean counting;
+  private int state;
   private int[][] board;
   private int[] forbidden;
 
@@ -11,8 +11,8 @@ public final class GameBuilder {
     this.game = game;
   }
 
-  public GameBuilder withCounting(boolean counting) {
-    this.counting = counting;
+  public GameBuilder withState(int state) {
+    this.state = state;
     return this;
   }
 
@@ -32,7 +32,7 @@ public final class GameBuilder {
 
   static GameBuilder builder(Game game) {
     GameBuilder builder = new GameBuilder(game);
-    builder.counting = game.counting();
+    builder.state = game.state();
     builder.board = game.board();
     builder.forbidden = game.forbidden();
     return builder;
@@ -43,10 +43,11 @@ public final class GameBuilder {
         game.id(),
         game.black(),
         game.white(),
-        counting,
+        state,
         board,
         game.dim(),
         game.timesetting(),
+        System.currentTimeMillis(),
         game.handicap(),
         forbidden,
         game.moves()

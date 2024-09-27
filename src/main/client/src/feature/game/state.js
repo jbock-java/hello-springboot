@@ -26,6 +26,9 @@ import {
   PointList,
 } from "src/model/PointList.js"
 
+const STATE_COUNTING = 1
+const STATE_TIMEOUT = 2
+
 export function initialState() {
   return {
     id: "",
@@ -41,7 +44,7 @@ export function initialState() {
     black: "",
     white: "",
     myColor: 0,
-    counting: false,
+    state: 0,
     queueLength: 0,
     lastMove: undefined,
     board: [],
@@ -49,8 +52,8 @@ export function initialState() {
   }
 }
 
-export function countingComplete({dim, counting, baseBoard}) {
-  if (!counting) {
+export function countingComplete({dim, state, baseBoard}) {
+  if (state !== STATE_COUNTING) {
     return false
   }
   for (let y = 0; y < dim; y++) {
@@ -99,7 +102,10 @@ export function countingAgreed({moves, myColor}) {
   return move.color === myColor && move.action === "agreeCounting"
 }
 
-export function gameHasEnded({winnerByTime, moves}) {
+export function gameHasEnded({state, winnerByTime, moves}) {
+  if (state === STATE_TIMEOUT) {
+    return true
+  }
   if (winnerByTime) {
     return true
   }
@@ -182,7 +188,8 @@ function goToEnd(baseState) {
 
 export function addMove(baseState, move) {
   let {action, n} = move
-  let {moves, baseBoard, historyBoard, counting, queueLength} = baseState
+  let {moves, baseBoard, historyBoard, state, queueLength} = baseState
+  let counting = state === STATE_COUNTING
   let previousMove = getMove(moves, n - 1)
   if (n < moves.length) {
     return baseState
@@ -212,7 +219,7 @@ export function addMove(baseState, move) {
     draft.board = rehydrate(updated, updatedFinalBoard)
     draft.forbidden = forbidden
     if (action === "pass" && previousMove?.action === "pass") {
-      draft.counting = true
+      draft.state = STATE_COUNTING
     }
   })
 }
@@ -275,7 +282,7 @@ export function createGameState(game, auth) {
     dim: game.dim,
     timesetting: game.timesetting,
     handicap: game.handicap,
-    counting: counting,
+    state: game.state,
     baseBoard: baseBoard,
     historyBoard: historyBoard,
     moves: moves,
@@ -393,4 +400,8 @@ function updateHistoryBoard(historyBoard, move) {
   let oldColor = historyBoard[y][x].color
   updated[y][x] = {n, color: (color || oldColor)}
   return updated
+}
+
+export function isCounting({state}) {
+  return state === STATE_COUNTING
 }

@@ -26,10 +26,11 @@ public record OpenGame(
         id,
         userBlack,
         userWhite,
-        false,
+        Game.STATE_NORMAL,
         createEmptyBoard(dim),
         dim,
         timesetting,
+        System.currentTimeMillis(),
         acceptRequest.handicap(),
         new int[]{-1, -1},
         MoveList.create(dim));

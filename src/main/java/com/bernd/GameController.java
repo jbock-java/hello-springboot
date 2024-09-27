@@ -72,35 +72,44 @@ public class GameController {
     if (p == null || game == null) {
       return;
     }
-    if (game.isForbidden(move)) {
+    if (game.gameHasEnded()) {
       return;
     }
     int principalColor = getColorFromPrincipal(game, getPrincipal(p));
-    int color = getColorFromGameState(game);
-    if (color == 0
-        || principalColor == 0
-        || color != principalColor && !game.counting() && !game.isSelfPlay()) {
+    if (principalColor == 0) {
       return;
     }
-    Move updatedMove = move
+    int color = getColorFromGameState(game);
+    Chat chat = chats.get(game.id());
+    if (System.currentTimeMillis() > game.updated() + game.timesetting() * 1000L) {
+      games.put(game.withTimeoutState());
+      String text = color == Board.W ? "B+Time" : "W+Time";
+      ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), text, null, "status", null);
+      chat.messages().add(message);
+      operations.convertAndSend("/topic/chat/" + chat.id(), message);
+      operations.convertAndSend("/topic/move/" + game.id(), game.getLastMove());
+      return;
+    }
+    if (!game.isCounting() && !game.isSelfPlay() && color != principalColor) {
+      return;
+    }
+    if (game.isForbidden(move)) {
+      return;
+    }
+    Game updated = game.update(move
         .withCount(game.moves().size())
-        .withColor(game.isSelfPlay() ? color : principalColor);
-    Game updated = game.update(updatedMove);
+        .withColor(game.isSelfPlay() ? color : principalColor));
     games.put(updated);
     Move lastMove = game.getLastMove();
     if (lastMove.end()) {
-      Chat chat = chats.get(game.id());
       ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), game.getScore(), null, "status", null);
       chat.messages().add(message);
       operations.convertAndSend("/topic/chat/" + chat.id(), message);
     }
-    operations.convertAndSend("/topic/move/" + game.id(), lastMove.removeColor());
+    operations.convertAndSend("/topic/move/" + game.id(), lastMove);
   }
 
   private int getColorFromGameState(Game game) {
-    if (game.gameHasEnded()) {
-      return 0;
-    }
     if (game.remainingHandicap() > 0) {
       return Board.B;
     }

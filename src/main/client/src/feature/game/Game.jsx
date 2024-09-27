@@ -59,6 +59,7 @@ import {
   isKibitz,
   createGameState,
   isReviewing,
+  isCounting,
   teleport,
   setWinnerByTime,
 } from "./state.js"
@@ -104,7 +105,7 @@ function Board({gameState, setGameState}) {
   let lastMove = gameState.lastMove
   let queueStatus = gameState.queueStatus
   let myColor = gameState.myColor
-  let counting = gameState.counting
+  let counting = isCounting(gameState)
   let board = gameState.board
   let [forbidden_x, forbidden_y] = gameState.forbidden
   let canvasRef = useRef()
@@ -326,7 +327,12 @@ function Board({gameState, setGameState}) {
       y: cursor_y,
     }
     if (!isSelfPlay(gameState)) { // can't add early in self play; myColor is 0
-      setGameState(addMove(gameState, {...move, color: myColor})) // early add move
+      // early add move
+      setGameState(addMove(gameState, {
+        ...move,
+        color: myColor,
+        n: gameState.moves.length,
+        }))
     }
     resetCountdown()
     playClickSound()

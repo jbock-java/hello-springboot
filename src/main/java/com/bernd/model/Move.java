@@ -19,10 +19,6 @@ public record Move(
     return new Move(color, n, action, x, y);
   }
 
-  public Move removeColor() {
-    return this;
-  }
-
   public boolean agreeCounting() {
     return "agreeCounting".equals(action);
   }

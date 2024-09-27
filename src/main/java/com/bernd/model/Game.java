@@ -10,6 +10,8 @@ import com.bernd.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Objects;
+
 import static com.bernd.game.Board.removeDeadStonesAround;
 import static com.bernd.util.Util.COLORS;
 
@@ -17,14 +19,19 @@ public record Game(
     String id,
     String black,
     String white,
-    boolean counting,
+    int state,
     int[][] board,
     int dim,
     int timesetting,
+    long updated,
     int handicap,
     int[] forbidden,
     MoveList moves
 ) {
+
+  public static final int STATE_NORMAL = 0;
+  public static final int STATE_COUNTING = 1;
+  public static final int STATE_TIMEOUT = 2;
 
   private static final Logger logger = LogManager.getLogger(Game.class);
   public static final int[] NOT_FORBIDDEN = {-1, -1};
@@ -47,7 +54,7 @@ public record Game(
     if (move.agreeCounting()) {
       return toBuilder().build();
     }
-    if (counting) {
+    if (isCounting()) {
       int[][] updated = move.resetCounting() ?
           Toggle.resetCounting(board) :
           Toggle.toggleStonesAt(board, move.x(), move.y());
@@ -59,7 +66,7 @@ public record Game(
     if (move.pass()) {
       if (opponentPassed()) {
         return toBuilder()
-            .withCounting(true)
+            .withState(STATE_COUNTING)
             .withBoard(Count.count(board))
             .withForbidden(NOT_FORBIDDEN)
             .build();
@@ -143,6 +150,9 @@ public record Game(
   }
 
   public boolean gameHasEnded() {
+    if (isTimeout()) {
+      return true;
+    }
     if (moves.isEmpty()) {
       return false;
     }
@@ -189,7 +199,11 @@ public record Game(
   }
 
   public boolean isForbidden(Move move) {
-    return move.x() == forbidden[0] && move.y() == forbidden[1];
+    if (!Objects.toString(move.action(), "").isEmpty()) {
+      return false;
+    }
+    return move.x() == -1 || move.y() == -1 ||
+        move.x() == forbidden[0] && move.y() == forbidden[1];
   }
 
   public String getScore() {
@@ -207,5 +221,18 @@ public record Game(
       }
     }
     return w > b ? "W+" + w : "B+" + b;
+  }
+
+  public Game withTimeoutState() {
+    moves.addGameEndMarker();
+    return toBuilder().withState(STATE_TIMEOUT).build();
+  }
+
+  public boolean isTimeout() {
+    return state == STATE_TIMEOUT;
+  }
+
+  public boolean isCounting() {
+    return state == STATE_COUNTING;
   }
 }

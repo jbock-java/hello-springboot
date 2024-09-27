@@ -39,6 +39,7 @@ import {
   currentPlayer,
   currentColor,
   isKibitz,
+  isCounting,
   moveBack,
   moveForward,
   countingAgreed,
@@ -60,7 +61,8 @@ export const GamePanel = ({gameState, setGameState}) => {
 function Panel({gameState, setGameState}) {
   let {gameId} = useParams()
   let auth = useAuthStore(state => state.auth)
-  let {counting, board} = gameState
+  let {board} = gameState
+  let counting = isCounting(gameState)
 
   if (!board.length) {
     return <span>Loading...</span>
@@ -84,7 +86,8 @@ function Panel({gameState, setGameState}) {
 }
 
 function WhoIsWho({gameState}) {
-  let {black, white, counting} = gameState
+  let {black, white} = gameState
+  let counting = isCounting(gameState)
   let end = gameHasEnded(gameState)
   let timeout = useTimeoutStore(state => state.timeout)
   let timesetting = gameState.timesetting

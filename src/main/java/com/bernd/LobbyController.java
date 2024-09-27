@@ -69,10 +69,11 @@ public class LobbyController {
         RandomString.get(),
         principal,
         principal,
-        false,
+        Game.STATE_NORMAL,
         createEmptyBoard(request.dim()),
         request.dim(),
         request.timesetting(),
+        System.currentTimeMillis(),
         request.handicap(),
         new int[]{-1, -1},
         MoveList.create(request.dim())));
