@@ -36,7 +36,6 @@ export function initialState() {
     baseBoard: [],
     historyBoard: [],
     viewPos: Number.NaN,
-    winnerByTime: 0,
     dim: 0,
     timesetting: 0,
     handicap: 0,
@@ -102,11 +101,8 @@ export function countingAgreed({moves, myColor}) {
   return move.color === myColor && move.action === "agreeCounting"
 }
 
-export function gameHasEnded({state, winnerByTime, moves}) {
+export function gameHasEnded({state, moves}) {
   if (state === STATE_TIMEOUT) {
-    return true
-  }
-  if (winnerByTime) {
     return true
   }
   if (!moves.length) {
@@ -221,12 +217,6 @@ export function addMove(baseState, move) {
     if (action === "pass" && previousMove?.action === "pass") {
       draft.state = STATE_COUNTING
     }
-  })
-}
-
-export function setWinnerByTime(baseState, winnerByTime) {
-  return produce(baseState, (draft) => {
-    draft.winnerByTime = winnerByTime
   })
 }
 

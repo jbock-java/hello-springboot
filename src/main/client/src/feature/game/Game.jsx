@@ -22,7 +22,6 @@ import {
   StompContext,
   tfetch,
   doTry,
-  COLORS,
 } from "src/util.js"
 import {
   PointList,
@@ -61,7 +60,6 @@ import {
   isReviewing,
   isCounting,
   teleport,
-  setWinnerByTime,
 } from "./state.js"
 import { 
   BoardSettings,
@@ -126,13 +124,16 @@ function Board({gameState, setGameState}) {
       setTimeout(t)
       if (t <= 0) {
         clearInterval(intervalIdRef.current)
-        let gameState = gameStateRef.current
-        let updated = setWinnerByTime(gameState, currentColor(gameState) ^ COLORS)
-        setGameState(updated)
+        window.setTimeout(() => {
+          stompClient.publish({
+            destination: "/app/game/move",
+            body: JSON.stringify({ x: -1, y: -1 }),
+          })
+        }, 100)
       }
     }, 1000)
 
-  }, [setTimeout, timesetting, setGameState])
+  }, [setTimeout, timesetting, stompClient])
 
   useEffect(() => {
     resetCountdown()
@@ -363,7 +364,7 @@ function Board({gameState, setGameState}) {
       paintMoveNumbers(context, board)
     } else if (!counting && !end) {
       paintLastMove(context, lastMove, timeoutRef.current)
-    } else if (lastMove) {
+    } else if (lastMove && !lastMove.action) {
       paintNumber(context, lastMove.x, lastMove.y, lastMove.n + 1, lastMove.color)
     }
     if (currentPlayer(gameState) !== auth.name) {
