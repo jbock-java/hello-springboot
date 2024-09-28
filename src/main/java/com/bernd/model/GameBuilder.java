@@ -6,6 +6,7 @@ public final class GameBuilder {
   private int state;
   private int[][] board;
   private int[] forbidden;
+  private long updated = System.currentTimeMillis();
 
   private GameBuilder(Game game) {
     this.game = game;
@@ -30,6 +31,11 @@ public final class GameBuilder {
     return withForbidden(new int[]{x, y});
   }
 
+  GameBuilder withUpdated(long updated) {
+    this.updated = updated;
+    return this;
+  }
+
   static GameBuilder builder(Game game) {
     GameBuilder builder = new GameBuilder(game);
     builder.state = game.state();
@@ -47,7 +53,7 @@ public final class GameBuilder {
         board,
         game.dim(),
         game.timesetting(),
-        System.currentTimeMillis(),
+        updated,
         game.handicap(),
         forbidden,
         game.moves()

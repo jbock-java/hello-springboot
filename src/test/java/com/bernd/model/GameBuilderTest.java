@@ -14,14 +14,15 @@ class GameBuilderTest {
         "123",
         "bernd",
         "heike",
-        true,
+        1,
         createEmptyBoard(9),
         9,
-        2,
+        10,
+        1727532679000L,
         0,
         new int[]{-1, -1},
         MoveList.create(2));
-    Game game2 = GameBuilder.builder(game).build();
+    Game game2 = GameBuilder.builder(game).withUpdated(game.updated()).build();
     assertEquals(game, game2);
   }
 }
