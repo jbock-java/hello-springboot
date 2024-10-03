@@ -35,6 +35,7 @@ import {
 } from "src/util.js"
 import {
   useAuthStore,
+  useLobbyStore,
 } from "src/store.js"
 
 export function OpenGames() {
@@ -87,13 +88,11 @@ export function OpenGames() {
             key={game.id} />
         ))}
       </div>
-      {acceptableGame && (
-        <AcceptDialog
-          acceptableGame={acceptableGame}
-          setAcceptableGame={setAcceptableGame}
-          onAccept={onAccept}
+      <AcceptDialog
+        acceptableGame={acceptableGame}
+        setAcceptableGame={setAcceptableGame}
+        onAccept={onAccept}
         />
-      )}
     </div>
   )
 }
@@ -139,7 +138,7 @@ function OpenGame({game, acceptableGame, setAcceptableGame}) {
 }
 
 function AcceptDialog({acceptableGame, onAccept}) {
-  let { top, right } = acceptableGame.rect
+  let { top, right } = acceptableGame?.rect || {top: 0, right: 0}
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
@@ -151,15 +150,17 @@ function AcceptDialog({acceptableGame, onAccept}) {
         handicap: handi === 1 ? 0 : handi,
       })}
       style={{
-        position: "absolute",
         top: top,
         left: Math.trunc(right) + 16,
       }}
-      className="absolute bg-sky-200 px-4 py-3 rounded-lg z-10 flex flex-col">
+      className={twJoin(
+        !acceptableGame && "hidden",
+        "absolute bg-sky-200 px-4 py-3 rounded-lg z-8 flex flex-col",
+      )}>
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
           <BabyStone color={isFlip ? "white": "black"} className="pr-2" />
-          {acceptableGame.game.user}
+          {acceptableGame?.game.user}
         </button>
       </div>
       <div className="text-black">

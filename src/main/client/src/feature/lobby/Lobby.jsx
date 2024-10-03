@@ -30,6 +30,7 @@ import {
 } from "./ActiveGames.jsx"
 import {
   useAuthStore,
+  useLobbyStore,
 } from "src/store.js"
 import {
   CgClose,
@@ -44,25 +45,15 @@ const detailData = [
 ]
 
 export function Lobby() {
-  let [isNewGameOpen, setNewGameOpen] = useState(false)
+  let isNewGameOpen = useLobbyStore(state => state.isNewGameOpen())
+  let setNewGameOpen = useLobbyStore(state => state.setNewGameOpen)
+  let handleLobbyClick = useLobbyStore(state => state.handleLobbyClick)
+  let closeLobbyPopup = useLobbyStore(state => state.closeLobbyPopup)
   let [detail, setDetail] = useState("open")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let newGameRef = useRef()
-  let onClickOutside = useCallback((event) => {
-    if (!isNewGameOpen) {
-      return
-    }
-    let el = newGameRef.current
-    if (!el) {
-      return
-    }
-    let rect = el.getBoundingClientRect()
-    if (event.clientX > rect.right || event.clientX < rect.left || event.clientY > rect.bottom || event.clientY < rect.top) {
-      setNewGameOpen(false)
-    }
-  }, [isNewGameOpen] )
   let onNewGame = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/create", {
       method: "POST",
@@ -77,7 +68,7 @@ export function Lobby() {
       navigate(base + "/game/" + game.id)
       sub.unsubscribe()
     })
-    setNewGameOpen(false)
+    closeLobbyPopup()
   }), [auth.token, navigate, stompClient])
   let onStartEdit = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/start_edit", {
@@ -91,27 +82,29 @@ export function Lobby() {
     navigate(base + "/game/" + response.id)
   }), [auth, navigate])
   return (
-    <div onClick={onClickOutside} className="h-full">
+    <div onClick={handleLobbyClick} className="h-full">
       <div className={twJoin(
           "mt-2 py-2 pr-4 gap-x-1",
           isNewGameOpen && "",
           !isNewGameOpen && "border-transparent",
         )}>
-        {isNewGameOpen ? (
-          <NewGameDialog
-            newGameRef={newGameRef}
-            onNewGame={onNewGame}
-            onStartEdit={onStartEdit}
-            setNewGameOpen={setNewGameOpen} />
-        ) : "" }
-          <button disabled={isNewGameOpen}  className={!isNewGameOpen ? twJoin(
+        <NewGameDialog
+          newGameRef={newGameRef}
+          onNewGame={onNewGame}
+          onStartEdit={onStartEdit} />
+          <button disabled={isNewGameOpen}  className={isNewGameOpen ? twJoin(
+              "ml-2 border-2 bg-gray-400 border-transparent px-4 py-2 rounded-lg",
+            ) : twJoin(
               "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
               "hover:border-sky-700",
-            ) : twJoin(
-              "ml-2 border-2 bg-gray-400 border-transparent px-4 py-2 rounded-lg",
             )}
-            onClick={() => {
-              setNewGameOpen(true)
+            onClick={(event) => {
+              setNewGameOpen(newGameRef.current)
+              if (event.stopPropagation) {
+                event.stopPropagation()
+              } else {
+                event.cancelBubble = true
+              }
             }}>
             New Game
           </button>
@@ -131,12 +124,14 @@ export function Lobby() {
   )
 }
 
-function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen, newGameRef}) {
+function NewGameDialog({onNewGame, onStartEdit, newGameRef}) {
   let dimRef = useRef(9)
   let timeRef = useRef(10)
   let [edit, setEdit] = useState(false)
+  let closeLobbyPopup = useLobbyStore(state => state.closeLobbyPopup)
+  let isNewGameOpen = useLobbyStore(state => state.isNewGameOpen())
   return (
-    <form className="contents" onSubmit={(e) => {
+    <form onSubmit={(e) => {
         e.preventDefault()
         let game = {dim: dimRef.current, timesetting: timeRef.current}
         if (edit) {
@@ -145,9 +140,13 @@ function NewGameDialog({onNewGame, onStartEdit, setNewGameOpen, newGameRef}) {
           onNewGame(game)
         }
       }}>
-      <div ref={newGameRef} className="absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg z-10 px-3 py-2">
+      <div ref={newGameRef}
+        className={twJoin(
+          !isNewGameOpen && "hidden",
+          "absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg z-10 px-3 py-2",
+          )}>
         <div className="absolute top-1 right-1">
-          <button onClick={() => setNewGameOpen(false)} className="text-stone-100 hover:text-stone-300">
+          <button onClick={closeLobbyPopup} className="text-stone-100 hover:text-stone-300">
             <IconContext.Provider value={{ size: "1.25em" }}>
               <CgClose />
             </IconContext.Provider>
