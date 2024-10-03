@@ -70,7 +70,7 @@ export function Lobby() {
       sub.unsubscribe()
     })
     closeLobbyPopup()
-  }), [auth.token, navigate, stompClient])
+  }), [auth.token, navigate, stompClient, closeLobbyPopup])
   let onStartEdit = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/start_edit", {
       method: "POST",
