@@ -128,3 +128,11 @@ export function resurrect(color) {
   }
   return color
 }
+
+export function stopPropagation(event) {
+  if (event.stopPropagation) {
+    event.stopPropagation()
+  } else {
+    event.cancelBubble = true
+  }
+}

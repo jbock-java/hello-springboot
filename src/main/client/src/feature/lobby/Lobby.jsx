@@ -18,6 +18,7 @@ import {
   StompContext,
   tfetch,
   doTry,
+  stopPropagation,
 } from "src/util.js"
 import {
   LobbyPanel,
@@ -92,23 +93,17 @@ export function Lobby() {
           newGameRef={newGameRef}
           onNewGame={onNewGame}
           onStartEdit={onStartEdit} />
-          <button disabled={isNewGameOpen}  className={isNewGameOpen ? twJoin(
-              "ml-2 border-2 bg-gray-400 border-transparent px-4 py-2 rounded-lg",
-            ) : twJoin(
-              "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
-              "hover:border-sky-700",
-            )}
-            onClick={(event) => {
-              setNewGameOpen(newGameRef.current)
-              if (event.stopPropagation) {
-                event.stopPropagation()
-              } else {
-                event.cancelBubble = true
-              }
-            }}>
-            New Game
-          </button>
-
+        <button disabled={isNewGameOpen}  className={twJoin(
+            "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
+            isNewGameOpen && "bg-gray-400",
+            !isNewGameOpen && "hover:border-sky-700",
+          )}
+          onClick={(event) => {
+            setNewGameOpen(newGameRef.current)
+            stopPropagation(event)
+          }}>
+          New Game
+        </button>
       </div>
       <div className="mt-2 grid gap-x-4 grid-cols-[max-content_auto]">
         <DetailNavigation detail={detail} setDetail={setDetail} />

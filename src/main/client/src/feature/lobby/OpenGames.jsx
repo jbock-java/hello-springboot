@@ -32,6 +32,7 @@ import {
   StompContext,
   tfetch,
   doTry,
+  stopPropagation,
 } from "src/util.js"
 import {
   useAuthStore,
@@ -40,11 +41,13 @@ import {
 
 export function OpenGames() {
   let [openGames, setOpenGames] = useState([])
-  let [acceptableGame, setAcceptableGame] = useState(undefined)
+  let acceptDialog = useLobbyStore(state => state.getAcceptDialog())
+  let setAcceptDialogOpen = useLobbyStore(state => state.setAcceptDialogOpen)
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
+  let acceptDialogRef = useRef()
   useEffect(() => {
     if (initialized.current) {
       return
@@ -83,21 +86,25 @@ export function OpenGames() {
         {openGames.map((game) => (
           <OpenGame
             game={game}
-            acceptableGame={acceptableGame}
-            setAcceptableGame={setAcceptableGame}
+            onClick={(event, acceptableGame) => {
+              if (acceptDialog) {
+                return
+              }
+              setAcceptDialogOpen(acceptDialogRef.current, acceptableGame)
+              stopPropagation(event)
+            }}
             key={game.id} />
         ))}
       </div>
       <AcceptDialog
-        acceptableGame={acceptableGame}
-        setAcceptableGame={setAcceptableGame}
         onAccept={onAccept}
+        acceptDialogRef={acceptDialogRef}
         />
     </div>
   )
 }
 
-function OpenGame({game, acceptableGame, setAcceptableGame}) {
+function OpenGame({game, onClick}) {
   let dimRef = useRef()
   let auth = useAuthStore(state => state.auth)
   let disabled = auth.name === game.user
@@ -113,19 +120,15 @@ function OpenGame({game, acceptableGame, setAcceptableGame}) {
   )
   return (
     <div
-      onClick={disabled ? undefined : () => {
+      onClick={disabled ? undefined : (event) => {
         let rect = dimRef.current.getBoundingClientRect()
-        if (acceptableGame?.game.id === game.id) {
-          setAcceptableGame(undefined)
-        } else {
-          setAcceptableGame({
-            game: game,
-            rect: {
-              top: rect.top,
-              right: rect.right,
-            },
-          })
-        }
+        onClick(event, {
+          game: game,
+          rect: {
+            top: rect.top,
+            right: rect.right,
+          },
+        })
       }}
       className={classes}
       key={game.id}>
@@ -137,24 +140,26 @@ function OpenGame({game, acceptableGame, setAcceptableGame}) {
   )
 }
 
-function AcceptDialog({acceptableGame, onAccept}) {
-  let { top, right } = acceptableGame?.rect || {top: 0, right: 0}
+function AcceptDialog({onAccept, acceptDialogRef}) {
+  let acceptDialog = useLobbyStore(state => state.getAcceptDialog())
+  let acceptableGame = acceptDialog?.data
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
   return (
     <Form
+      forwardedRef={acceptDialogRef}
       onSubmit={() => onAccept({
-        game: acceptableGame.game,
+        game: acceptableGame?.game,
         flip: isFlip,
         handicap: handi === 1 ? 0 : handi,
       })}
       style={{
-        top: top,
-        left: Math.trunc(right) + 16,
+        top: acceptableGame?.rect.top || 0,
+        left: Math.trunc(acceptableGame?.rect.right || 0) + 16,
       }}
       className={twJoin(
-        !acceptableGame && "hidden",
+        !acceptDialog && "hidden",
         "absolute bg-sky-200 px-4 py-3 rounded-lg z-8 flex flex-col",
       )}>
       <div className="text-black">

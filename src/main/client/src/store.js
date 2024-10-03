@@ -58,27 +58,28 @@ export const useLobbyStore = create((set, get) => ({
   isNewGameOpen: () => {
     return get().stack.some(obj => obj.kind === "newgame")
   },
-  setOpen: (el, kind) => set(produce(draft => {
+  setOpen: (el, kind, data) => set(produce(draft => {
     if (!el) {
       return
     }
     if (get().stack.some(obj => obj.kind === kind)) {
       return
     }
-    let rect = el.getBoundingClientRect()
     draft.stack = [...get().stack, {
       kind: kind,
-      left: rect.left,
-      right: rect.right,
-      bottom: rect.bottom,
-      top: rect.top,
+      el: el,
+      data: data,
     }]
   }), true),
   setNewGameOpen: (el) => get().setOpen(el, "newgame"),
-  isAcceptOpen: () => {
-    return get().stack.some(obj => obj.kind === "accept")
+  getAcceptDialog: () => {
+    let result = get().stack.filter(obj => obj.kind === "accept")
+    if (!result.length) {
+      return undefined
+    }
+    return result[0]
   },
-  setAcceptOpen: (el) => get().setOpen(el, "accept"),
+  setAcceptDialogOpen: (el, data) => get().setOpen(el, "accept", data),
   closeLobbyPopup: () => set(produce(draft => {
     if (!get().stack.length) {
       return
@@ -92,7 +93,8 @@ export const useLobbyStore = create((set, get) => ({
       return
     }
     let {clientX, clientY} = event
-    let {left, right, top, bottom} = get().stack[get().stack.length - 1]
+    let {el} = get().stack[get().stack.length - 1]
+    let {left, right, top, bottom} = el.getBoundingClientRect()
     if (clientX <= right && clientX >= left && clientY <= bottom && clientY >= top) {
       return
     }
