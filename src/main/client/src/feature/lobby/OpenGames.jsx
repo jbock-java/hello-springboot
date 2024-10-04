@@ -35,14 +35,16 @@ import {
   stopPropagation,
 } from "src/util.js"
 import {
+  getAcceptDialog,
+  setAcceptDialogOpen,
+} from "./lobbyState.js"
+import {
   useAuthStore,
-  useLobbyStore,
 } from "src/store.js"
 
-export function OpenGames() {
+export function OpenGames({lobbyState, setLobbyState}) {
   let [openGames, setOpenGames] = useState([])
-  let acceptDialog = useLobbyStore(state => state.getAcceptDialog())
-  let setAcceptDialogOpen = useLobbyStore(state => state.setAcceptDialogOpen)
+  let acceptDialog = getAcceptDialog(lobbyState)
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
@@ -90,13 +92,14 @@ export function OpenGames() {
               if (acceptDialog) {
                 return
               }
-              setAcceptDialogOpen(acceptDialogRef.current, acceptableGame)
+              setLobbyState(setAcceptDialogOpen(lobbyState, acceptDialogRef.current, acceptableGame))
               stopPropagation(event)
             }}
             key={game.id} />
         ))}
       </div>
       <AcceptDialog
+        acceptDialog={acceptDialog}
         onAccept={onAccept}
         acceptDialogRef={acceptDialogRef}
         />
@@ -140,8 +143,7 @@ function OpenGame({game, onClick}) {
   )
 }
 
-function AcceptDialog({onAccept, acceptDialogRef}) {
-  let acceptDialog = useLobbyStore(state => state.getAcceptDialog())
+function AcceptDialog({onAccept, acceptDialog, acceptDialogRef}) {
   let acceptableGame = acceptDialog?.data
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)

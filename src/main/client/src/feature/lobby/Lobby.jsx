@@ -31,8 +31,14 @@ import {
 } from "./ActiveGames.jsx"
 import {
   useAuthStore,
-  useLobbyStore,
 } from "src/store.js"
+import {
+  checkNewGameOpen,
+  setNewGameOpen,
+  handleLobbyClick,
+  closeLobbyPopup,
+  initialState,
+} from "./lobbyState.js"
 import {
   CgClose,
 } from "react-icons/cg"
@@ -46,10 +52,8 @@ const detailData = [
 ]
 
 export function Lobby() {
-  let isNewGameOpen = useLobbyStore(state => state.isNewGameOpen())
-  let setNewGameOpen = useLobbyStore(state => state.setNewGameOpen)
-  let handleLobbyClick = useLobbyStore(state => state.handleLobbyClick)
-  let closeLobbyPopup = useLobbyStore(state => state.closeLobbyPopup)
+  let [lobbyState, setLobbyState] = useState(initialState())
+  let isNewGameOpen = checkNewGameOpen(lobbyState)
   let [detail, setDetail] = useState("open")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
@@ -69,8 +73,8 @@ export function Lobby() {
       navigate(base + "/game/" + game.id)
       sub.unsubscribe()
     })
-    closeLobbyPopup()
-  }), [auth.token, navigate, stompClient, closeLobbyPopup])
+    setLobbyState(closeLobbyPopup(lobbyState))
+  }), [auth.token, navigate, stompClient, lobbyState])
   let onStartEdit = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/start_edit", {
       method: "POST",
@@ -83,13 +87,15 @@ export function Lobby() {
     navigate(base + "/game/" + response.id)
   }), [auth, navigate])
   return (
-    <div onClick={handleLobbyClick} className="h-full">
+    <div onClick={(event) => setLobbyState(handleLobbyClick(lobbyState, event))} className="h-full">
       <div className={twJoin(
           "mt-2 py-2 pr-4 gap-x-1",
           isNewGameOpen && "",
           !isNewGameOpen && "border-transparent",
         )}>
         <NewGameDialog
+          lobbyState={lobbyState}
+          setLobbyState={setLobbyState}
           newGameRef={newGameRef}
           onNewGame={onNewGame}
           onStartEdit={onStartEdit} />
@@ -99,7 +105,7 @@ export function Lobby() {
             !isNewGameOpen && "hover:border-sky-700",
           )}
           onClick={(event) => {
-            setNewGameOpen(newGameRef.current)
+            setLobbyState(setNewGameOpen(lobbyState, newGameRef.current))
             stopPropagation(event)
           }}>
           New Game
@@ -108,7 +114,7 @@ export function Lobby() {
       <div className="mt-2 grid gap-x-4 grid-cols-[max-content_auto]">
         <DetailNavigation detail={detail} setDetail={setDetail} />
         {detail === "open" && (
-          <OpenGames />
+          <OpenGames lobbyState={lobbyState} setLobbyState={setLobbyState} />
         )}
         {detail === "active" && (
           <ActiveGames />
@@ -119,12 +125,11 @@ export function Lobby() {
   )
 }
 
-function NewGameDialog({onNewGame, onStartEdit, newGameRef}) {
+function NewGameDialog({lobbyState, setLobbyState, onNewGame, onStartEdit, newGameRef}) {
   let dimRef = useRef(9)
   let timeRef = useRef(10)
   let [edit, setEdit] = useState(false)
-  let closeLobbyPopup = useLobbyStore(state => state.closeLobbyPopup)
-  let isNewGameOpen = useLobbyStore(state => state.isNewGameOpen())
+  let isNewGameOpen = checkNewGameOpen(lobbyState)
   return (
     <form onSubmit={(e) => {
         e.preventDefault()
@@ -141,7 +146,7 @@ function NewGameDialog({onNewGame, onStartEdit, newGameRef}) {
           "absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg z-10 px-3 py-2",
           )}>
         <div className="absolute top-1 right-1">
-          <button onClick={closeLobbyPopup} className="text-stone-100 hover:text-stone-300">
+          <button onClick={() => setLobbyState(closeLobbyPopup(lobbyState))} className="text-stone-100 hover:text-stone-300">
             <IconContext.Provider value={{ size: "1.25em" }}>
               <CgClose />
             </IconContext.Provider>
