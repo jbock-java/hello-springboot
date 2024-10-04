@@ -35,7 +35,7 @@ import {
   stopPropagation,
 } from "src/util.js"
 import {
-  getAcceptDialog,
+  getAcceptData,
   setAcceptDialogOpen,
 } from "./lobbyState.js"
 import {
@@ -44,7 +44,7 @@ import {
 
 export function OpenGames({lobbyState, setLobbyState}) {
   let [openGames, setOpenGames] = useState([])
-  let acceptDialog = getAcceptDialog(lobbyState)
+  let acceptableGame = getAcceptData(lobbyState)
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
@@ -84,14 +84,11 @@ export function OpenGames({lobbyState, setLobbyState}) {
   }), [auth, navigate])
   return (
     <div>
-      <div className="grid grid-cols-[max-content_max-content]">
+      <div className="grid grid-cols-[max-content_max-content_max-content]">
         {openGames.map((game) => (
           <OpenGame
             game={game}
             onClick={(event, acceptableGame) => {
-              if (acceptDialog) {
-                return
-              }
               setLobbyState(setAcceptDialogOpen(lobbyState, acceptDialogRef.current, acceptableGame))
               stopPropagation(event)
             }}
@@ -99,7 +96,7 @@ export function OpenGames({lobbyState, setLobbyState}) {
         ))}
       </div>
       <AcceptDialog
-        acceptDialog={acceptDialog}
+        acceptableGame={acceptableGame}
         onAccept={onAccept}
         acceptDialogRef={acceptDialogRef}
         />
@@ -116,11 +113,6 @@ function OpenGame({game, onClick}) {
     "*:py-3",
     !disabled && "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
   )
-  let dimClasses = twJoin(
-    "pl-1",
-    "pr-3",
-    "rounded-r-lg",
-  )
   return (
     <div
       onClick={disabled ? undefined : (event) => {
@@ -136,15 +128,17 @@ function OpenGame({game, onClick}) {
       className={classes}
       key={game.id}>
       <div className="pl-3 pr-1 rounded-l-lg">{game.user}</div>
-      <div ref={dimRef} className={dimClasses}>
+      <div className="px-1">
         {game.dim}x{game.dim}
+      </div>
+      <div ref={dimRef} className="pl-1 pr-3 rounded-r-lg">
+        {game.timesetting}s
       </div>
     </div>
   )
 }
 
-function AcceptDialog({onAccept, acceptDialog, acceptDialogRef}) {
-  let acceptableGame = acceptDialog?.data
+function AcceptDialog({onAccept, acceptableGame, acceptDialogRef}) {
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
@@ -161,18 +155,18 @@ function AcceptDialog({onAccept, acceptDialog, acceptDialogRef}) {
         left: Math.trunc(acceptableGame?.rect.right || 0) + 16,
       }}
       className={twJoin(
-        !acceptDialog && "hidden",
+        !acceptableGame && "hidden",
         "absolute bg-sky-200 px-4 py-3 rounded-lg z-8 flex flex-col",
       )}>
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
-          <BabyStone color={isFlip ? "white": "black"} className="pr-2" />
+          <BabyStone color={isFlip ? "white" : "black"} className="pr-2" />
           {acceptableGame?.game.user}
         </button>
       </div>
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>
-          <BabyStone color={isFlip ? "black": "white"} className="pr-2" />
+          <BabyStone color={isFlip ? "black" : "white"} className="pr-2" />
           {auth.name}
         </button>
       </div>

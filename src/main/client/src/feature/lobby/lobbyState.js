@@ -28,12 +28,15 @@ export function setNewGameOpen(state, el) {
   return setOpen(state, el, "newgame")
 }
 
-export function getAcceptDialog({stack}) {
+export function getAcceptData({stack}) {
+  if (!stack.length) {
+    return undefined
+  }
   let result = stack.filter(obj => obj.kind === "accept")
   if (!result.length) {
     return undefined
   }
-  return result[0]
+  return result[0].data
 }
 
 export function setAcceptDialogOpen(state, el, data) {
