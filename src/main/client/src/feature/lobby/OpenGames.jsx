@@ -35,6 +35,7 @@ import {
   stopPropagation,
 } from "src/util.js"
 import {
+  getZindex,
   getAcceptData,
   setAcceptDialogOpen,
 } from "./lobbyState.js"
@@ -96,10 +97,10 @@ export function OpenGames({lobbyState, setLobbyState}) {
         ))}
       </div>
       <AcceptDialog
+        lobbyState={lobbyState}
         acceptableGame={acceptableGame}
         onAccept={onAccept}
-        acceptDialogRef={acceptDialogRef}
-        />
+        acceptDialogRef={acceptDialogRef} />
     </div>
   )
 }
@@ -108,11 +109,6 @@ function OpenGame({game, onClick}) {
   let dimRef = useRef()
   let auth = useAuthStore(state => state.auth)
   let disabled = auth.name === game.user
-  let classes = twJoin(
-    "contents",
-    "*:py-3",
-    !disabled && "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
-  )
   return (
     <div
       onClick={disabled ? undefined : (event) => {
@@ -125,7 +121,11 @@ function OpenGame({game, onClick}) {
           },
         })
       }}
-      className={classes}
+      className={twJoin(
+        "contents",
+        "*:py-3",
+        !disabled && "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
+      )}
       key={game.id}>
       <div className="pl-3 pr-1 rounded-l-lg">{game.user}</div>
       <div className="px-1">
@@ -138,10 +138,11 @@ function OpenGame({game, onClick}) {
   )
 }
 
-function AcceptDialog({onAccept, acceptableGame, acceptDialogRef}) {
+function AcceptDialog({lobbyState, onAccept, acceptableGame, acceptDialogRef}) {
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
+  let zAccept = getZindex(lobbyState, "accept")
   return (
     <Form
       forwardedRef={acceptDialogRef}
@@ -151,12 +152,13 @@ function AcceptDialog({onAccept, acceptableGame, acceptDialogRef}) {
         handicap: handi === 1 ? 0 : handi,
       })}
       style={{
+        zIndex: zAccept,
         top: acceptableGame?.rect.top || 0,
         left: Math.trunc(acceptableGame?.rect.right || 0) + 16,
       }}
       className={twJoin(
-        !acceptableGame && "hidden",
-        "absolute bg-sky-200 px-4 py-3 rounded-lg z-8 flex flex-col",
+        !zAccept && "hidden",
+        "absolute bg-sky-200 px-4 py-3 rounded-lg flex flex-col",
       )}>
       <div className="text-black">
         <button type="button" className="inline-flex" onClick={() => setFlip(!isFlip)}>

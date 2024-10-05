@@ -33,7 +33,7 @@ import {
   useAuthStore,
 } from "src/store.js"
 import {
-  checkNewGameOpen,
+  getZindex,
   setNewGameOpen,
   handleLobbyClick,
   closeLobbyPopup,
@@ -53,7 +53,7 @@ const detailData = [
 
 export function Lobby() {
   let [lobbyState, setLobbyState] = useState(initialState())
-  let isNewGameOpen = checkNewGameOpen(lobbyState)
+  let zNewGame = getZindex(lobbyState, "newgame")
   let [detail, setDetail] = useState("open")
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
@@ -89,20 +89,19 @@ export function Lobby() {
   return (
     <div onClick={(event) => setLobbyState(handleLobbyClick(lobbyState, event))} className="h-full">
       <div className={twJoin(
-          "mt-2 py-2 pr-4 gap-x-1",
-          isNewGameOpen && "",
-          !isNewGameOpen && "border-transparent",
+          "mt-2 py-2 pr-4",
         )}>
         <NewGameDialog
+          zNewGame={zNewGame}
           lobbyState={lobbyState}
           setLobbyState={setLobbyState}
           newGameRef={newGameRef}
           onNewGame={onNewGame}
           onStartEdit={onStartEdit} />
-        <button disabled={isNewGameOpen}  className={twJoin(
+        <button disabled={zNewGame !== 0}  className={twJoin(
             "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
-            isNewGameOpen && "bg-gray-400",
-            !isNewGameOpen && "hover:border-sky-700",
+            zNewGame && "bg-gray-400",
+            !zNewGame && "hover:border-sky-700",
           )}
           onClick={(event) => {
             setLobbyState(setNewGameOpen(lobbyState, newGameRef.current))
@@ -125,11 +124,10 @@ export function Lobby() {
   )
 }
 
-function NewGameDialog({lobbyState, setLobbyState, onNewGame, onStartEdit, newGameRef}) {
+function NewGameDialog({zNewGame, lobbyState, setLobbyState, onNewGame, onStartEdit, newGameRef}) {
   let dimRef = useRef(9)
   let timeRef = useRef(10)
   let [edit, setEdit] = useState(false)
-  let isNewGameOpen = checkNewGameOpen(lobbyState)
   return (
     <form onSubmit={(e) => {
         e.preventDefault()
@@ -141,10 +139,13 @@ function NewGameDialog({lobbyState, setLobbyState, onNewGame, onStartEdit, newGa
         }
       }}>
       <div ref={newGameRef}
+        style={{
+          zIndex: zNewGame,
+        }}
         className={twJoin(
-          !isNewGameOpen && "hidden",
-          "absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg z-10 px-3 py-2",
-          )}>
+          !zNewGame && "hidden",
+          "absolute ml-40 bg-slate-800 border-2 border-slate-600 rounded-lg px-3 py-2",
+        )}>
         <div className="absolute top-1 right-1">
           <button onClick={() => setLobbyState(closeLobbyPopup(lobbyState))} className="text-stone-100 hover:text-stone-300">
             <IconContext.Provider value={{ size: "1.25em" }}>

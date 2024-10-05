@@ -20,8 +20,13 @@ function setOpen(state, el, kind, data) {
   }
 }
 
-export function checkNewGameOpen({stack}) {
-  return stack.some(obj => obj.kind === "newgame")
+export function getZindex({stack}, kind) {
+  for (let i = 0; i < stack.length; i++) {
+    if (stack[i].kind === kind) {
+      return 5 + i
+    }
+  }
+  return 0
 }
 
 export function setNewGameOpen(state, el) {
@@ -29,14 +34,12 @@ export function setNewGameOpen(state, el) {
 }
 
 export function getAcceptData({stack}) {
-  if (!stack.length) {
-    return undefined
+  for (let i = 0; i < stack.length; i++) {
+    if (stack[i].kind === "accept") {
+      return stack[i].data
+    }
   }
-  let result = stack.filter(obj => obj.kind === "accept")
-  if (!result.length) {
-    return undefined
-  }
-  return result[0].data
+  return undefined
 }
 
 export function setAcceptDialogOpen(state, el, data) {
