@@ -1,6 +1,11 @@
+import {
+  produce,
+} from "immer"
+
 export function initialState() {
   return {
-    stack: [],
+    stack: [], // newgame, accept
+    proposals: [],
   }
 }
 
@@ -11,13 +16,13 @@ function setOpen(state, el, kind, data) {
   if (state.stack.some(obj => obj.kind === kind)) {
     return state
   }
-  return {
-    stack: [...state.stack, {
+  return produce(state, draft => {
+    draft.stack = [...state.stack, {
       kind: kind,
       el: el,
       data: data,
-    }],
-  }
+    }]
+  })
 }
 
 export function getZindex({stack}, kind) {
@@ -52,9 +57,9 @@ export function closeLobbyPopup(state) {
   }
   let newStack = [...state.stack]
   newStack.pop()
-  return {
-    stack: newStack,
-  }
+  return produce(state, draft => {
+    draft.stack = newStack
+  })
 }
 
 export function handleLobbyClick(state, event) {
@@ -69,7 +74,7 @@ export function handleLobbyClick(state, event) {
   }
   let newStack = [...state.stack]
   newStack.pop()
-  return {
-    stack: newStack,
-  }
+  return produce(state, draft => {
+    draft.stack = newStack
+  })
 }

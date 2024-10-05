@@ -214,9 +214,9 @@ function DetailNavigation({detail, setDetail}) {
           onClick={() => setDetail(id)}
           disabled={id === detail}
           className={twJoin(
-            "px-2 py-2 rounded-lg border-2 hover:border-sky-700",
+            "px-2 py-2 rounded-lg border-2",
             id === detail && "border-slate-600",
-            id !== detail && "border-transparent hover:bg-stone-800",
+            id !== detail && "border-transparent hover:border-sky-700",
           )}>{label}</button>
       ))}
     </div>
