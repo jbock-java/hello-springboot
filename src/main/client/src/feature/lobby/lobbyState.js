@@ -5,8 +5,14 @@ import {
 export function initialState() {
   return {
     stack: [], // newgame, accept
-    proposals: [],
+    openGameId: "",
   }
+}
+
+export function setOpenGameId(state, openGameId) {
+  return produce(state, draft => {
+    draft.openGameId = openGameId
+  })
 }
 
 function setOpen(state, el, kind, data) {

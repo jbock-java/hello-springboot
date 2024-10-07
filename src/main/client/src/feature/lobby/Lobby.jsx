@@ -30,6 +30,9 @@ import {
   ActiveGames,
 } from "./ActiveGames.jsx"
 import {
+  Requests,
+} from "./Requests.jsx"
+import {
   useAuthStore,
 } from "src/store.js"
 import {
@@ -49,6 +52,7 @@ import {
 const detailData = [
   ["open", "Open Games"],
   ["active", "Active Games"],
+  ["requests", "Game Requests"],
 ]
 
 export function Lobby() {
@@ -117,6 +121,9 @@ export function Lobby() {
         )}
         {detail === "active" && (
           <ActiveGames />
+        )}
+        {detail === "requests" && (
+          <Requests lobbyState={lobbyState} />
         )}
       </div>
       <LobbyPanel />
@@ -202,6 +209,7 @@ function NewGameDialog({zNewGame, lobbyState, setLobbyState, onNewGame, onStartE
     </form>
   )
 }
+
 function DetailNavigation({detail, setDetail}) {
   return (
     <div className={twJoin(
