@@ -38,7 +38,7 @@ export function Requests({lobbyState}) {
           "Authorization": "Bearer " + auth.token,
         },
       })
-      setRequests(r.requests.filter(request => request.gameId === openGameId))
+      setRequests(r.requests)
     })
     let sub1 = stompClient.subscribe("/topic/lobby/requests", (message) => {
       let r = JSON.parse(message.body)
@@ -53,10 +53,9 @@ export function Requests({lobbyState}) {
   }
   return (
     <div>
-      <div className="grid grid-cols-[max-content_max-content_max-content_max-content]">
+      <div className="grid grid-cols-[max-content_max-content_max-content_max-content_max-content]">
         {requests.map((request) => (
           <Request
-            lobbyState={lobbyState}
             request={request}
             key={request.id} />
         ))}
@@ -65,45 +64,44 @@ export function Requests({lobbyState}) {
   )
 }
 
-function Request({lobbyState, request}) {
+function Request({request}) {
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
-  let openGameId = lobbyState.openGameId
-  let classes = twJoin(
-    "contents",
-    "*:py-3",
-    "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
-  )
   return (
     <div
       onClick={() => {
         doTry(async () => {
-          let r = await tfetch("/api/lobby/start", {
+          await tfetch("/api/lobby/start", {
+            method: "POST",
             headers: {
-              "method": "POST",
               "Authorization": "Bearer " + auth.token,
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              gameId: openGameId,
-              request: request.id,
-            }),
+            body: JSON.stringify(request),
           })
-          navigate(base + "/game/" + r.id)
+          navigate(base + "/game/" + request.game.id)
         })
       }}
-      className={classes}
-      key={request.id}>
+      className={twJoin(
+        "contents",
+        "*:py-3",
+        "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
+      )}
+      key={request.game.id}>
       <div className="pl-3 pr-1 rounded-l-lg">
-        {request.white}
+        {request.flip ? "B" : "W"}: {request.opponent}
       </div>
       <div className="px-1">
-        {request.black}
+        {request.flip ? "W" : "B"}: {request.game.user}
       </div>
       <div className="px-1">
-        {request.dim}x{request.dim}
+        {request.game.dim}x{request.game.dim}
+      </div>
+      <div className="px-1">
+        T: {request.game.timesetting}
       </div>
       <div className="pl-1 pr-3 rounded-r-lg">
-        H{request.handi}
+        H: {request.handicap}
       </div>
     </div>
   )

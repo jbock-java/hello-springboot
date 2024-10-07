@@ -1,6 +1,7 @@
 import {
   useRef,
   useState,
+  useEffect,
   useContext,
   useCallback,
 } from "react"
@@ -38,6 +39,7 @@ import {
 import {
   getZindex,
   setNewGameOpen,
+  setOpenGameId,
   handleLobbyClick,
   closeLobbyPopup,
   initialState,
@@ -59,26 +61,26 @@ export function Lobby() {
   let [lobbyState, setLobbyState] = useState(initialState())
   let zNewGame = getZindex(lobbyState, "newgame")
   let [detail, setDetail] = useState("open")
-  let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let newGameRef = useRef()
-  let onNewGame = useCallback((d) => doTry(async () => {
-    let response = await tfetch("/api/create", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + auth.token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(d),
+  let stompClient = useContext(StompContext)
+  let initialized = useRef()
+  useEffect(() => {
+    if (initialized.current) {
+      return
+    }
+    initialized.current = true
+    let sub = stompClient.subscribe("/topic/gamestart", (message) => {
+      let r = JSON.parse(message.body)
+      if (r.opponent === auth.name) {
+        navigate(base + "/game/" + r.id)
+      }
     })
-    let sub = stompClient.subscribe("/topic/game/" + response.id, (message) => {
-      let game = JSON.parse(message.body)
-      navigate(base + "/game/" + game.id)
+    return () => {
       sub.unsubscribe()
-    })
-    setLobbyState(closeLobbyPopup(lobbyState))
-  }), [auth.token, navigate, stompClient, lobbyState])
+    }
+  }, [auth, initialized, stompClient, navigate])
   let onStartEdit = useCallback((d) => doTry(async () => {
     let response = await tfetch("/api/start_edit", {
       method: "POST",
@@ -100,7 +102,6 @@ export function Lobby() {
           lobbyState={lobbyState}
           setLobbyState={setLobbyState}
           newGameRef={newGameRef}
-          onNewGame={onNewGame}
           onStartEdit={onStartEdit} />
         <button disabled={zNewGame !== 0}  className={twJoin(
             "ml-2 border-2 border-transparent px-4 py-2 rounded-lg",
@@ -131,10 +132,23 @@ export function Lobby() {
   )
 }
 
-function NewGameDialog({zNewGame, lobbyState, setLobbyState, onNewGame, onStartEdit, newGameRef}) {
+function NewGameDialog({zNewGame, lobbyState, setLobbyState, onStartEdit, newGameRef}) {
   let dimRef = useRef(9)
   let timeRef = useRef(10)
   let [edit, setEdit] = useState(false)
+  let auth = useAuthStore(state => state.auth)
+  let onNewGame = useCallback((d) => doTry(async () => {
+    let response = await tfetch("/api/create", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + auth.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(d),
+    })
+    let newState = closeLobbyPopup(lobbyState)
+    setLobbyState(setOpenGameId(newState, response.id))
+  }), [auth.token, lobbyState, setLobbyState])
   return (
     <form onSubmit={(e) => {
         e.preventDefault()

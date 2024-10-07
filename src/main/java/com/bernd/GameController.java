@@ -12,6 +12,10 @@ import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.RandomString;
 import com.bernd.util.SgfCreator;
+import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.security.Principal;
-import java.time.LocalDate;
 
 import static com.bernd.util.Auth.getPrincipal;
 import static com.bernd.util.Util.COLORS;
@@ -140,22 +141,41 @@ public class GameController {
     return result;
   }
 
-  @PostMapping(value = "/api/accept", consumes = "application/json")
-  public ResponseEntity<?> accept(@RequestBody AcceptRequest acceptRequest) {
+  @PostMapping(value = "/api/lobby/start", consumes = "application/json")
+  public ResponseEntity<?> start(@RequestBody AcceptRequest acceptRequest) {
     String principal = getPrincipal();
-    openGames.remove(principal);
-    OpenGame openGame = openGames.remove(acceptRequest.game().user());
-    Game fullGame = games.put(openGame.accept(principal, acceptRequest));
+    openGames.remove(acceptRequest.opponent());
+    OpenGame openGame = openGames.remove(principal);
+    Game fullGame = games.put(openGame.accept(acceptRequest));
     activeGames.put(ActiveGame.fromGame(fullGame));
     Chat chat = chats.get(openGame.id());
 
     ChatMessage startMessage = ChatMessage.createStartMessage(chat, fullGame);
     chat.messages().add(startMessage);
     operations.convertAndSend("/topic/chat/" + chat.id(), startMessage);
-    operations.convertAndSend("/topic/game/" + fullGame.id(), fullGame.toView());
+    operations.convertAndSend("/topic/gamestart", Map.of(
+        "opponent", acceptRequest.opponent(),
+        "id", openGame.id()));
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
     return ResponseEntity.ok().build();
+  }
+
+  @ResponseBody
+  @PostMapping(value = "/api/challenge", consumes = "application/json")
+  public Map<String, List<AcceptRequest>> challenge(@RequestBody AcceptRequest acceptRequest) {
+    String principal = getPrincipal();
+    openGames.remove(principal);
+    OpenGame openGame = openGames.addRequest(acceptRequest.game().user(), acceptRequest, principal);
+    operations.convertAndSend("/topic/lobby/requests", Map.of("requests", openGame.requests()));
+    return Map.of("requests", openGame.requests());
+  }
+
+  @ResponseBody
+  @GetMapping(value = "/api/lobby/requests")
+  public Map<String, List<AcceptRequest>> getRequests() {
+    String principal = getPrincipal();
+    return Map.of("requests", openGames.getRequests(principal));
   }
 
   @GetMapping("/api/sgf/{id}/{black}_vs_{white}.sgf")

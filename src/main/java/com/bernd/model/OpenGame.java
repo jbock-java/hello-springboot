@@ -1,6 +1,7 @@
 package com.bernd.model;
 
 import com.bernd.game.MoveList;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.bernd.LobbyController.createEmptyBoard;
@@ -20,6 +21,13 @@ public record OpenGame(
     return new OpenGame(id, user, requests, dim, timesetting).sanitize();
   }
 
+  public OpenGame addRequest(AcceptRequest request, String opponent) {
+    List<AcceptRequest> updated = new ArrayList<>(requests.size() + 1);
+    updated.addAll(requests);
+    updated.add(request.withOpponent(opponent));
+    return new OpenGame(id, user, updated, dim, timesetting);
+  }
+
   private OpenGame sanitize() {
     if (requests == null) {
       return new OpenGame(id, user, List.of(), dim, timesetting);
@@ -27,9 +35,9 @@ public record OpenGame(
     return this;
   }
 
-  public Game accept(String opponent, AcceptRequest acceptRequest) {
-    String userBlack = acceptRequest.flip() ? opponent : user;
-    String userWhite = acceptRequest.flip() ? user : opponent;
+  public Game accept(AcceptRequest acceptRequest) {
+    String userBlack = acceptRequest.flip() ? acceptRequest.opponent() : user;
+    String userWhite = acceptRequest.flip() ? user : acceptRequest.opponent();
     return new Game(
         id,
         userBlack,

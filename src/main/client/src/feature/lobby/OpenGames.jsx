@@ -3,7 +3,6 @@ import {
   useState,
   useEffect,
   useContext,
-  useCallback,
 } from "react"
 import {
   FaAngleLeft,
@@ -16,9 +15,6 @@ import {
   twJoin,
 } from "tailwind-merge"
 import {
-  useNavigate,
-} from "react-router-dom"
-import {
   Form,
 } from "src/component/Form.jsx"
 import {
@@ -28,7 +24,6 @@ import {
   BabyStone,
 } from "src/component/BabyStone.jsx"
 import {
-  base,
   StompContext,
   tfetch,
   doTry,
@@ -37,6 +32,7 @@ import {
 import {
   getZindex,
   getAcceptData,
+  closeLobbyPopup,
   setAcceptDialogOpen,
 } from "./lobbyState.js"
 import {
@@ -47,7 +43,6 @@ export function OpenGames({lobbyState, setLobbyState}) {
   let [openGames, setOpenGames] = useState([])
   let acceptableGame = getAcceptData(lobbyState)
   let stompClient = useContext(StompContext)
-  let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
   let acceptDialogRef = useRef()
@@ -71,18 +66,7 @@ export function OpenGames({lobbyState, setLobbyState}) {
     return () => {
       sub1.unsubscribe()
     }
-  }, [auth, initialized, stompClient, navigate])
-  let onAccept = useCallback((d) => doTry(async () => {
-    await tfetch("/api/accept", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + auth.token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(d),
-    })
-    navigate(base + "/game/" + d.game.id)
-  }), [auth, navigate])
+  }, [auth, initialized, stompClient])
   return (
     <div>
       <div className="grid grid-cols-[max-content_max-content_max-content]">
@@ -96,10 +80,10 @@ export function OpenGames({lobbyState, setLobbyState}) {
             key={game.id} />
         ))}
       </div>
-      <AcceptDialog
+      <ChallengeDialog
         lobbyState={lobbyState}
+        setLobbyState={setLobbyState}
         acceptableGame={acceptableGame}
-        onAccept={onAccept}
         acceptDialogRef={acceptDialogRef} />
     </div>
   )
@@ -138,7 +122,7 @@ function OpenGame({game, onClick}) {
   )
 }
 
-function AcceptDialog({lobbyState, onAccept, acceptableGame, acceptDialogRef}) {
+function ChallengeDialog({lobbyState, setLobbyState, acceptableGame, acceptDialogRef}) {
   let [isFlip, setFlip] = useState(false)
   let [handi, setHandi] = useState(1)
   let auth = useAuthStore(state => state.auth)
@@ -146,10 +130,20 @@ function AcceptDialog({lobbyState, onAccept, acceptableGame, acceptDialogRef}) {
   return (
     <Form
       forwardedRef={acceptDialogRef}
-      onSubmit={() => onAccept({
-        game: acceptableGame?.game,
-        flip: isFlip,
-        handicap: handi === 1 ? 0 : handi,
+      onSubmit={() => doTry(async () => {
+        await tfetch("/api/challenge", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + auth.token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            game: acceptableGame?.game,
+            flip: isFlip,
+            handicap: handi === 1 ? 0 : handi,
+          }),
+        })
+        setLobbyState(closeLobbyPopup(lobbyState))
       })}
       style={{
         zIndex: zAccept,
