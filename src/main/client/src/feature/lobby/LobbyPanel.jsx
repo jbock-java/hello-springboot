@@ -37,7 +37,7 @@ function Panel() {
     })
     return undefined
   }, [auth])
-  return <>
+  return (
     <Chat chatId="Lobby" />
-  </>
+  )
 }
