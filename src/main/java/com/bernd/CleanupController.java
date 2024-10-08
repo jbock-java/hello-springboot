@@ -21,7 +21,7 @@ public class CleanupController {
 
   @Scheduled(fixedDelay = 40 * 1000)
   public void runScheduled() {
-    Map<String, List<String>> updatedRooms = statusMap.prune();
+    Map<String, List<String>> updatedRooms = statusMap.removeInactiveUsers();
     for (Map.Entry<String, List<String>> e : updatedRooms.entrySet()) {
       String room = e.getKey();
       List<String> users = e.getValue();

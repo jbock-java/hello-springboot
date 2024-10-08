@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.bernd.model.Error;
 import com.bernd.model.LoginRequest;
 import com.bernd.model.LoginResponse;
+import com.bernd.model.StatusMap;
+import com.bernd.util.RoomManager;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class LoginController {
 
-  private final Users users;
+  private final StatusMap statusMap;
+  private final RoomManager roomManager;
   private final Environment environment;
 
   LoginController(
-      Users users,
+      StatusMap statusMap,
+      RoomManager roomManager,
       Environment environment) {
-    this.users = users;
+    this.statusMap = statusMap;
+    this.roomManager = roomManager;
     this.environment = environment;
   }
 
@@ -34,7 +39,7 @@ public class LoginController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(new Error("The name must not be empty"));
     }
-    if (users.contains(request.name())) {
+    if (statusMap.contains(request.name())) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(new Error("Please choose another name"));
     }
@@ -48,7 +53,7 @@ public class LoginController {
         .withIssuer("auth0")
         .withClaim("name", request.name())
         .sign(algorithm);
-    users.login(request.name());
+    roomManager.login(request.name());
     return ResponseEntity.ok(new LoginResponse(request.name(), token));
   }
 }

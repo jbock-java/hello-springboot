@@ -38,6 +38,6 @@ function Panel() {
     return undefined
   }, [auth])
   return (
-    <Chat chatId="Lobby" />
+    <Chat chatId="lobby" />
   )
 }

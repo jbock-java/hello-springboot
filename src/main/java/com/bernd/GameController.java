@@ -9,8 +9,11 @@ import com.bernd.model.ChatMessage;
 import com.bernd.model.Game;
 import com.bernd.model.Move;
 import com.bernd.model.OpenGame;
+import com.bernd.model.StatusMap;
 import com.bernd.model.ViewGame;
+import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
+import com.bernd.util.RoomManager;
 import com.bernd.util.SgfCreator;
 import java.security.Principal;
 import java.time.LocalDate;
@@ -36,7 +39,8 @@ import static com.bernd.util.Util.COLORS;
 public class GameController {
 
   private final MessageSendingOperations<String> operations;
-  private final Users users;
+  private final RoomManager roomManager;
+  private final StatusMap statusMap;
   private final Games games;
   private final OpenGames openGames;
   private final ActiveGames activeGames;
@@ -44,12 +48,15 @@ public class GameController {
 
   GameController(
       MessageSendingOperations<String> operations,
-      Users users,
+      RoomManager roomManager,
+      StatusMap statusMap,
       Games games,
       OpenGames openGames,
-      ActiveGames activeGames, Chats chats) {
+      ActiveGames activeGames,
+      Chats chats) {
     this.operations = operations;
-    this.users = users;
+    this.roomManager = roomManager;
+    this.statusMap = statusMap;
     this.games = games;
     this.openGames = openGames;
     this.activeGames = activeGames;
@@ -59,7 +66,7 @@ public class GameController {
   @ResponseBody
   @GetMapping(value = "/api/game/{id}")
   public ViewGame getGame(@PathVariable String id, Principal p) {
-    users.get(p).setCurrentGame(id);
+    roomManager.updateStatus(Auth.getPrincipal(p), id);
     Game game = games.get(id);
     if (game == null) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no such game");
@@ -69,7 +76,11 @@ public class GameController {
 
   @MessageMapping("/game/move")
   public void action(Move move, Principal p) {
-    Game game = games.get(users.get(p).currentGame());
+    String id = statusMap.get(getPrincipal(p));
+    if (id == null) {
+      return;
+    }
+    Game game = games.get(id);
     if (p == null || game == null) {
       return;
     }

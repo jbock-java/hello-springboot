@@ -1,25 +1,25 @@
 package com.bernd;
 
+import com.bernd.util.RoomManager;
+import java.security.Principal;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.security.Principal;
-
 @Component
 public class SessionDisconnectEventListener implements ApplicationListener<SessionDisconnectEvent> {
 
   private final MessageSendingOperations<String> operations;
-  private final Users users;
+  private final RoomManager roomManager;
   private final OpenGames openGames;
 
   SessionDisconnectEventListener(
       MessageSendingOperations<String> operations,
-      Users users,
+      RoomManager roomManager,
       OpenGames openGames) {
     this.operations = operations;
-    this.users = users;
+    this.roomManager = roomManager;
     this.openGames = openGames;
   }
 
@@ -30,7 +30,7 @@ public class SessionDisconnectEventListener implements ApplicationListener<Sessi
       return;
     }
     String name = user.getName();
-    users.logout(name);
+    roomManager.logout(name);
     openGames.remove(name);
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
   }

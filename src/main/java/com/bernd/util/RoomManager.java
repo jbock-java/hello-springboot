@@ -2,9 +2,8 @@ package com.bernd.util;
 
 import com.bernd.model.StatusMap;
 import com.bernd.model.UserStatus;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RoomManager {
@@ -22,7 +21,7 @@ public class RoomManager {
   }
 
   public void updateStatus(String user, String room) {
-    UserStatus old = statusMap.put(user, UserStatus.create(room));
+    UserStatus old = statusMap.put(user, room);
     List<String> users = statusMap.usersInRoom(room);
     if (old == null) {
       sender.sendUsers(room, users);
@@ -30,5 +29,18 @@ public class RoomManager {
       sender.sendUsers(room, users);
       sender.sendUsers(old.room(), statusMap.usersInRoom(old.room()));
     }
+  }
+
+  public void login(String user) {
+    updateStatus(user, "lobby");
+  }
+
+  public void logout(String user) {
+    String room = statusMap.remove(user);
+    if (room == null) {
+      return;
+    }
+    List<String> users = statusMap.usersInRoom(room);
+    sender.sendUsers(room, users);
   }
 }
