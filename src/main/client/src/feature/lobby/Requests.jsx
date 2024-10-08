@@ -8,10 +8,6 @@ import {
   twJoin,
 } from "tailwind-merge"
 import {
-  useNavigate,
-} from "react-router-dom"
-import {
-  base,
   StompContext,
   tfetch,
   doTry,
@@ -24,7 +20,6 @@ export function Requests({lobbyState}) {
   let [requests, setRequests] = useState([])
   let openGameId = lobbyState.openGameId
   let stompClient = useContext(StompContext)
-  let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   let initialized = useRef()
   useEffect(() => {
@@ -47,7 +42,7 @@ export function Requests({lobbyState}) {
     return () => {
       sub1.unsubscribe()
     }
-  }, [auth, initialized, stompClient, navigate, openGameId])
+  }, [auth, initialized, stompClient, openGameId])
   if (!openGameId) {
     return <div />
   }
@@ -65,7 +60,6 @@ export function Requests({lobbyState}) {
 }
 
 function Request({request}) {
-  let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
   return (
     <div
@@ -79,7 +73,6 @@ function Request({request}) {
             },
             body: JSON.stringify(request),
           })
-          navigate(base + "/game/" + request.game.id)
         })
       }}
       className={twJoin(

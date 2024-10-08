@@ -73,7 +73,7 @@ export function Lobby() {
     initialized.current = true
     let sub = stompClient.subscribe("/topic/gamestart", (message) => {
       let r = JSON.parse(message.body)
-      if (r.opponent === auth.name) {
+      if (r.players.includes(auth.name)) {
         navigate(base + "/game/" + r.id)
       }
     })

@@ -154,7 +154,7 @@ public class GameController {
     chat.messages().add(startMessage);
     operations.convertAndSend("/topic/chat/" + chat.id(), startMessage);
     operations.convertAndSend("/topic/gamestart", Map.of(
-        "opponent", acceptRequest.opponent(),
+        "players", List.of(principal, acceptRequest.opponent()),
         "id", openGame.id()));
     operations.convertAndSend("/topic/lobby/open_games", openGames.games());
     operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
