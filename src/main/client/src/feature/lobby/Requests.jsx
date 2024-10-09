@@ -52,7 +52,7 @@ export function Requests({lobbyState}) {
         {requests.map((request) => (
           <Request
             request={request}
-            key={request.id} />
+            key={request.opponent} />
         ))}
       </div>
     </div>
@@ -79,8 +79,7 @@ function Request({request}) {
         "contents",
         "*:py-3",
         "cursor-pointer *:hover:bg-sky-200 *:hover:text-black",
-      )}
-      key={request.game.id}>
+      )} >
       <div className="pl-3 pr-1 rounded-l-lg">
         {request.flip ? "B" : "W"}: {request.opponent}
       </div>
