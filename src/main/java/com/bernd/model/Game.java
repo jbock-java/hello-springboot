@@ -7,10 +7,9 @@ import com.bernd.game.MoveList;
 import com.bernd.game.Toggle;
 import com.bernd.util.BoardUpdateImpl;
 import com.bernd.util.Util;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Objects;
 
 import static com.bernd.game.Board.removeDeadStonesAround;
 import static com.bernd.util.Util.COLORS;
@@ -234,5 +233,13 @@ public record Game(
 
   public boolean isCounting() {
     return state == STATE_COUNTING;
+  }
+
+  public ActiveGame toActiveGame() {
+    return new ActiveGame(
+        id,
+        black,
+        white,
+        board().length);
   }
 }

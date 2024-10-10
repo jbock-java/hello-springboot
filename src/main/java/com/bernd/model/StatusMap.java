@@ -45,12 +45,12 @@ public final class StatusMap {
   }
 
   /**
-   * @return all changed rooms, where inactive users have been removed
+   * @return a map where key=roomId and value=users
    */
   public Map<String, List<String>> removeInactiveUsers() {
     long current = System.currentTimeMillis();
     Map<String, List<String>> tmp = new HashMap<>();
-    List<RemoveTask> removeTasks = new ArrayList<>();
+    List<String> usersToRemove = new ArrayList<>();
     for (Map.Entry<String, UserStatus> e : map.entrySet()) {
       UserStatus status = e.getValue();
       String room = status.room();
@@ -58,22 +58,23 @@ public final class StatusMap {
       if (status.isActive(current)) {
         tmp.computeIfAbsent(room, key -> new ArrayList<>()).add(user);
       } else {
-        removeTasks.add(new RemoveTask(user, room));
+        usersToRemove.add(user);
       }
     }
-    Map<String, List<String>> result = new LinkedHashMap<>(Math.max(8, (int) (tmp.size() * 1.5)));
-    for (RemoveTask task : removeTasks) {
-      result.put(task.room, tmp.getOrDefault(task.room, List.of()));
-      map.remove(task.user);
+    for (String user : usersToRemove) {
+      UserStatus status = map.get(user);
+      if (status == null) {
+        continue;
+      }
+      map.remove(user);
     }
-    return result;
+    return tmp;
   }
 
   public Set<String> activeGames() {
     Set<String> result = new LinkedHashSet<>();
-    long current = System.currentTimeMillis();
     for (UserStatus status : map.values()) {
-      if (status.isActive(current)) {
+      if (!"lobby".equals(status.room())) {
         result.add(status.room());
       }
     }
@@ -82,8 +83,5 @@ public final class StatusMap {
 
   public boolean contains(String user) {
     return map.containsKey(user);
-  }
-
-  private record RemoveTask(String user, String room) {
   }
 }

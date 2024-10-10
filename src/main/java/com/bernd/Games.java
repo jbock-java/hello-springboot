@@ -22,4 +22,8 @@ public class Games {
   List<Game> games() {
     return List.copyOf(map.values());
   }
+
+  void remove(String id) {
+    map.remove(id);
+  }
 }

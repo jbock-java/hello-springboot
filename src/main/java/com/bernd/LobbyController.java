@@ -2,15 +2,16 @@ package com.bernd;
 
 import com.bernd.game.MoveList;
 import com.bernd.model.ActiveGame;
-import com.bernd.model.ActiveGameList;
 import com.bernd.model.Chat;
 import com.bernd.model.ChatMessage;
 import com.bernd.model.Game;
 import com.bernd.model.MatchRequest;
-import com.bernd.model.OpenGameList;
+import com.bernd.model.OpenGame;
 import com.bernd.model.ViewGame;
 import com.bernd.util.Auth;
 import com.bernd.util.RandomString;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.stereotype.Controller;
@@ -44,21 +45,21 @@ public class LobbyController {
   @GetMapping(value = "/api/lobby/hello")
   public ResponseEntity<?> sayHello() {
     String principal = Auth.getPrincipal();
-    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
-    operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", Map.of("games", openGames.games()));
+    operations.convertAndSend("/topic/lobby/active_games", Map.of("games", activeGames.games()));
     return ResponseEntity.ok().build();
   }
 
   @ResponseBody
   @GetMapping(value = "/api/lobby/active_games")
-  public ActiveGameList getActiveGames() {
-    return activeGames.games();
+  public Map<String, List<ActiveGame>> getActiveGames() {
+    return Map.of("games", activeGames.games());
   }
 
   @ResponseBody
   @GetMapping(value = "/api/lobby/open_games")
-  public OpenGameList getOpenGames() {
-    return openGames.games();
+  public Map<String, List<OpenGame>> getOpenGames() {
+    return Map.of("games", openGames.games());
   }
 
   @ResponseBody
@@ -77,7 +78,6 @@ public class LobbyController {
         request.handicap(),
         new int[]{-1, -1},
         MoveList.create(request.dim())));
-    activeGames.put(ActiveGame.fromGame(game));
     Chat chat = chats.get(game.id());
     ChatMessage startMessage = ChatMessage.createStartMessage(chat, game);
     chat.messages().add(startMessage);

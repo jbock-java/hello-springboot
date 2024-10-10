@@ -148,7 +148,7 @@ public class GameController {
     String principal = getPrincipal();
     OpenGame result = openGames.put(game.withUser(principal)
         .withId(RandomString.get()));
-    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", Map.of("games", openGames.games()));
     return result;
   }
 
@@ -158,7 +158,6 @@ public class GameController {
     openGames.remove(acceptRequest.opponent());
     OpenGame openGame = openGames.remove(principal);
     Game fullGame = games.put(openGame.accept(acceptRequest));
-    activeGames.put(ActiveGame.fromGame(fullGame));
     Chat chat = chats.get(openGame.id());
 
     ChatMessage startMessage = ChatMessage.createStartMessage(chat, fullGame);
@@ -167,8 +166,8 @@ public class GameController {
     operations.convertAndSend("/topic/gamestart", Map.of(
         "players", List.of(principal, acceptRequest.opponent()),
         "id", openGame.id()));
-    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
-    operations.convertAndSend("/topic/lobby/active_games", activeGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", Map.of("games", openGames.games()));
+    operations.convertAndSend("/topic/lobby/active_games", Map.of("games", activeGames.games()));
     return ResponseEntity.ok().build();
   }
 

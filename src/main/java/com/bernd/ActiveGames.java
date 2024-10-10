@@ -1,40 +1,36 @@
 package com.bernd;
 
 import com.bernd.model.ActiveGame;
-import com.bernd.model.ActiveGameList;
+import com.bernd.model.Game;
 import com.bernd.model.StatusMap;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ActiveGames {
 
   private final StatusMap statusMap;
-  private final Map<String, ActiveGame> cache = new LinkedHashMap<>();
+  private final Games games;
 
-  ActiveGames(StatusMap statusMap) {
+  ActiveGames(
+      StatusMap statusMap,
+      Games games) {
     this.statusMap = statusMap;
+    this.games = games;
   }
 
-  ActiveGame put(ActiveGame game) {
-    cache.put(game.id(), game);
-    return game;
-  }
-
-  ActiveGameList games() {
+  List<ActiveGame> games() {
     Set<String> active = statusMap.activeGames();
     List<ActiveGame> result = new ArrayList<>(active.size());
     for (String gameId : active) {
-      ActiveGame game = cache.get(gameId);
-      if (game != null) {
-        result.add(game);
+      Game game = games.get(gameId);
+      if (game == null) {
+        continue;
       }
+      result.add(game.toActiveGame());
     }
-    return new ActiveGameList(result);
+    return result;
   }
 }

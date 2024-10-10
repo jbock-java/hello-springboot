@@ -2,6 +2,7 @@ package com.bernd;
 
 import com.bernd.util.RoomManager;
 import java.security.Principal;
+import java.util.Map;
 import org.springframework.context.ApplicationListener;
 import org.springframework.messaging.core.MessageSendingOperations;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,6 @@ public class SessionDisconnectEventListener implements ApplicationListener<Sessi
     String name = user.getName();
     roomManager.logout(name);
     openGames.remove(name);
-    operations.convertAndSend("/topic/lobby/open_games", openGames.games());
+    operations.convertAndSend("/topic/lobby/open_games", Map.of("games", openGames.games()));
   }
 }

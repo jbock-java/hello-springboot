@@ -2,7 +2,6 @@ package com.bernd;
 
 import com.bernd.model.AcceptRequest;
 import com.bernd.model.OpenGame;
-import com.bernd.model.OpenGameList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,8 @@ public class OpenGames {
     return result;
   }
 
-  OpenGameList games() {
-    return new OpenGameList(List.copyOf(map.values()));
+  List<OpenGame> games() {
+    return List.copyOf(map.values());
   }
 
   OpenGame remove(String name) {
