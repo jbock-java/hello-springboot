@@ -47,8 +47,8 @@ export const useMuteStore = create(
 )
 
 export const useTimeoutStore = create(set => ({
-  timeout: 10,
-  setTimeout: timeout => set(produce(draft => {
-    draft.timeout = timeout
+  timeRemaining: 10,
+  setTimeRemaining: timeRemaining => set(produce(draft => {
+    draft.timeRemaining = timeRemaining
   }), true),
 }))

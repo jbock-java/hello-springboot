@@ -89,13 +89,14 @@ function WhoIsWho({gameState}) {
   let {black, white} = gameState
   let counting = isCounting(gameState)
   let end = gameHasEnded(gameState)
-  let timeout = useTimeoutStore(state => state.timeout)
+  let timeRemaining = useTimeoutStore(state => state.timeRemaining)
   let timesetting = gameState.timesetting
   let color = currentColor(gameState)
   let navigate = useNavigate()
   let onExit = useCallback(() => {
     navigate(base + "/lobby")
   }, [navigate])
+  let timeClassname = timeRemaining > 0 && timeRemaining <= 5 ? "font-bold text-red-500" : "text-white"
   return (
     <div className="flex-none grid grid-cols-[max-content_max-content_max-content_auto_max-content] w-full gap-x-4">
       <div className="flex"><BabyStone color="white" className="pr-1" />{white}</div>
@@ -110,11 +111,17 @@ function WhoIsWho({gameState}) {
           <IoMdExit />
         </IconContext.Provider>
       </button>
-      <div>{!counting && !end && color === WHITE ? timeout : timesetting}</div>
-      <div />
-      <div>{!counting && !end && color === BLACK ? timeout : timesetting}</div>
-      <div />
-      <div />
+      {timesetting ? <>
+        <div className={color === WHITE ? timeClassname : ""}>
+          {!counting && !end && color === WHITE ? timeRemaining : timesetting}
+        </div>
+        <div />
+        <div className={color === BLACK ? timeClassname : ""}>
+          {!counting && !end && color === BLACK ? timeRemaining : timesetting}
+        </div>
+        <div />
+        <div />
+      </> : ""}
     </div>
   )
 }

@@ -199,7 +199,7 @@ export function paintNumber(context, grid_x, grid_y, n, color) {
   ctx.fillText(n, x, y)
 }
 
-export function paintLastMove(context, lastMove, countdown) {
+export function paintLastMove(context, lastMove, timeRemaining) {
   if (!lastMove) {
     return
   }
@@ -211,8 +211,8 @@ export function paintLastMove(context, lastMove, countdown) {
   paintStone(context, grid_x, grid_y, color)
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
-  if (countdown && countdown < 10 && countdown > 0) {
-    paintNumber(context, grid_x, grid_y, countdown, color)
+  if (timeRemaining > 0 && timeRemaining < 10) {
+    paintNumber(context, grid_x, grid_y, timeRemaining, color)
     return
   }
   let length = stoneRadius * 0.875

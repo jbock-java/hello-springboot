@@ -3,7 +3,6 @@ package com.bernd;
 import com.bernd.game.Board;
 import com.bernd.game.MoveList;
 import com.bernd.model.AcceptRequest;
-import com.bernd.model.ActiveGame;
 import com.bernd.model.Chat;
 import com.bernd.model.ChatMessage;
 import com.bernd.model.Game;
@@ -93,7 +92,8 @@ public class GameController {
     }
     int color = getColorFromGameState(game);
     Chat chat = chats.get(game.id());
-    if (System.currentTimeMillis() > game.updated() + game.timesetting() * 1000L) {
+    if (game.timesetting() != 0
+        && System.currentTimeMillis() > game.updated() + game.timesetting() * 1000L) {
       games.put(game.withTimeoutState());
       String text = color == Board.W ? "B+Time" : "W+Time";
       ChatMessage message = new ChatMessage(chat.counter().getAndIncrement(), text, null, "status", null);

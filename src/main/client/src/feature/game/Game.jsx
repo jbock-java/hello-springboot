@@ -82,11 +82,11 @@ export function Game() {
 function Board({gameState, setGameState}) {
   let [cursor_x, setCursor_x] = useState(-1)
   let [cursor_y, setCursor_y] = useState(-1)
-  let timeout = useTimeoutStore(state => state.timeout)
+  let timeRemaining = useTimeoutStore(state => state.timeRemaining)
   let timesetting = gameState.timesetting
-  let setTimeout = useTimeoutStore(state => state.setTimeout)
-  let timeoutRef = useRef()
-  timeoutRef.current = timeout
+  let setTimeRemaining = useTimeoutStore(state => state.setTimeRemaining)
+  let timeRemainingRef = useRef()
+  timeRemainingRef.current = timeRemaining
   let gameStateRef = useRef()
   gameStateRef.current = gameState
   let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
@@ -118,10 +118,13 @@ function Board({gameState, setGameState}) {
     if (intervalIdRef.current) {
       clearInterval(intervalIdRef.current)
     }
-    setTimeout(timesetting)
+    setTimeRemaining(timesetting)
+    if (!timesetting) {
+      return
+    }
     intervalIdRef.current = setInterval(() => {
-      let t = timeoutRef.current - 1
-      setTimeout(t)
+      let t = timeRemainingRef.current - 1
+      setTimeRemaining(t)
       if (t <= 0) {
         clearInterval(intervalIdRef.current)
         window.setTimeout(() => {
@@ -133,7 +136,7 @@ function Board({gameState, setGameState}) {
       }
     }, 1000)
 
-  }, [setTimeout, timesetting, stompClient])
+  }, [setTimeRemaining, timesetting, stompClient])
 
   useEffect(() => {
     resetCountdown()
@@ -265,9 +268,9 @@ function Board({gameState, setGameState}) {
 
   useEffect(() => {
     if (!showMoveNumbers && !counting && !end) {
-      paintLastMove(context, lastMove, timeout)
+      paintLastMove(context, lastMove, timeRemaining)
     }
-  }, [showMoveNumbers, context, lastMove, timeout, counting, end])
+  }, [showMoveNumbers, context, lastMove, timeRemaining, counting, end])
 
   let onMouseMove = useCallback((e) => {
     if (dragging) {
@@ -363,7 +366,7 @@ function Board({gameState, setGameState}) {
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else if (!counting && !end) {
-      paintLastMove(context, lastMove, timeoutRef.current)
+      paintLastMove(context, lastMove, timeRemainingRef.current)
     } else if (lastMove && !lastMove.action) {
       paintNumber(context, lastMove.x, lastMove.y, lastMove.n + 1, lastMove.color)
     }
