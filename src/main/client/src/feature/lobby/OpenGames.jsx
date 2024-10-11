@@ -124,7 +124,7 @@ function OpenGame({game, onClick}) {
 
 function ChallengeDialog({lobbyState, setLobbyState, acceptableGame, acceptDialogRef}) {
   let [isFlip, setFlip] = useState(false)
-  let [handi, setHandi] = useState(1)
+  let [handicap, setHandicap] = useState(1)
   let auth = useAuthStore(state => state.auth)
   let zAccept = getZindex(lobbyState, "accept")
   return (
@@ -140,7 +140,7 @@ function ChallengeDialog({lobbyState, setLobbyState, acceptableGame, acceptDialo
           body: JSON.stringify({
             game: acceptableGame?.game,
             flip: isFlip,
-            handicap: handi === 1 ? 0 : handi,
+            handicap: handicap === 1 ? 0 : handicap,
           }),
         })
         setLobbyState(closeLobbyPopup(lobbyState))
@@ -169,19 +169,19 @@ function ChallengeDialog({lobbyState, setLobbyState, acceptableGame, acceptDialo
       <div className="mt-2 text-black py-1">
         <div className="inline-flex">
         <span>Handicap:</span>
-        <button type="button" disabled={handi === 1} onClick={() => setHandi(Math.max(1, handi - 1))}>
+        <button type="button" disabled={handicap === 1} onClick={() => setHandicap(Math.max(1, handicap - 1))}>
           <IconContext.Provider value={{
             size: "1.25em",
             className: twJoin(
               "px-1",
-              handi === 1 && "text-slate-400",
+              handicap === 1 && "text-slate-400",
             )
           }}>
             <FaAngleLeft />
           </IconContext.Provider>
         </button>
-        <span className="font-bold">{handi === 1 ? "0" : handi}</span>
-        <button type="button" className="" onClick={() => setHandi(handi + 1)}>
+        <span className="font-bold">{handicap === 1 ? "0" : handicap}</span>
+        <button type="button" className="" onClick={() => setHandicap(handicap + 1)}>
           <IconContext.Provider value={{ size: "1.25em", className: "pl-1" }}>
             <FaAngleRight />
           </IconContext.Provider>

@@ -153,7 +153,7 @@ function Board({gameState, setGameState}) {
     }
     if (!howler.current) {
       howler.current = new Howl({
-        src: ["/app/stone1.wav"],
+        src: [base + "/stone1.wav"],
         onloaderror: (id, error) => {
           throw new Error(id + ": " + error)
         },
