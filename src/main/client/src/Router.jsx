@@ -1,5 +1,4 @@
 import {
-  useRef,
   useState,
   useEffect,
   useContext,
@@ -79,15 +78,10 @@ function WithConnection() {
   let auth = useAuthStore(state => state.auth)
   let stompClient = useContext(StompContext)
   let [connected, setConnected] = useState(false)
-  let initialized = useRef()
   useEffect(() => {
-    if (initialized.current) {
-      return
-    }
     if (!auth.name) {
       return
     }
-    initialized.current = true
     stompClient.onConnect = () => {
       setConnected(true)
     }
@@ -95,7 +89,7 @@ function WithConnection() {
       token: auth.token,
     }
     stompClient.activate()
-  }, [initialized, stompClient, setConnected, auth])
+  }, [stompClient, setConnected, auth])
   if (auth.state == "anonymous") {
     return <Navigate to={base + "/login"} />
   }

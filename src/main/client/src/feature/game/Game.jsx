@@ -66,53 +66,21 @@ import {
 } from "./BoardSettings.jsx"
 
 export function Game() {
+  let stompClient = useContext(StompContext)
+  let auth = useAuthStore(state => state.auth)
+  let navigate = useNavigate()
+  let {gameId} = useParams()
   let [gameState, setGameState] = useState(initialState())
-  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
-  return (
-    <div
-      style={{ width: vw() - sidebarWidth }}
-      className="h-full">
-      <BoardSettings gameId={gameState.id} black={gameState.black} white={gameState.white} />
-      <Board gameState={gameState} setGameState={setGameState} />
-      <GamePanel gameState={gameState} setGameState={setGameState} />
-    </div>
-  )
-}
-
-function Board({gameState, setGameState}) {
-  let [cursor_x, setCursor_x] = useState(-1)
-  let [cursor_y, setCursor_y] = useState(-1)
-  let timeRemaining = useTimeoutStore(state => state.timeRemaining)
+  let queueStatus = gameState.queueStatus
   let timesetting = gameState.timesetting
+  let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
+  let gameStateRef = useRef()
+  gameStateRef.current = gameState
+  let intervalIdRef = useRef()
+  let timeRemaining = useTimeoutStore(state => state.timeRemaining)
   let setTimeRemaining = useTimeoutStore(state => state.setTimeRemaining)
   let timeRemainingRef = useRef()
   timeRemainingRef.current = timeRemaining
-  let gameStateRef = useRef()
-  gameStateRef.current = gameState
-  let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
-  let zoom = useViewStateStore(state => state.zoom)
-  let {gameId} = useParams()
-  let navigate = useNavigate()
-  let stompClient = useContext(StompContext)
-  let auth = useAuthStore(state => state.auth)
-  let cursorXref = useRef()
-  cursorXref.current = cursor_x
-  let cursorYref = useRef()
-  cursorYref.current = cursor_y
-  let id = gameState.id
-  let lastMove = gameState.lastMove
-  let queueStatus = gameState.queueStatus
-  let myColor = gameState.myColor
-  let counting = isCounting(gameState)
-  let board = gameState.board
-  let [forbidden_x, forbidden_y] = gameState.forbidden
-  let canvasRef = useRef()
-  let dragging = useLayoutStore(state => state.dragging)
-  let muted = useMuteStore(state => state.muted)
-  let howler = useRef()
-  let end = gameHasEnded(gameState)
-  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
-  let intervalIdRef = useRef()
 
   let resetCountdown = useCallback(() => {
     if (intervalIdRef.current) {
@@ -135,7 +103,6 @@ function Board({gameState, setGameState}) {
         }, 100)
       }
     }, 1000)
-
   }, [setTimeRemaining, timesetting, stompClient])
 
   useEffect(() => {
@@ -146,6 +113,74 @@ function Board({gameState, setGameState}) {
       }
     }
   }, [resetCountdown])
+
+  useEffect(() => {
+    let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
+      let move = JSON.parse(message.body)
+      let newState = addMove(gameStateRef.current, move)
+      setGameState(newState)
+      resetCountdown()
+    })
+    return () => {
+      sub.unsubscribe()
+    }
+  }, [gameStateRef, setGameState, stompClient, gameId, resetCountdown])
+
+  useEffect(() => {
+    if (queueStatus === "up_to_date") {
+      return
+    }
+    doTry(async () => {
+      let game = await tfetch("/api/game/" + gameId, {
+        headers: {
+          "Authorization": "Bearer " + auth.token,
+        },
+      })
+      setGameState(createGameState(game, auth))
+    }, () => navigate(base + "/lobby"))
+  }, [setGameState, queueStatus, auth, gameId, navigate])
+
+  if (!gameState.board.length) {
+    return <div>Loading...</div>
+  }
+
+  return (
+    <div
+      style={{ width: vw() - sidebarWidth }}
+      className="h-full">
+      <BoardSettings gameId={gameId} black={gameState.black} white={gameState.white} />
+      <Board
+        resetCountdown={resetCountdown}
+        timeRemaining={timeRemaining}
+        gameState={gameState}
+        setGameState={setGameState} />
+      <GamePanel gameState={gameState} setGameState={setGameState} />
+    </div>
+  )
+}
+
+function Board({gameState, setGameState, resetCountdown, timeRemaining}) {
+  let [cursor_x, setCursor_x] = useState(-1)
+  let [cursor_y, setCursor_y] = useState(-1)
+  let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
+  let zoom = useViewStateStore(state => state.zoom)
+  let auth = useAuthStore(state => state.auth)
+  let stompClient = useContext(StompContext)
+  let cursorXref = useRef()
+  cursorXref.current = cursor_x
+  let cursorYref = useRef()
+  cursorYref.current = cursor_y
+  let lastMove = gameState.lastMove
+  let myColor = gameState.myColor
+  let counting = isCounting(gameState)
+  let board = gameState.board
+  let [forbidden_x, forbidden_y] = gameState.forbidden
+  let canvasRef = useRef()
+  let dragging = useLayoutStore(state => state.dragging)
+  let muted = useMuteStore(state => state.muted)
+  let howler = useRef()
+  let end = gameHasEnded(gameState)
+  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
 
   let playClickSound = useCallback(() => {
     if (muted) {
@@ -336,7 +371,7 @@ function Board({gameState, setGameState}) {
         ...move,
         color: myColor,
         n: gameState.moves.length,
-        }))
+      }))
     }
     resetCountdown()
     playClickSound()
@@ -366,7 +401,7 @@ function Board({gameState, setGameState}) {
     if (showMoveNumbers) {
       paintMoveNumbers(context, board)
     } else if (!counting && !end) {
-      paintLastMove(context, lastMove, timeRemainingRef.current)
+      paintLastMove(context, lastMove, timeRemaining)
     } else if (lastMove && !lastMove.action) {
       paintNumber(context, lastMove.x, lastMove.y, lastMove.n + 1, lastMove.color)
     }
@@ -388,34 +423,7 @@ function Board({gameState, setGameState}) {
     if (!showMoveNumbers && !counting && !end) {
       paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
     }
-  }, [gameState, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers, end])
-
-  useEffect(() => {
-    if (id === gameId && queueStatus === "up_to_date") {
-      return
-    }
-    doTry(async () => {
-      let game = await tfetch("/api/game/" + gameId, {
-        headers: {
-          "Authorization": "Bearer " + auth.token,
-        },
-      })
-      setGameState(createGameState(game, auth))
-    }, () => navigate(base + "/lobby"))
-  }, [setGameState, queueStatus, auth, id, gameId, navigate])
-
-  useEffect(() => {
-    let sub = stompClient.subscribe("/topic/move/" + gameId, (message) => {
-      let move = JSON.parse(message.body)
-      setGameState(addMove(gameState, move))
-      resetCountdown()
-    })
-    return sub.unsubscribe
-  }, [gameState, setGameState, stompClient, gameId, resetCountdown])
-
-  if (!board.length) {
-    return <div>Loading...</div>
-  }
+  }, [gameState, timeRemaining, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers, end])
 
   return (
     <div className="grid h-full">

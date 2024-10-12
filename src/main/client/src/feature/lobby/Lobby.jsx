@@ -54,12 +54,7 @@ export function Lobby() {
   let auth = useAuthStore(state => state.auth)
   let newGameRef = useRef()
   let stompClient = useContext(StompContext)
-  let initialized = useRef()
   useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
     let sub = stompClient.subscribe("/topic/gamestart", (message) => {
       let r = JSON.parse(message.body)
       if (r.players.includes(auth.name)) {
@@ -69,7 +64,7 @@ export function Lobby() {
     return () => {
       sub.unsubscribe()
     }
-  }, [auth, initialized, stompClient, navigate])
+  }, [auth, stompClient, navigate])
   return (
     <div onClick={(event) => setLobbyState(handleLobbyClick(lobbyState, event))} className="h-full">
       <div className={twJoin(

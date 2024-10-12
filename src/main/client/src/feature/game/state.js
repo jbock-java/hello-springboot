@@ -65,8 +65,13 @@ export function countingComplete({dim, state, baseBoard}) {
   return true
 }
 
-export function currentPlayer({moves, white, black, handicap}) {
-  if (handicap > moves.length) {
+export function isCurrentlyPlacingHandicapStones({moves, handicap}) {
+  return moves.length < handicap
+}
+
+export function currentPlayer(baseState) {
+  let {moves, white, black} = baseState
+  if (isCurrentlyPlacingHandicapStones(baseState)) {
     return black
   }
   if (!moves.length) {
@@ -83,10 +88,11 @@ export function isKibitz({black, white}, auth) {
   return black !== auth.name && white !== auth.name
 }
 
-export function currentColor({moves, handicap}) {
-  if (handicap > moves.length) {
+export function currentColor(baseState) {
+  if (isCurrentlyPlacingHandicapStones(baseState)) {
     return BLACK
   }
+  let {moves} = baseState
   if (!moves.length) {
     return BLACK
   }

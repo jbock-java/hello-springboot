@@ -1,5 +1,4 @@
 import {
-  useRef,
   useState,
   useEffect,
   useContext,
@@ -25,12 +24,7 @@ export function ActiveGames() {
   let stompClient = useContext(StompContext)
   let navigate = useNavigate()
   let auth = useAuthStore(state => state.auth)
-  let initialized = useRef()
   useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
     doTry(async () => {
       let r = await tfetch("/api/lobby/active_games", {
         headers: {
@@ -46,7 +40,7 @@ export function ActiveGames() {
     return () => {
       sub1.unsubscribe()
     }
-  }, [auth, initialized, stompClient, navigate])
+  }, [auth, stompClient, navigate])
   return (
     <div>
       <div className="grid grid-cols-[max-content_max-content_max-content]">

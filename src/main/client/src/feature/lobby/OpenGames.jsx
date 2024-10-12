@@ -44,13 +44,8 @@ export function OpenGames({lobbyState, setLobbyState}) {
   let acceptableGame = getAcceptData(lobbyState)
   let stompClient = useContext(StompContext)
   let auth = useAuthStore(state => state.auth)
-  let initialized = useRef()
   let acceptDialogRef = useRef()
   useEffect(() => {
-    if (initialized.current) {
-      return
-    }
-    initialized.current = true
     doTry(async () => {
       let r = await tfetch("/api/lobby/open_games", {
         headers: {
@@ -66,7 +61,7 @@ export function OpenGames({lobbyState, setLobbyState}) {
     return () => {
       sub1.unsubscribe()
     }
-  }, [auth, initialized, stompClient])
+  }, [auth, stompClient])
   return (
     <div>
       <div className="grid grid-cols-[max-content_max-content_max-content]">
