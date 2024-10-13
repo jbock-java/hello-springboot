@@ -65,24 +65,32 @@ export function Board({
   let [forbidden_x, forbidden_y] = gameState.forbidden
   let dragging = useLayoutStore(state => state.dragging)
   let muted = useMuteStore(state => state.muted)
-  let howler = useRef()
+  let howler = useRef({})
   let end = gameHasEnded(gameState)
   let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
+  let howlerActive = useRef(false)
 
-  let playClickSound = useCallback(() => {
+  let playSound = useCallback(({file, volume}) => {
+    if (!howlerActive.current) {
+      return
+    }
     if (muted) {
       return
     }
-    if (!howler.current) {
-      howler.current = new Howl({
-        src: [base + "/stone1.wav"],
-        onloaderror: (id, error) => {
-          throw new Error(id + ": " + error)
-        },
+    if (!howler.current[file]) {
+      howler.current[file] = new Howl({
+        src: [base + "/" + file + ".wav"],
+        volume: volume,
       })
     }
-    howler.current.play()
+    return howler.current[file].play()
   }, [howler, muted])
+
+  useEffect(() => {
+    if (!end && !counting && timeRemaining >= 1 && timeRemaining <= 9) {
+      playSound({file: "" + timeRemaining, volume: 1})
+    }
+  }, [playSound, timeRemaining, end, counting])
 
   useEffect(() => {
     let onKeyDown = (e) => {
@@ -160,6 +168,7 @@ export function Board({
   }, [context, setCursor_x, setCursor_y, board.length, dragging])
 
   let onClick = useCallback(() => {
+    howlerActive.current = true
     if (!context.canvasRef.current) {
       return
     }
@@ -206,12 +215,12 @@ export function Board({
       }))
     }
     resetCountdown()
-    playClickSound()
+    playSound({file: "stone1", volume: 0.04})
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
     })
-  }, [context, gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers, resetCountdown, end])
+  }, [context, gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playSound, isCursorInBounds, showMoveNumbers, resetCountdown, end])
 
   useEffect(() => {
     if (!context.canvasRef.current) {

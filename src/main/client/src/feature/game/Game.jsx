@@ -87,7 +87,7 @@ export function Game() {
             destination: "/app/game/move",
             body: JSON.stringify({ x: -1, y: -1 }),
           })
-        }, 100)
+        }, Math.trunc(Math.random() * 200))
       }
     }, 1000)
   }, [setTimeRemaining, timesetting, stompClient])
