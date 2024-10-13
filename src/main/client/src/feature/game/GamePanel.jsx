@@ -129,21 +129,25 @@ function WhoIsWho({gameState}) {
 function WarpControls({gameState, setGameState, activePlay}) {
   return (
     <div className="flex-none flex gap-x-1 items-center">
-      <Button title="Back"
-        disabled={activePlay || isAtStart(gameState)}
-        onClick={() => setGameState(moveBack(gameState))}
-        className="py-1 px-2">
-        Back
-      </Button>
+      {!activePlay && (
+        <Button title="Back"
+          disabled={isAtStart(gameState)}
+          onClick={() => setGameState(moveBack(gameState))}
+          className="py-1 px-2">
+          Back
+        </Button>
+      )}
       <div className="flex-none">
         <div>Move {gameState.viewPos}</div>
       </div>
-      <Button title="Forward"
-        disabled={activePlay || isAtEnd(gameState)}
-        onClick={() => setGameState(moveForward(gameState))}
-        className="py-1 px-2">
-        Forward
-      </Button>
+      {!activePlay && (
+        <Button title="Forward"
+          disabled={activePlay || isAtEnd(gameState)}
+          onClick={() => setGameState(moveForward(gameState))}
+          className="py-1 px-2">
+          Forward
+        </Button>
+      )}
     </div>
   )
 }

@@ -185,14 +185,16 @@ function paintMoveNumber({cursorXref, cursorYref, stoneRadius, canvasRef, grid},
   ctx.fillText(historyEntry.n + 1, x, y)
 }
 
-export function paintNumber(context, grid_x, grid_y, n, color) {
+export function paintNumber(context, grid_x, grid_y, n, color, bold) {
   let {canvasRef, grid, stoneRadius} = context
   let ctx = canvasRef.current.getContext("2d")
   let [x, y] = grid[grid_y][grid_x]
   let style = color === BLACK ?
     "rgba(255,255,255)" :
     "rgba(0,0,0)"
-  ctx.font = "bold " + Math.trunc(stoneRadius * 1.125) + "px sans-serif"
+  ctx.font = bold ?
+    ("bold " + Math.trunc(stoneRadius * 1.125) + "px sans-serif") :
+    Math.trunc(stoneRadius * 0.75) + "px sans-serif"
   ctx.textBaseline = "middle"
   ctx.textAlign = "center"
   ctx.fillStyle = style
@@ -212,7 +214,7 @@ export function paintLastMove(context, lastMove, timeRemaining) {
   let [x, y] = grid[grid_y][grid_x]
   let ctx = canvasRef.current.getContext("2d")
   if (timeRemaining > 0 && timeRemaining < 10) {
-    paintNumber(context, grid_x, grid_y, timeRemaining, color)
+    paintNumber(context, grid_x, grid_y, timeRemaining, color, true)
     return
   }
   let length = stoneRadius * 0.875

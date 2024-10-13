@@ -1,7 +1,4 @@
 import {
-  twJoin,
-} from "tailwind-merge"
-import {
   useEffect,
   useCallback,
   useState,
@@ -14,9 +11,6 @@ import {
   useNavigate,
 } from "react-router-dom"
 import {
-  Howl,
-} from "howler"
-import {
   vw,
   base,
   StompContext,
@@ -28,7 +22,6 @@ import {
 } from "src/model/PointList.js"
 import {
   useAuthStore,
-  useMuteStore,
   useTimeoutStore,
 } from "src/store.js"
 import {
@@ -36,31 +29,16 @@ import {
   useViewStateStore,
 } from "src/layout.js"
 import {
-  paintShadow,
-  paintGrid,
-  paintBoardDecorations,
-  paintStones,
-  paintStonesCounting,
-  paintLastMove,
-  paintNumber,
-  paintMoveNumbers,
-} from "./paint.js"
-import {
   GamePanel,
 } from "./GamePanel.jsx"
 import {
   initialState,
-  currentPlayer,
-  isSelfPlay,
-  currentColor,
-  gameHasEnded,
   addMove,
-  isKibitz,
   createGameState,
-  isReviewing,
-  isCounting,
-  teleport,
 } from "./state.js"
+import {
+  Board,
+} from "./Board.jsx"
 import { 
   BoardSettings,
 } from "./BoardSettings.jsx"
@@ -73,6 +51,7 @@ export function Game() {
   let [gameState, setGameState] = useState(initialState())
   let queueStatus = gameState.queueStatus
   let timesetting = gameState.timesetting
+  let board = gameState.board
   let sidebarWidth = useLayoutStore(state => state.sidebarWidth.game)
   let gameStateRef = useRef()
   gameStateRef.current = gameState
@@ -81,6 +60,14 @@ export function Game() {
   let setTimeRemaining = useTimeoutStore(state => state.setTimeRemaining)
   let timeRemainingRef = useRef()
   timeRemainingRef.current = timeRemaining
+  let [cursor_x, setCursor_x] = useState(-1)
+  let [cursor_y, setCursor_y] = useState(-1)
+  let cursorXref = useRef()
+  cursorXref.current = cursor_x
+  let cursorYref = useRef()
+  cursorYref.current = cursor_y
+  let canvasRef = useRef()
+  let zoom = useViewStateStore(state => state.zoom)
 
   let resetCountdown = useCallback(() => {
     if (intervalIdRef.current) {
@@ -140,109 +127,6 @@ export function Game() {
     }, () => navigate(base + "/lobby"))
   }, [setGameState, queueStatus, auth, gameId, navigate])
 
-  if (!gameState.board.length) {
-    return <div>Loading...</div>
-  }
-
-  return (
-    <div
-      style={{ width: vw() - sidebarWidth }}
-      className="h-full">
-      <BoardSettings gameId={gameId} black={gameState.black} white={gameState.white} />
-      <Board
-        resetCountdown={resetCountdown}
-        timeRemaining={timeRemaining}
-        gameState={gameState}
-        setGameState={setGameState} />
-      <GamePanel gameState={gameState} setGameState={setGameState} />
-    </div>
-  )
-}
-
-function Board({gameState, setGameState, resetCountdown, timeRemaining}) {
-  let [cursor_x, setCursor_x] = useState(-1)
-  let [cursor_y, setCursor_y] = useState(-1)
-  let [ctrlKeyDown, setCtrlKeyDown] = useState(false)
-  let zoom = useViewStateStore(state => state.zoom)
-  let auth = useAuthStore(state => state.auth)
-  let stompClient = useContext(StompContext)
-  let cursorXref = useRef()
-  cursorXref.current = cursor_x
-  let cursorYref = useRef()
-  cursorYref.current = cursor_y
-  let lastMove = gameState.lastMove
-  let myColor = gameState.myColor
-  let counting = isCounting(gameState)
-  let board = gameState.board
-  let [forbidden_x, forbidden_y] = gameState.forbidden
-  let canvasRef = useRef()
-  let dragging = useLayoutStore(state => state.dragging)
-  let muted = useMuteStore(state => state.muted)
-  let howler = useRef()
-  let end = gameHasEnded(gameState)
-  let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
-
-  let playClickSound = useCallback(() => {
-    if (muted) {
-      return
-    }
-    if (!howler.current) {
-      howler.current = new Howl({
-        src: [base + "/stone1.wav"],
-        onloaderror: (id, error) => {
-          throw new Error(id + ": " + error)
-        },
-      })
-    }
-    howler.current.play()
-  }, [howler, muted])
-
-  useEffect(() => {
-    let onKeyDown = (e) => {
-      let activeElement = window.document.activeElement
-      if (e.shiftKey && activeElement?.id === "chat-input") {
-        return
-      }
-      if (e.ctrlKey || e.shiftKey) {
-        setCtrlKeyDown(true)
-      }
-    }
-    let onKeyUp = (e) => {
-      if (!e.shiftKey && !e.shiftKey) {
-        setCtrlKeyDown(false)
-      }
-    }
-    window.addEventListener("keydown", onKeyDown)
-    window.addEventListener("keyup", onKeyUp)
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-      window.removeEventListener("keyup", onKeyUp)
-    }
-  }, [setCtrlKeyDown])
-
-  let isCursorInBounds = useCallback(() => {
-    let dim = board.length
-    let x = cursorXref.current
-    let y = cursorYref.current
-    return x >= 0 && x < dim && y >= 0 && y < dim
-  }, [board.length])
-
-  let getCountingGroup = useCallback(() => {
-    if (end || !counting) {
-      return undefined
-    }
-    if (!isCursorInBounds()) {
-      return undefined
-    }
-    let x = cursorXref.current
-    let y = cursorYref.current
-    let {has, hasStone} = board[y][x]
-    if (!hasStone) {
-      return undefined
-    }
-    return has
-  }, [counting, board, isCursorInBounds, end])
-
   let context = useMemo(() => {
     let dim = board.length
     if (!dim) {
@@ -299,147 +183,28 @@ function Board({gameState, setGameState, resetCountdown, timeRemaining}) {
       territoryRadius: getRadius(step * 0.125),
       hoshiRadius: getRadius(step * 0.0625),
     }
-  }, [board, canvasRef, zoom])
+  }, [board.length, canvasRef, zoom])
 
-  useEffect(() => {
-    if (!showMoveNumbers && !counting && !end) {
-      paintLastMove(context, lastMove, timeRemaining)
-    }
-  }, [showMoveNumbers, context, lastMove, timeRemaining, counting, end])
-
-  let onMouseMove = useCallback((e) => {
-    if (dragging) {
-      return
-    }
-    if (!board.length) {
-      return
-    }
-    let dim = board.length
-    setCtrlKeyDown(e.shiftKey || e.ctrlKey)
-    let cursor_x = Math.round((e.nativeEvent.offsetX - context.margin) / context.step)
-    let cursor_y = Math.round((e.nativeEvent.offsetY - context.margin) / context.step)
-    if (cursor_x >= 0 && cursor_x < dim && cursor_y >= 0 && cursor_y < dim) {
-      setCursor_x(cursor_x + 0)
-      setCursor_y(cursor_y + 0)
-    } else {
-      setCursor_x(-1)
-      setCursor_y(-1)
-    }
-  }, [context, board.length, dragging])
-
-  let onClick = useCallback(() => {
-    let cursor_x = cursorXref.current
-    let cursor_y = cursorYref.current
-    if (showMoveNumbers) {
-      let historyEntry = board[cursor_y][cursor_x].historyEntry
-      if (historyEntry.n !== -1) {
-        setGameState(teleport(gameState, historyEntry.n + 1))
-      }
-      return
-    }
-    if (end) {
-      return
-    }
-    if (!board.length) {
-      return
-    }
-    if (!isCursorInBounds()) {
-      return
-    }
-    if (counting) {
-      if (!board[cursor_y][cursor_x].hasStone) {
-        return
-      }
-    } else {
-      if (board[cursor_y][cursor_x].isForbidden(currentColor(gameState))) {
-        return
-      }
-      if (cursor_x == forbidden_x && cursor_y == forbidden_y) {
-        return
-      }
-      if (currentPlayer(gameState) !== auth.name) {
-        return
-      }
-    }
-    let move = {
-      x: cursor_x,
-      y: cursor_y,
-    }
-    if (!isSelfPlay(gameState)) { // can't add early in self play; myColor is 0
-      // early add move
-      setGameState(addMove(gameState, {
-        ...move,
-        color: myColor,
-        n: gameState.moves.length,
-      }))
-    }
-    resetCountdown()
-    playClickSound()
-    stompClient.publish({
-      destination: "/app/game/move",
-      body: JSON.stringify(move),
-    })
-  }, [gameState, setGameState, auth, board, stompClient, counting, forbidden_x, forbidden_y, myColor, playClickSound, isCursorInBounds, showMoveNumbers, resetCountdown, end])
-
-  useEffect(() => {
-    if (!board.length) {
-      return
-    }
-    paintBoardDecorations(context)
-  }, [context, board.length])
-
-  useEffect(() => {
-    if (!board.length) {
-      return
-    }
-    paintGrid(context)
-    if (counting && !showMoveNumbers && !isReviewing(gameState)) {
-      paintStonesCounting(context, board, getCountingGroup())
-      return
-    }
-    paintStones(context, board, showMoveNumbers)
-    if (showMoveNumbers) {
-      paintMoveNumbers(context, board)
-    } else if (!counting && !end) {
-      paintLastMove(context, lastMove, timeRemaining)
-    } else if (lastMove && !lastMove.action) {
-      paintNumber(context, lastMove.x, lastMove.y, lastMove.n + 1, lastMove.color)
-    }
-    if (currentPlayer(gameState) !== auth.name) {
-      return
-    }
-    if (!isCursorInBounds()) {
-      return
-    }
-    if (board[cursor_y][cursor_x].hasStone) {
-      return
-    }
-    if (board[cursor_y][cursor_x].isForbidden(currentColor(gameState))) {
-      return
-    }
-    if (cursor_x === forbidden_x && cursor_y === forbidden_y) {
-      return
-    }
-    if (!showMoveNumbers && !counting && !end) {
-      paintShadow(context, cursor_x, cursor_y, currentColor(gameState))
-    }
-  }, [gameState, timeRemaining, context, cursor_x, cursor_y, ctrlKeyDown, canvasRef, auth, board, counting, forbidden_x, forbidden_y, lastMove, isCursorInBounds, getCountingGroup, showMoveNumbers, end])
+  if (!gameState.board.length) {
+    return <div>Loading...</div>
+  }
 
   return (
-    <div className="grid h-full">
-      <canvas className={twJoin(
-          "place-self-center",
-          isCursorInBounds() && showMoveNumbers && board[cursor_y][cursor_x].historyEntry.n !== -1 && "cursor-pointer",
-        )}
-        ref={canvasRef}
-        onMouseLeave={() => {
-          setCursor_x(-1)
-          setCursor_y(-1)
-        }}
-        onMouseMove={onMouseMove}
-        onClick={onClick}
-        width={context.width} height={context.width}>
-      </canvas>
+    <div
+      style={{ width: vw() - sidebarWidth }}
+      className="h-full">
+      <BoardSettings gameId={gameId} black={gameState.black} white={gameState.white} />
+      <Board
+        context={context}
+        cursor_x={cursor_x}
+        cursor_y={cursor_y}
+        setCursor_x={setCursor_x}
+        setCursor_y={setCursor_y}
+        resetCountdown={resetCountdown}
+        timeRemaining={timeRemaining}
+        gameState={gameState}
+        setGameState={setGameState} />
+      <GamePanel gameState={gameState} setGameState={setGameState} />
     </div>
   )
 }
