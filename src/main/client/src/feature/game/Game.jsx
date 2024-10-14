@@ -35,6 +35,8 @@ import {
   initialState,
   addMove,
   createGameState,
+  isCounting,
+  gameHasEnded,
 } from "./state.js"
 import {
   Board,
@@ -78,6 +80,16 @@ export function Game() {
       return
     }
     intervalIdRef.current = setInterval(() => {
+      let gameState = gameStateRef.current
+      if (!gameState) {
+        return
+      }
+      if (isCounting(gameState) || gameHasEnded(gameState)) {
+        if (intervalIdRef.current) {
+          clearInterval(intervalIdRef.current)
+        }
+        return
+      }
       let t = timeRemainingRef.current - 1
       setTimeRemaining(t)
       if (t <= 0) {

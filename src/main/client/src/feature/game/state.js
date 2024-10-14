@@ -119,6 +119,9 @@ export function gameHasEnded({state, moves}) {
 }
 
 export function isReviewing(baseState) {
+  if (gameHasEnded(baseState)) {
+    return true
+  }
   return baseState.viewPos < baseState.queueLength
 }
 
@@ -174,10 +177,11 @@ function goToEnd(baseState) {
   let queueLength = baseState.queueLength
   let baseBoard = baseState.baseBoard
   let historyBoard = baseState.historyBoard
+  let counting = baseState.state === STATE_COUNTING
   for (let i = baseState.viewPos; i < moves.length; i++) {
     let move = moves[i]
     let previousMove = getMove(moves, i - 1)
-    let [, updated] = updateBoardState(baseBoard, previousMove, move, !baseState.winnerByTime)
+    let [, updated] = updateBoardState(baseBoard, previousMove, move, counting)
     baseBoard = updated
   }
   let board = rehydrate(baseBoard, historyBoard)
@@ -202,8 +206,12 @@ export function addMove(baseState, move) {
     })
   }
   if (action === "end") {
+    let updated = resetCounting(baseBoard)
     return produce(baseState, (draft) => {
       draft.moves.push(move)
+      draft.state = 0
+      draft.baseBoard = updated
+      draft.board = rehydrate(updated, historyBoard)
     })
   }
   let [storedMove, updated, forbidden] = updateBoardState(baseBoard, previousMove, move, counting)
@@ -216,9 +224,9 @@ export function addMove(baseState, move) {
     draft.moves.push(storedMove)
     draft.lastMove = action === "pass" ? undefined : storedMove
     draft.baseBoard = updated
-    let updatedFinalBoard = counting ? historyBoard : updateHistoryBoard(historyBoard, move)
-    draft.historyBoard = updatedFinalBoard
-    draft.board = rehydrate(updated, updatedFinalBoard)
+    let updatedHistoryBoard = counting ? historyBoard : updateHistoryBoard(historyBoard, move)
+    draft.historyBoard = updatedHistoryBoard
+    draft.board = rehydrate(updated, updatedHistoryBoard)
     draft.forbidden = forbidden
     if (action === "pass" && previousMove?.action === "pass") {
       draft.state = STATE_COUNTING

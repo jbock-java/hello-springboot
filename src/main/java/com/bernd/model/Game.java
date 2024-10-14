@@ -54,7 +54,7 @@ public record Game(
       return toBuilder().build();
     }
     if (isCounting()) {
-      int[][] updated = move.resetCounting() ?
+      int[][] updated = (move.pass() || move.resetCounting()) ?
           Toggle.resetCounting(board) :
           Toggle.toggleStonesAt(board, move.x(), move.y());
       return toBuilder()
@@ -208,7 +208,7 @@ public record Game(
   public String getScore() {
     int w = 0;
     int b = 0;
-    for (int y = 0; y < board().length; y++) {
+    for (int y = 0; y < board.length; y++) {
       for (int x = 0; x < board[y].length; x++) {
         int color = board[y][x];
         if ((color & (Board.W | Board.TERRITORY_W)) != 0) {

@@ -93,6 +93,8 @@ public class GameController {
     int color = getColorFromGameState(game);
     Chat chat = chats.get(game.id());
     if (game.timesetting() != 0
+        && !game.isCounting()
+        && !game.gameHasEnded()
         && System.currentTimeMillis() > game.updated() + game.timesetting() * 1000L) {
       games.put(game.withTimeoutState());
       String text = color == Board.W ? "B+Time" : "W+Time";

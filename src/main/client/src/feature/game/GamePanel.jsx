@@ -142,7 +142,7 @@ function WarpControls({gameState, setGameState, activePlay}) {
       </div>
       {!activePlay && (
         <Button title="Forward"
-          disabled={activePlay || isAtEnd(gameState)}
+          disabled={isAtEnd(gameState)}
           onClick={() => setGameState(moveForward(gameState))}
           className="py-1 px-2">
           Forward
