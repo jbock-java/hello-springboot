@@ -135,9 +135,6 @@ export function isAtEnd(gameState) {
 
 export function teleport(baseState, targetPos) {
   let viewPos = baseState.viewPos
-  if (targetPos >= baseState.queueLength) {
-    return goToEnd(baseState)
-  }
   let diff = targetPos - viewPos
   let direction = Math.sign(diff)
   let moves = baseState.moves
@@ -172,26 +169,6 @@ export function moveForward(baseState) {
   return teleport(baseState, viewPos + 1)
 }
 
-function goToEnd(baseState) {
-  let moves = baseState.moves
-  let queueLength = baseState.queueLength
-  let baseBoard = baseState.baseBoard
-  let historyBoard = baseState.historyBoard
-  let counting = baseState.state === STATE_COUNTING
-  for (let i = baseState.viewPos; i < moves.length; i++) {
-    let move = moves[i]
-    let previousMove = getMove(moves, i - 1)
-    let [, updated] = updateBoardState(baseBoard, previousMove, move, counting)
-    baseBoard = updated
-  }
-  let board = rehydrate(baseBoard, historyBoard)
-  return produce(baseState, (draft) => {
-    draft.board = board
-    draft.viewPos = queueLength
-    draft.lastMove = getMove(moves, queueLength - 1)
-  })
-}
-
 export function addMove(baseState, move) {
   let {action, n} = move
   let {moves, baseBoard, historyBoard, state, queueLength} = baseState
@@ -207,11 +184,16 @@ export function addMove(baseState, move) {
   }
   if (action === "end") {
     let updated = resetCounting(baseBoard)
+    let finalQueueLength = getFinalQueueLength(baseState)
+    let lastMove = finalQueueLength ? moves[finalQueueLength - 1] : undefined
     return produce(baseState, (draft) => {
       draft.moves.push(move)
       draft.state = 0
       draft.baseBoard = updated
       draft.board = rehydrate(updated, historyBoard)
+      draft.queueLength = finalQueueLength
+      draft.viewPos = finalQueueLength
+      draft.lastMove = lastMove
     })
   }
   let [storedMove, updated, forbidden] = updateBoardState(baseBoard, previousMove, move, counting)
@@ -232,6 +214,15 @@ export function addMove(baseState, move) {
       draft.state = STATE_COUNTING
     }
   })
+}
+
+function getFinalQueueLength({moves, queueLength}) {
+  let copy = [...moves]
+  copy = copy.slice(0, queueLength)
+  while (copy.length && copy[copy.length - 1].action === "pass") {
+    copy.pop()
+  }
+  return copy.length
 }
 
 export function createGameState(game, auth) {

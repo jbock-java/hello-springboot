@@ -71,7 +71,7 @@ function Panel({gameState, setGameState}) {
   return (
     <>
       <WhoIsWho gameState={gameState} />
-      <WarpControls
+      <ReviewControls
         gameState={gameState}
         setGameState={setGameState}
         activePlay={activePlay} />
@@ -111,13 +111,13 @@ function WhoIsWho({gameState}) {
           <IoMdExit />
         </IconContext.Provider>
       </button>
-      {timesetting ? <>
+      {!end && !counting && timesetting ? <>
         <div className={color === WHITE ? timeClassname : ""}>
-          {!counting && !end && color === WHITE ? timeRemaining : timesetting}
+          {color === WHITE ? timeRemaining : timesetting}
         </div>
         <div />
         <div className={color === BLACK ? timeClassname : ""}>
-          {!counting && !end && color === BLACK ? timeRemaining : timesetting}
+          {color === BLACK ? timeRemaining : timesetting}
         </div>
         <div />
         <div />
@@ -126,7 +126,7 @@ function WhoIsWho({gameState}) {
   )
 }
 
-function WarpControls({gameState, setGameState, activePlay}) {
+function ReviewControls({gameState, setGameState, activePlay}) {
   return (
     <div className="flex-none flex gap-x-1 items-center">
       {!activePlay && (
