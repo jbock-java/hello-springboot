@@ -14,16 +14,22 @@ public final class StatusMap {
 
   private final Map<String, UserStatus> map = new LinkedHashMap<>();
 
-  public UserStatus put(String user, String room) {
-    return map.put(user, UserStatus.create(room));
+  public UserStatus setRoom(String user, String room) {
+    return map.compute(user, (key, current) -> {
+      if (current == null) {
+        return UserStatus.create(room);
+      } else {
+        return current.touch();
+      }
+    });
   }
 
-  public String get(String user) {
+  public String getRoom(String user) {
     UserStatus status = map.get(user);
     if (status == null) {
       return null;
     }
-    return put(user, status.room()).room();
+    return setRoom(user, status.room()).room();
   }
 
   public String remove(String user) {

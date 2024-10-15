@@ -75,7 +75,7 @@ public class GameController {
 
   @MessageMapping("/game/move")
   public void action(Move move, Principal p) {
-    String id = statusMap.get(getPrincipal(p));
+    String id = statusMap.getRoom(getPrincipal(p));
     if (id == null) {
       return;
     }

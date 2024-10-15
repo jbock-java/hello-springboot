@@ -21,7 +21,7 @@ public class RoomManager {
   }
 
   public void updateStatus(String user, String room) {
-    UserStatus old = statusMap.put(user, room);
+    UserStatus old = statusMap.setRoom(user, room);
     List<String> users = statusMap.usersInRoom(room);
     if (old == null) {
       sender.sendUsers(room, users);
