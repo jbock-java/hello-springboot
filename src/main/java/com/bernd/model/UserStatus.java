@@ -1,5 +1,7 @@
 package com.bernd.model;
 
+import java.util.List;
+
 public record UserStatus(
         String room,
         long lastSeen,
@@ -15,8 +17,22 @@ public record UserStatus(
                 null);
     }
 
-    public UserStatus touch() {
-        return toBuilder().lastSeen(System.currentTimeMillis()).build();
+    public UserStatus removeOpenGame() {
+        if (openGame == null) {
+            return this;
+        }
+        return openGame(null);
+    }
+
+    public UserStatus openGame(OpenGame openGame) {
+        return toBuilder().openGame(openGame).build();
+    }
+
+    public List<AcceptRequest> requests() {
+        if (openGame == null) {
+            return List.of();
+        }
+        return openGame.requests();
     }
 
     public boolean isActive(long current) {
@@ -43,6 +59,11 @@ public record UserStatus(
 
         public Builder room(String room) {
             this.room = room;
+            return this;
+        }
+
+        public Builder touch() {
+            this.lastSeen = System.currentTimeMillis();
             return this;
         }
 

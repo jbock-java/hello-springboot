@@ -22,17 +22,24 @@ public record OpenGame(
   }
 
   public OpenGame addRequest(AcceptRequest request, String opponent) {
-    List<AcceptRequest> updated = new ArrayList<>(requests.size() + 1);
-    updated.addAll(requests);
+    List<AcceptRequest> updated = new ArrayList<>(requests().size() + 1);
+    updated.addAll(requests());
     updated.add(request.withOpponent(opponent));
     return new OpenGame(id, user, updated, dim, timesetting);
   }
 
-  private OpenGame sanitize() {
+  private List<AcceptRequest> getRequests() {
     if (requests == null) {
-      return new OpenGame(id, user, List.of(), dim, timesetting);
+      return List.of();
     }
-    return this;
+    return requests;
+  }
+
+  private OpenGame sanitize() {
+    if (requests != null) {
+      return this;
+    }
+    return new OpenGame(id, user, List.of(), dim, timesetting);
   }
 
   public Game accept(AcceptRequest acceptRequest) {
