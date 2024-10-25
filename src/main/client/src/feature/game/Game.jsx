@@ -37,6 +37,7 @@ import {
   createGameState,
   isCounting,
   gameHasEnded,
+  isCurrentlyPlacingHandicapStones,
 } from "./state.js"
 import {
   Board,
@@ -70,30 +71,30 @@ export function Game() {
   cursorYref.current = cursor_y
   let canvasRef = useRef()
   let zoom = useViewStateStore(state => state.zoom)
+  let counting = isCounting(gameState)
+  let gameEnded = gameHasEnded(gameState)
+  let placingHandicap = isCurrentlyPlacingHandicapStones(gameState)
+  let movesLength = gameState.moves.length
 
   let resetCountdown = useCallback(() => {
-    if (intervalIdRef.current) {
-      clearInterval(intervalIdRef.current)
+    let intervalId = intervalIdRef.current
+    if (intervalId) {
+      window.clearInterval(intervalId)
+    }
+    if (placingHandicap || counting || gameEnded) {
+      return
     }
     setTimeRemaining(timesetting)
     if (!timesetting) {
       return
     }
     intervalIdRef.current = setInterval(() => {
-      let gameState = gameStateRef.current
-      if (!gameState) {
-        return
-      }
-      if (isCounting(gameState) || gameHasEnded(gameState)) {
-        if (intervalIdRef.current) {
-          clearInterval(intervalIdRef.current)
-        }
-        return
-      }
       let t = timeRemainingRef.current - 1
       setTimeRemaining(t)
       if (t <= 0) {
-        clearInterval(intervalIdRef.current)
+        if (intervalId) {
+          window.clearInterval(intervalId)
+        }
         window.setTimeout(() => {
           stompClient.publish({
             destination: "/app/game/move",
@@ -102,7 +103,11 @@ export function Game() {
         }, Math.trunc(Math.random() * 200))
       }
     }, 1000)
-  }, [setTimeRemaining, timesetting, stompClient])
+  }, [setTimeRemaining, timesetting, stompClient, counting, gameEnded, placingHandicap])
+
+  useEffect(() => {
+    resetCountdown()
+  }, [resetCountdown, movesLength])
 
   useEffect(() => {
     resetCountdown()
@@ -118,7 +123,6 @@ export function Game() {
       let move = JSON.parse(message.body)
       let newState = addMove(gameStateRef.current, move)
       setGameState(newState)
-      resetCountdown()
     })
     return () => {
       sub.unsubscribe()
