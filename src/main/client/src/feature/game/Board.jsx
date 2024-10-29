@@ -70,7 +70,7 @@ export function Board({
   let showMoveNumbers = ctrlKeyDown && (isKibitz(gameState, auth) || end)
   let howlerActive = useRef(false)
 
-  let playSound = useCallback(({file, volume}) => {
+  let playSound = useCallback(({file}) => {
     if (!howlerActive.current) {
       return
     }
@@ -80,7 +80,6 @@ export function Board({
     if (!howler.current[file]) {
       howler.current[file] = new Howl({
         src: [base + "/" + file + ".wav"],
-        volume: volume,
       })
     }
     return howler.current[file].play()
@@ -88,7 +87,7 @@ export function Board({
 
   useEffect(() => {
     if (!end && !counting && timeRemaining >= 1 && timeRemaining <= 9) {
-      playSound({file: "" + timeRemaining, volume: 1})
+      playSound({file: "" + timeRemaining})
     }
   }, [playSound, timeRemaining, end, counting])
 
@@ -215,7 +214,7 @@ export function Board({
       }))
     }
     resetCountdown()
-    playSound({file: "stone1", volume: 0.04})
+    playSound({file: "stone1"})
     stompClient.publish({
       destination: "/app/game/move",
       body: JSON.stringify(move),
