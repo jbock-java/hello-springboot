@@ -1,0 +1,6 @@
+#!/bin/bash
+if [[ -f /root/bulltrigger ]]; then
+  echo -n "I am bull " >> /tmp/bullmessage
+  date >> /tmp/bullmessage
+  rm /root/bulltrigger
+fi

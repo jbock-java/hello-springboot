@@ -1,0 +1,7 @@
+[Unit]
+Description=Fussbull
+[Service]
+ExecStart=/usr/bin/fussbull
+Type=oneshot
+[Install]
+WantedBy=multi-user.target
